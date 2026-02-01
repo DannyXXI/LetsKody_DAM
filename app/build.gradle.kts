@@ -1,8 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.devtools.ksp") version "2.3.4"
-    alias(libs.plugins.google.gms.google.services)  // plugin ksp (agregar primero y sincronizar)
+    id("com.google.devtools.ksp") version "2.3.4"   // plugin ksp (agregar primero y sincronizar)
+    alias(libs.plugins.google.gms.google.services)  // plugin para usar Firebase
 }
 
 android {
