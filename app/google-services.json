@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "471155651747",
+    "project_id": "lets-kody",
+    "storage_bucket": "lets-kody.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:471155651747:android:bf896538795aa8b6d0bb16",
+        "android_client_info": {
+          "package_name": "com.juandeherrera.letskody"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwN_8s63q-MVYkkUt9TW5vt5Lk3AnJNk4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
