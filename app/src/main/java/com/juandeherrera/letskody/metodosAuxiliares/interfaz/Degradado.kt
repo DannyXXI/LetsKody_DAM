@@ -1,4 +1,4 @@
-package com.juandeherrera.letskody.metodosAuxiliares
+package com.juandeherrera.letskody.metodosAuxiliares.interfaz
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode

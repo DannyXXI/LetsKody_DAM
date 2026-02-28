@@ -59,7 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.juandeherrera.letskody.R
-import com.juandeherrera.letskody.metodosAuxiliares.fondoDegradadoDiagonal
+import com.juandeherrera.letskody.metodosAuxiliares.interfaz.fondoDegradadoDiagonal
 
 @SuppressLint("DefaultLocale")
 @RequiresApi(Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
