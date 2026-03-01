@@ -62,13 +62,13 @@ import com.juandeherrera.letskody.R
 import com.juandeherrera.letskody.metodosAuxiliares.interfaz.fondoDegradadoDiagonal
 
 @SuppressLint("DefaultLocale")
-@RequiresApi(Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
+@RequiresApi(value = Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun PantallaLogin(controladorNavegacion: NavController) {
     val badcomic = FontFamily(Font(R.font.badcomic))  // fuente tipografica por defecto
 
-    val degradadoDiagonal = fondoDegradadoDiagonal(Color(0xFF0D47A1), Color(0xFF1976D2), Color(0xFF42A5F5))  // variable para obtener el degradado
+    val degradadoDiagonal = fondoDegradadoDiagonal(color1 = Color(0xFF0D47A1), color2 = Color(0xFF1976D2), color3 = Color(0xFF42A5F5))  // variable para obtener el degradado
 
     val scope = rememberCoroutineScope() // variable que crea un ambito de corrutinas que se mantienen en la recomposicion de la interfaz
 
@@ -77,7 +77,7 @@ fun PantallaLogin(controladorNavegacion: NavController) {
     val context = LocalContext.current // variable que obtiene el contexto actual
 
     // variables para los datos del formulario
-    var email by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf(value = "") }
     val password = rememberTextFieldState()
     var passVisible by remember { mutableStateOf(false) }
 
@@ -91,8 +91,8 @@ fun PantallaLogin(controladorNavegacion: NavController) {
 
         Column(
             modifier = Modifier.fillMaxSize()             // ocupa el espacio disponible
-                .padding(innerPadding)     // usa el padding por defecto
-                .background(degradadoDiagonal),   // fondo con degradado animado
+                .padding(paddingValues =  innerPadding)     // usa el padding por defecto
+                .background(brush = degradadoDiagonal),   // fondo con degradado animado
             horizontalAlignment = Alignment.CenterHorizontally,   // centrado horizontal
             verticalArrangement = Arrangement.Center              // centrado vertical
         ){

@@ -3,28 +3,46 @@ package com.juandeherrera.letskody.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
+import com.juandeherrera.letskody.clasesAuxiliares.DetectorRed
 import com.juandeherrera.letskody.screens.PantallaLogin
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
+@RequiresApi(value = Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
 @Composable
 fun AppNavigation() {
     val controladorNavegacion = rememberNavController()  // controlador del estado navegación entre las pantallas para desplazarse entre ellas
 
-    val context = LocalContext.current // se obtiene el contexto actual (necesario para la bd local)
+    val context = LocalContext.current // se obtiene el contexto actual
 
-    // contenedor que gestiona la navegacion y muestra las pantallas segun la ruta actual
-    // se le pasa el controlador del estado de navegacion y la pantalla inicial al abrir la app
-    // se muestre el login o la pantalla de perfil en funcion si exista una sesion iniciada
-    NavHost(navController = controladorNavegacion, startDestination = AppScreens.login.route) {
+    val detectorRed = remember { DetectorRed(context = context) } // se crea una instancia recordable del detector de red
 
-        // se define la ruta para la pantalla y se le indica al navegador la función que ejecutará
-        composable(route = AppScreens.login.route) { PantallaLogin(controladorNavegacion) }
+    val hayInternet by detectorRed.hayInternet.collectAsState()  // estado observable que indica si existe conexion a Internet
+
+    val usuarioActual = FirebaseAuth.getInstance().currentUser  // se obtiene el usuario iniciado en Firebase (si no existe, sera nulo)
+
+    // si hay Internet, se muestra la navegación normal de la aplicación
+    if (hayInternet) {
+
+        // contenedor que gestiona la navegacion y muestra las pantallas segun la ruta actual
+        // se le pasa el controlador del estado de navegacion y la pantalla inicial al abrir la app
+        // se muestre el login o la pantalla de perfil en funcion si exista una sesion iniciada en Firebase
+        NavHost(navController = controladorNavegacion, startDestination = if (usuarioActual != null) { AppScreens.Perfil.route } else { AppScreens.Login.route }) {
+
+            // se definen la rutas para las pantallas y se le indica al navegador la función que se ejecutará
+            composable(route = AppScreens.Login.route) { PantallaLogin(controladorNavegacion) }
 
 
 
+        }
+    }
+    else {
+        // si no hay Internet, se bloqueará la aplicación en esta pantalla aislada
     }
 }
