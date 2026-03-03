@@ -60,6 +60,7 @@ import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.juandeherrera.letskody.R
 import com.juandeherrera.letskody.metodosAuxiliares.interfaz.fondoDegradadoDiagonal
+import com.juandeherrera.letskody.navigation.AppScreens
 
 @SuppressLint("DefaultLocale")
 @RequiresApi(value = Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
@@ -287,7 +288,7 @@ fun PantallaLogin(controladorNavegacion: NavController) {
                                 fontWeight = FontWeight.Bold     // texto en negrita
                             ),
                             modifier = Modifier.clickable {
-                                //controladorNavegacion.navigate(AppScreens.crearUsuario.route) // vas al formulario de crear el usuario
+                                controladorNavegacion.navigate(AppScreens.CrearUsuario.route) // vas al formulario de crear el usuario
                             }
                         )
                     }
