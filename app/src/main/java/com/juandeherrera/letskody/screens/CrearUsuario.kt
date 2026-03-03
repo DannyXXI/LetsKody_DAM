@@ -174,7 +174,7 @@ fun PantallaCrearUsuario(controladorNavegacion: NavController) {
                 ){
                     // botón para volver atrás
                     IconButton(
-                        onClick = { controladorNavegacion.navigate(route = AppScreens.Perfil.route) }  // al pulsarlo se vuelve a la pantalla de login
+                        onClick = { controladorNavegacion.navigate(route = AppScreens.Login.route) }  // al pulsarlo se vuelve a la pantalla de login
                     ){
                         Icon(
                             imageVector = Lucide.ArrowBigLeft,  // icono

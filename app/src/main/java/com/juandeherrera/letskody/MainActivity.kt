@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AppNavigation()  // se encarga de manegar la navegacion y mostrar la primera pantalla
+            AppNavigation()  // maneja la navegación y mostrar la primera pantalla
         }
     }
 }

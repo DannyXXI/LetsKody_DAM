@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.juandeherrera.letskody.clasesAuxiliares.DetectorRed
 import com.juandeherrera.letskody.screens.PantallaCrearUsuario
 import com.juandeherrera.letskody.screens.PantallaLogin
+import com.juandeherrera.letskody.screens.PantallaSinConexion
 
 @RequiresApi(value = Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
 @Composable
@@ -48,6 +49,6 @@ fun AppNavigation() {
         }
     }
     else {
-        // si no hay Internet, se bloqueará la aplicación en esta pantalla aislada
+        PantallaSinConexion()// si no hay Internet, se bloqueará la aplicación en esta pantalla aislada
     }
 }
