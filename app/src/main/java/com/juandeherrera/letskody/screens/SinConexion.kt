@@ -74,7 +74,7 @@ fun PantallaSinConexion() {
                         color = Color(0xFF017DB2),  // color del texto
                         style = TextStyle(
                             fontFamily = badcomic,  // fuente tipográfica
-                            fontSize = 44.sp        // tamaño de fuente
+                            fontSize = 38.sp        // tamaño de fuente
                         )
                     )
 
@@ -82,7 +82,7 @@ fun PantallaSinConexion() {
 
                     // MENSAJE DE AVISO
                     Text(
-                        text = "¡Oh no! Hemos perdido la conexión a Internet y Kody necesita estar actualizado para poder seguir jugando contigo.",   // texto
+                        text = "¡Oh no! Hemos perdido la conexión de Internet y Kody la necesita estar actualizado para poder seguir jugando contigo.",   // texto
                         color = Color.Black,               // color del texto
                         style = TextStyle(
                             fontFamily = badcomic,         // fuente tipográfica

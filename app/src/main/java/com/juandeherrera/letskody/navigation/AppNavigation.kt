@@ -16,6 +16,7 @@ import com.juandeherrera.letskody.clasesAuxiliares.DetectorRed
 import com.juandeherrera.letskody.screens.PantallaCrearUsuario
 import com.juandeherrera.letskody.screens.PantallaLogin
 import com.juandeherrera.letskody.screens.PantallaSinConexion
+import com.juandeherrera.letskody.screens.PantallaVerificarEmailUsuario
 
 @RequiresApi(value = Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
 @Composable
@@ -44,6 +45,11 @@ fun AppNavigation() {
             composable(route = AppScreens.CrearUsuario.route) {
                 BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
                 PantallaCrearUsuario(controladorNavegacion = controladorNavegacion)
+            }
+
+            composable(route = AppScreens.VerificarEmailUsuario.route) {
+                BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
+                PantallaVerificarEmailUsuario(controladorNavegacion = controladorNavegacion)
             }
 
         }

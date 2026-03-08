@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -51,7 +52,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -72,6 +72,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -83,9 +84,11 @@ import com.composables.icons.lucide.Lucide
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.juandeherrera.letskody.R
 import com.juandeherrera.letskody.clasesAuxiliares.paises
+import com.juandeherrera.letskody.metodosAuxiliares.componentes.MensajeSnackbarHost
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.notificationSnackbar
 import com.juandeherrera.letskody.metodosAuxiliares.interfaz.fondoDegradadoDiagonal
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.convertirURIenBase64
+import com.juandeherrera.letskody.metodosAuxiliares.operaciones.crearUsuarioTemporal
 import com.juandeherrera.letskody.navigation.AppScreens
 import java.time.Instant
 import java.time.ZoneId
@@ -102,6 +105,8 @@ fun PantallaCrearUsuario(controladorNavegacion: NavController) {
     val scope = rememberCoroutineScope() // variable que crea un ámbito de corrutinas que se mantienen en la recomposición de la interfaz
 
     val snackbarHostState = remember { SnackbarHostState() } // variable de estado que controla el estado (mostrar/ocultar) del Snackbar
+
+    val tipoSnackbar = remember { mutableStateOf(value = "error") }  // variable de estado para indicar el tipo de snackbar a mostrar por defecto
 
     // variables para los datos del formulario
     var nombre by remember { mutableStateOf(value = "") }                    // nombre
@@ -136,7 +141,7 @@ fun PantallaCrearUsuario(controladorNavegacion: NavController) {
 
             // se obtiene el string en base64 para almacenarlo en la base de datos
             imagen = convertirURIenBase64(uriImagen = uriImagenGaleria!!, context = context, error = { mensaje ->
-                notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = mensaje) // si hay algún error se muestra un mensaje por Snackbar
+                notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = mensaje, tipo = "error") // si hay algún error se muestra un mensaje por Snackbar
             })
         }
     }
@@ -144,7 +149,7 @@ fun PantallaCrearUsuario(controladorNavegacion: NavController) {
     Scaffold(
         // define el lugar donde se mostraran los Snackbar
         snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)  // componente que muestra el Snackbar en pantalla
+            MensajeSnackbarHost(snackbarHostState = snackbarHostState, fuenteTipografica = badcomic, tipo = tipoSnackbar.value)
         }
     ){
         innerPadding ->
@@ -162,7 +167,7 @@ fun PantallaCrearUsuario(controladorNavegacion: NavController) {
             ElevatedCard(
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),  // sombreado de elevación de la tarjeta
                 colors = CardDefaults.cardColors(containerColor = Color.White),   // color de fondo de la tarjeta
-                modifier = Modifier.fillMaxSize()    // se ocupa el espacio disponible
+                modifier = Modifier.fillMaxSize()    // se ocupa la pantalla completa
                     .padding(all = 30.dp)            // padding externo
             ){
                 // fila para el botón de volver atrás
@@ -490,11 +495,13 @@ fun PantallaCrearUsuario(controladorNavegacion: NavController) {
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
+                    Spacer(modifier = Modifier.height(28.dp))  // separación vertical entre componentes
 
                     // tarjeta que contendrá las opciones del sexo del usuario
                     OutlinedCard(
-                        border = BorderStroke(width = 1.dp, color = Color(0xFF017DB2)),  // borde de la tarjeta
+                        shape = RoundedCornerShape(size = 5.dp),                          // bordes redondeados
+                        colors = CardDefaults.cardColors(containerColor = Color.White),   // color de fondo de la tarjeta
+                        border = BorderStroke(width = 1.dp, color = Color(0xFF017DB2)),   // borde de la tarjeta
                         modifier = Modifier.width(310.dp)   // ancho que coincide con el de los campos de texto
                     ){
 
@@ -507,8 +514,9 @@ fun PantallaCrearUsuario(controladorNavegacion: NavController) {
                                 text = "Sexo",         // texto
                                 color = Color.Black,   // color del texto
                                 style = TextStyle(
-                                    fontFamily = badcomic,   // fuente tipográfica del texto
-                                    fontSize = 16.sp         // tamaño de fuente del texto
+                                    fontFamily = badcomic,        // fuente tipográfica del texto
+                                    fontSize = 16.sp,             // tamaño de fuente del texto
+                                    fontWeight = FontWeight.Bold  // texto en negrita
                                 )
                             )
 
@@ -631,7 +639,7 @@ fun PantallaCrearUsuario(controladorNavegacion: NavController) {
                                 )
                             )
 
-                            // al pulsar el boton de confirmar, se guarda la fecha
+                            // al pulsar el botón de confirmar, se guarda la fecha
                             LaunchedEffect(key1 = estadoSelectorFecha.selectedDateMillis) {
                                 val millis = estadoSelectorFecha.selectedDateMillis  // fecha en milisegundos
 
@@ -685,7 +693,7 @@ fun PantallaCrearUsuario(controladorNavegacion: NavController) {
                             color = Color.Black,      // color del texto
                             style = TextStyle(
                                 fontFamily = badcomic,  // fuente tipográfica del texto
-                                fontSize = 14.sp                    // tamaño de fuente
+                                fontSize = 14.sp        // tamaño de fuente
                             )
                         )
                     }
@@ -695,18 +703,67 @@ fun PantallaCrearUsuario(controladorNavegacion: NavController) {
                     // BOTÓN DE REGISTRAR USUARIO
                     Button(
                         onClick = {
-
+                            // validaciones de los campos del formulario
+                            when{
+                                nombre.isBlank() -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El nombre no puede estar vacío.")
+                                }
+                                apellidos.isBlank() -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Los apellidos no pueden estar vacíos.")
+                                }
+                                telefono.isBlank() -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El teléfono no puede estar vacío.")
+                                }
+                                telefono.length < 9 -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El teléfono debe tener 9 dígitos.")
+                                }
+                                email.isBlank() -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El email no puede estar vacío.")
+                                }
+                                !email.matches(regex = emailPattern) -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El email no tiene un formato válido.")
+                                }
+                                password.text.length < 8 -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La contraseña debe tener 8 caracteres.")
+                                }
+                                sexoSeleccionado.isEmpty() -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Se debe elegir un sexo.")
+                                }
+                                fechaNacimiento.isBlank() -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La fecha de nacimiento no puede estar vacía.")
+                                }
+                                imagen.isBlank() -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Se debe elegir una foto de perfil.")
+                                }
+                                else -> {
+                                    // se crea el usuario temporal
+                                    crearUsuarioTemporal(
+                                        controladorNavegacion = controladorNavegacion,
+                                        scope = scope,
+                                        snackbarHostState = snackbarHostState,
+                                        context = context,
+                                        nombre = nombre,
+                                        apellidos = apellidos,
+                                        telefono = paisSeleccionado.prefijo + telefono,
+                                        email = email,
+                                        password = password.text.toString(),
+                                        sexo = sexoSeleccionado,
+                                        fechaNacimiento = fechaNacimiento,
+                                        foto = imagen
+                                    )
+                                }
+                            }
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF017DB2),    // color de fondo del botón
                             contentColor = Color.White             // color del texto del botón
-                        ),
+                        )
                     ){
                         Text(
                             text = "Registrar usuario",   // texto del botón
                             style = TextStyle(
-                                fontFamily = badcomic,        // fuente tipográfica del texto
-                                fontSize = 16.sp              // tamaño de fuente del texto
+                                fontFamily = badcomic,      // fuente tipográfica del texto
+                                fontSize = 16.sp            // tamaño de fuente del texto
                             )
                         )
                     }

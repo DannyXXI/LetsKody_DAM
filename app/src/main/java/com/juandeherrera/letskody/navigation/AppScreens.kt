@@ -7,7 +7,7 @@ sealed class AppScreens (val route: String) {
 
     object CrearUsuario: AppScreens(route = "CrearUsuario")
 
-    object verificarEmailUsuario: AppScreens("verificarEmailUsuario")
+    object VerificarEmailUsuario: AppScreens(route = "VerificarEmailUsuario")
 
     object Perfil: AppScreens(route = "Perfil")
 }

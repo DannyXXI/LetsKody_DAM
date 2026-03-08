@@ -7,7 +7,7 @@ data class Pais (
     val bandera: String  // emoticono de la bandera
 )
 
-// lista inmutable con los datos de los paises para el prefijo telefónico
+// lista inmutable con los datos de los países para el prefijo telefónico
 val paises = listOf(
     Pais(nombre = "España", prefijo = "+34", bandera = "🇪🇸"),
     Pais(nombre = "Francia", prefijo = "+33", bandera = "🇫🇷"),

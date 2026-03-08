@@ -19,9 +19,9 @@ class DetectorRed (context: Context) {
     // estado público observable de solo lectura del estado de la conexion a Internet
     val hayInternet: StateFlow<Boolean> = existeConexion
 
-    // bloque de codigo que se ejecutará inicialmente al crear una instancia de la clase
+    // bloque de código que se ejecutará inicialmente al crear una instancia de la clase
     init {
-        // funcion callback que se ejecuta cuando cambia el estado de red
+        // función callback que se ejecuta cuando cambia el estado de red
         val callback = object : ConnectivityManager.NetworkCallback() {
 
             // si hay conexion disponible
@@ -40,7 +40,7 @@ class DetectorRed (context: Context) {
         conexionManager.registerDefaultNetworkCallback(callback)
     }
 
-    // metodo interno para comprobar el estado de la conexion al arrancar la aplicacion
+    // función interna para comprobar el estado de la conexion al arrancar la aplicación
     private fun comprobarConexion(): Boolean {
 
         // se obtiene la red activa actual del dispositivo, si no hay ninguna, no hay conexion

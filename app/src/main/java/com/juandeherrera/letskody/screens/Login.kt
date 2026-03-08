@@ -1,5 +1,6 @@
 package com.juandeherrera.letskody.screens
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -36,6 +37,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,7 +60,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.juandeherrera.letskody.R
+import com.juandeherrera.letskody.metodosAuxiliares.componentes.MensajeSnackbarHost
 import com.juandeherrera.letskody.metodosAuxiliares.interfaz.fondoDegradadoDiagonal
 import com.juandeherrera.letskody.navigation.AppScreens
 
@@ -67,13 +72,17 @@ import com.juandeherrera.letskody.navigation.AppScreens
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun PantallaLogin(controladorNavegacion: NavController) {
-    val badcomic = FontFamily(Font(R.font.badcomic))  // fuente tipografica por defecto
+    val badcomic = FontFamily(Font(R.font.badcomic))  // fuente tipográfica por defecto
 
     val degradadoDiagonal = fondoDegradadoDiagonal(color1 = Color(0xFF0D47A1), color2 = Color(0xFF1976D2), color3 = Color(0xFF42A5F5))  // variable para obtener el degradado
 
-    val scope = rememberCoroutineScope() // variable que crea un ambito de corrutinas que se mantienen en la recomposicion de la interfaz
+    val scope = rememberCoroutineScope() // variable que crea un ambito de corrutinas que se mantienen en la recomposición de la interfaz
 
     val snackbarHostState = remember { SnackbarHostState() } // variable de estado que controla el estado (mostrar/ocultar) del Snackbar
+
+    val tipoSnackbar = remember { mutableStateOf(value = "error") }  // variable de estado para indicar el tipo de snackbar a mostrar por defecto
+
+    val permisosNotificacion = rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS) // controlador de permisos de notificaciones
 
     val context = LocalContext.current // variable que obtiene el contexto actual
 
@@ -85,10 +94,18 @@ fun PantallaLogin(controladorNavegacion: NavController) {
     Scaffold(
         // define el lugar donde se mostraran los Snackbar
         snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)  // componente que muestra el Snackbar en pantalla
+            MensajeSnackbarHost(snackbarHostState = snackbarHostState, fuenteTipografica = badcomic, tipo = tipoSnackbar.value)
         }
     ){
         innerPadding ->
+
+        // bloque de código que se ejecuta una sola vez al iniciar la aplicación por primera vez
+        LaunchedEffect(key1 = true) {
+            // cuando cargue la pantalla se pide permiso de notificaciones si no se dio antes (solo la primera vez)
+            if (!permisosNotificacion.status.isGranted) {
+                permisosNotificacion.launchPermissionRequest()  // popup para que el usuario conceda o no los permisos de notificaciones a la aplicación
+            }
+        }
 
         Column(
             modifier = Modifier.fillMaxSize()             // ocupa el espacio disponible
