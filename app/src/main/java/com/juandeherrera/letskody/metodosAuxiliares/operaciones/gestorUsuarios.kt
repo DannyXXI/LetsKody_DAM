@@ -46,7 +46,7 @@ fun crearUsuarioTemporal(controladorNavegacion: NavController, scope: CoroutineS
         }
         .addOnFailureListener { ex ->
             // si falla la creación del usuario se muestra un mensaje de error y se muestra el error por consola
-            notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Error al registrar el usuario.", tipo = "error")
+            notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Error al registrar el usuario.")
             println("Error al registrar el usuario con Auth: ${ex.message}")
         }
 }

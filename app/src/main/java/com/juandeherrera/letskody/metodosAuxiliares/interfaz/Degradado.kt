@@ -26,7 +26,7 @@ fun fondoDegradadoDiagonal (color1: Color, color2: Color, color3: Color) : Brush
         animationSpec = infiniteRepeatable(
             // se indica como será la animacion entre el valor inicial y el final
             animation = tween(
-                durationMillis = 4000, // duracion de ida en milisegundos
+                durationMillis = 4000, // duración de ida en milisegundos
                 easing = LinearEasing  // velocidad constante
             ),
             repeatMode = RepeatMode.Reverse // al llegar al final, la animacion se realiza hacia atrás
@@ -34,11 +34,11 @@ fun fondoDegradadoDiagonal (color1: Color, color2: Color, color3: Color) : Brush
         label = "move" // se indica como se llama la animacion
     )
 
-    // variable que se encarga de realizar el degradado lineal con una inclinacion de 45º
+    // variable que se encarga de realizar el degradado lineal con una inclinación de 45º
     val degradadoDiagonal = Brush.linearGradient(
         // colores del degradado
         colors = listOf(
-            color1, // morado azulado oscuro
+            color1,
             color2,
             color3
         ),

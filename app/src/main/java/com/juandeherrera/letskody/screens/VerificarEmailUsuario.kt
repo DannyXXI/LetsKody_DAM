@@ -139,7 +139,7 @@ fun PantallaVerificarEmailUsuario(controladorNavegacion: NavController) {
                     db = db,
                     notificationHandler = notificationHandler,
                     exito = {
-                        // si el registro se hizo correctamente, se navega a la pantalla de login (se limpia el historial de navegacion)
+                        // si el registro se hizo correctamente, se navega a la pantalla de login (se limpia el historial de navegación)
                         controladorNavegacion.navigate(AppScreens.Login.route) { popUpTo(AppScreens.VerificarEmailUsuario.route) {inclusive = true} }
                     },
                     error = { mensaje ->

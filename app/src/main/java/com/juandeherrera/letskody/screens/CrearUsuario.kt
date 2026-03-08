@@ -141,7 +141,7 @@ fun PantallaCrearUsuario(controladorNavegacion: NavController) {
 
             // se obtiene el string en base64 para almacenarlo en la base de datos
             imagen = convertirURIenBase64(uriImagen = uriImagenGaleria!!, context = context, error = { mensaje ->
-                notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = mensaje, tipo = "error") // si hay algún error se muestra un mensaje por Snackbar
+                notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = mensaje) // si hay algún error se muestra un mensaje por Snackbar
             })
         }
     }
