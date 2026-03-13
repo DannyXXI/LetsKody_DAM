@@ -156,9 +156,9 @@ fun PantallaCrearUsuario(controladorNavegacion: NavController) {
 
         Column(
             modifier = Modifier.fillMaxSize()                   // se ocupa el espacio disponible
-                .padding(paddingValues = innerPadding)          // se usa el padding por defecto
+                .background(brush = degradadoDiagonal)          // fondo con degradado animado
                 .verticalScroll(state = rememberScrollState())  // scroll vertical
-                .background(brush = degradadoDiagonal),         // fondo con degradado animado
+                .padding(paddingValues = innerPadding),          // se usa el padding por defecto
             horizontalAlignment = Alignment.CenterHorizontally,   // centrado horizontal
             verticalArrangement = Arrangement.Center              // centrado vertical
         ){

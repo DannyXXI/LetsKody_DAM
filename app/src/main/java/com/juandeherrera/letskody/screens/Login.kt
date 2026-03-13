@@ -146,8 +146,8 @@ fun PantallaLogin(controladorNavegacion: NavController) {
 
         Column(
             modifier = Modifier.fillMaxSize()               // ocupa el máximo espacio disponible
-                .padding(paddingValues =  innerPadding)     // se usa el padding por defecto
-                .background(brush = degradadoDiagonal),     // fondo con degradado animado
+                .background(brush = degradadoDiagonal)      // fondo con degradado animado
+                .padding(paddingValues = innerPadding),     // se usa el padding por defecto
             horizontalAlignment = Alignment.CenterHorizontally,   // centrado horizontal
             verticalArrangement = Arrangement.Center              // centrado vertical
         ){
