@@ -94,3 +94,20 @@ fun registrarUsuarioFirebase(uid: String, usuarioTemporal: UsuarioData, db: AppD
             error("No se logró registrar el usuario.")
         }
 }
+
+// función auxiliar para la recuperación de la contraseña del usuario
+fun recuperarPasswordUsuario(emailRecuperacion: String, exito: () -> Unit, error: (String) -> Unit) {
+
+    val auth = FirebaseAuth.getInstance() // instancia al sistema de autenticación de Firebase
+
+    // Firebase envía un email de para que el usuario pueda modificar su contraseña (si no existe en la base de datos, no se enviará a ese email)
+    auth.sendPasswordResetEmail(emailRecuperacion)
+        .addOnSuccessListener {
+            exito()  // si envío salió bien se muestra un mensaje al usuario
+        }
+        .addOnFailureListener { ex ->
+            // si falla el envió se muestra un mensaje de error en terminal y al usuario
+            println("Error al enviar el enlace para modificar la contraseña: ${ex.message}")
+            error("Error al enviar el email de recuperación.")
+        }
+}

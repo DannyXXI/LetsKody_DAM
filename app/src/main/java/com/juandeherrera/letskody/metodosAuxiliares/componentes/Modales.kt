@@ -1,0 +1,173 @@
+package com.juandeherrera.letskody.metodosAuxiliares.componentes
+
+import android.content.Context
+import android.widget.Toast
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+// función auxiliar para cargar el modal para la modificación de contraseña del usuario
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ModalModificarPassword(context: Context, fuenteTipografica: FontFamily, email: String, detectorEmail: (String) -> Unit, cerrar: () -> Unit, enviar: () -> Unit) {
+    // MODAL (cuadro de diálogo)
+    BasicAlertDialog(
+        onDismissRequest = { cerrar() }  // se cierra el modal cuando se pulsa afuera de él
+    ){
+        // tarjeta que conformará el modal
+        ElevatedCard(
+            shape = RoundedCornerShape(size = 10.dp),                         // bordes redondeados
+            colors = CardDefaults.cardColors(containerColor = Color.White),   // color de fondo de la tarjeta
+            modifier = Modifier.fillMaxWidth()                                // ocupa el máximo ancho posible
+                .padding(all = 22.dp)                                         // padding externo
+        ){
+            // columna que contiene el contenido de la tarjeta
+            Column(
+                modifier = Modifier.padding(all = 20.dp),  // padding externo
+                horizontalAlignment = Alignment.CenterHorizontally  // centrado horizontalmente
+            ){
+                // TITULO
+                Text(
+                    text = "Recuperar contraseña",   // texto
+                    color = Color(0xFF017DB2),       // color del texto
+                    style = TextStyle(
+                        fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                        fontSize = 20.sp,                // tamaño del texto
+                        fontWeight = FontWeight.Bold     // texto en negrita
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))  // separación vertical entre componentes
+
+                // MENSAJE
+                Text(
+                    text = "¡Oh no! Olvidaste tu contraseña.\n\nNo te preocupes, Kody se encargará de todo. Solo necesita tu email para enviarte un enlace para restablecer tu contraseña.",
+                    color = Color.Black,    // color del texto
+                    style = TextStyle(
+                        fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                        fontSize = 15.sp,                // tamaño del texto
+                        textAlign = TextAlign.Justify    // texto alineado de manera justificada
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))  // separación vertical entre componentes
+
+                // campo de texto para escribir el email
+                OutlinedTextField(
+                    value = email,  // valor del campo de texto
+                    onValueChange = { if (it.length < 41){ detectorEmail(it) } },  // se limita la longitud a 40 caracteres
+                    label = {
+                        Text(
+                            text = "Email del usuario",      // texto
+                            color = Color.Black,             // color del texto
+                            fontFamily = fuenteTipografica   // fuente tipográfica
+                        )
+                    },
+                    modifier = Modifier.width(310.dp),  // ancho del campo de texto
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color(0xFF017DB2),   // borde del campo cuando está activo
+                        unfocusedIndicatorColor = Color(0xFF017DB2), // borde del campo cuando no está activo
+                        focusedContainerColor = Color.White,         // color del fondo del campo cuando está activo
+                        unfocusedContainerColor = Color.White,       // color del fondo del campo cuando no está activo
+                        cursorColor = Color(0xFF017DB2)              // color del cursor en el campo de texto
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,            // tipo de teclado para el campo de texto
+                        capitalization = KeyboardCapitalization.None, // no se capitaliza (no se trata las mayúsculas) el texto del usuario
+                        autoCorrectEnabled = true,                    // se habilita el autocorrector mientras escribe el usuario
+                        showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
+                    ),
+                    textStyle = TextStyle(
+                        color = Color.Black,              // color del texto introducido
+                        fontFamily = fuenteTipografica    // fuente tipográfica del texto introducida
+                    ),
+                    singleLine = true // el campo de texto solo puede tener una sola línea de texto (con TAB se pasa al siguiente campo)
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
+
+                // fila que contiene los botones
+                Row(
+                    modifier = Modifier.fillMaxWidth(),             // se ocupa el maximo ancho posible
+                    horizontalArrangement = Arrangement.End,        // alineación horizontal a la derecha
+                    verticalAlignment = Alignment.CenterVertically  // centrado vertical
+                ){
+                    // BOTÓN DE CANCELAR (texto seleccionable)
+                    Text(
+                        text = "Cancelar",             // texto
+                        color = Color(0xFF017DB2),     // color del texto
+                        style = TextStyle(
+                            fontFamily = fuenteTipografica,      // fuente tipográfica del texto
+                            fontSize = 16.sp                     // tamaño del texto
+                        ),
+                        modifier = Modifier.padding(all = 8.dp)  // padding externo
+                            .clickable{ cerrar() }               // al pulsar se cierra el modal
+                    )
+
+                    Spacer(modifier = Modifier.width(16.dp))  // separación horizontal entre componentes
+
+                    // BOTÓN DE ENVIAR
+                    Button(
+                        onClick = {
+                            val emailPattern = Regex(pattern = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}") // patron que debe cumplir el email
+
+                            // validaciones básicas del campo de texto del email
+                            when{
+                                email.isBlank() -> {
+                                    Toast.makeText(context, "El email no puede estar vacío.", Toast.LENGTH_LONG).show()
+                                }
+                                !email.matches(regex = emailPattern) -> {
+                                    Toast.makeText(context, "El email no tiene un formato válido.", Toast.LENGTH_LONG).show()
+                                }
+                                else -> {
+                                    enviar()  // se procesa el envío del enlace de recuperación de contraseña
+                                }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF017DB2),    // color de fondo del botón
+                            contentColor = Color.White             // color del texto del botón
+                        )
+                    ){
+                        Text(
+                            text = "Enviar",                     // texto del botón
+                            style = TextStyle(
+                                fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                                fontSize = 16.sp                 // tamaño de fuente del texto
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

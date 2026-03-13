@@ -129,7 +129,7 @@ fun PantallaCrearUsuario(controladorNavegacion: NavController) {
         uriImagenGaleria = uri   // cuando el usuario seleccione una imagen de la galería, se guardará su URI
     }
 
-    val emailPattern = Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}") // patron que debe cumplir el email
+    val emailPattern = Regex(pattern = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}") // patron que debe cumplir el email
 
     val context = LocalContext.current // se obtiene el contexto actual
 
