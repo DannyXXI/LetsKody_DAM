@@ -67,6 +67,7 @@ import com.juandeherrera.letskody.metodosAuxiliares.componentes.MensajeSnackbarH
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.ModalModificarPassword
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.notificationSnackbar
 import com.juandeherrera.letskody.metodosAuxiliares.interfaz.fondoDegradadoDiagonal
+import com.juandeherrera.letskody.metodosAuxiliares.operaciones.loguearUsuario
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.recuperarPasswordUsuario
 import com.juandeherrera.letskody.navigation.AppScreens
 
@@ -94,9 +95,11 @@ fun PantallaLogin(controladorNavegacion: NavController) {
     val password = rememberTextFieldState()                        // contraseña
     var passVisible by remember { mutableStateOf(value = false) }  // variable para mostrar la contraseña
 
+    val emailPattern = Regex(pattern = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}") // patron que debe cumplir el email
+
     var emailRecuperacion by remember { mutableStateOf(value = "") } // variable de estado para el email del usuario para la recuperación de su contraseña
 
-    val abrirModalPassword = remember { mutableStateOf(value = false) } // variable para el estado (abrir/cerrar) el modal de recuperación de contraseña
+    val abrirModalPassword = remember { mutableStateOf(value = false) } // variable para el estado (abrir/cerrar) del modal de recuperación de contraseña
 
     Scaffold(
         // define el lugar donde se mostraran los Snackbar
@@ -264,7 +267,15 @@ fun PantallaLogin(controladorNavegacion: NavController) {
                             showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
                         ),
                         onKeyboardAction = {
-                            // PONER MISMA LLAMADA DE FUNCIÓN CON LA QUE INICIARA SESIÓN EL USUARIO
+                            // inicia sesión el usuario
+                            loguearUsuario(
+                                controladorNavegacion = controladorNavegacion,
+                                context = context,
+                                scope = scope,
+                                snackbarHostState = snackbarHostState,
+                                email = email,
+                                password = password.text.toString()
+                            )
                         },
                         textStyle = TextStyle(
                             color = Color.Black,        // color del texto introducido
@@ -304,7 +315,29 @@ fun PantallaLogin(controladorNavegacion: NavController) {
                     // BOTÓN DE INICIO DE SESIÓN
                     Button(
                         onClick = {
-
+                            // validaciones de los campos del formulario
+                            when{
+                                email.isBlank() -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El email no puede estar vacío.")
+                                }
+                                !email.matches(regex = emailPattern) -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El email no tiene un formato válido.")
+                                }
+                                password.text.length < 8 -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La contraseña debe tener 8 caracteres.")
+                                }
+                                else -> {
+                                    // inicia sesión el usuario
+                                    loguearUsuario(
+                                        controladorNavegacion = controladorNavegacion,
+                                        context = context,
+                                        scope = scope,
+                                        snackbarHostState = snackbarHostState,
+                                        email = email,
+                                        password = password.text.toString()
+                                    )
+                                }
+                            }
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF017DB2),  // color de fondo del botón

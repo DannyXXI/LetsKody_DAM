@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.juandeherrera.letskody.clasesAuxiliares.DetectorRed
 import com.juandeherrera.letskody.screens.PantallaCrearUsuario
+import com.juandeherrera.letskody.screens.PantallaInicio
 import com.juandeherrera.letskody.screens.PantallaLogin
 import com.juandeherrera.letskody.screens.PantallaSinConexion
 import com.juandeherrera.letskody.screens.PantallaVerificarEmailUsuario
@@ -37,7 +38,7 @@ fun AppNavigation() {
         // contenedor que gestiona la navegación y muestra las pantallas según la ruta actual
         // se le pasa el controlador del estado de navegación y la pantalla inicial al abrir la app
         // se muestre el login o la pantalla de perfil en función si existe una sesión iniciada en Firebase
-        NavHost(navController = controladorNavegacion, startDestination = if (usuarioActual != null) { AppScreens.Perfil.route } else { AppScreens.Login.route }) {
+        NavHost(navController = controladorNavegacion, startDestination = if (usuarioActual != null) { AppScreens.Inicio.route } else { AppScreens.Login.route }) {
 
             // se definen las rutas para las pantallas y se le indica al navegador la función que se ejecutará
             composable(route = AppScreens.Login.route) { PantallaLogin(controladorNavegacion = controladorNavegacion) }
@@ -50,6 +51,11 @@ fun AppNavigation() {
             composable(route = AppScreens.VerificarEmailUsuario.route) {
                 BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
                 PantallaVerificarEmailUsuario(controladorNavegacion = controladorNavegacion)
+            }
+
+            composable(route = AppScreens.Inicio.route) {
+                BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
+                PantallaInicio(controladorNavegacion = controladorNavegacion)
             }
 
         }

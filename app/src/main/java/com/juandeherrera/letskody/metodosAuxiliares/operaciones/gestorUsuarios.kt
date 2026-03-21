@@ -5,6 +5,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.navigation.NavController
 import androidx.room.Room
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.firestore.FirebaseFirestore
 import com.juandeherrera.letskody.firebase.UsuarioFirebase
 import com.juandeherrera.letskody.localdb.AppDB
@@ -110,4 +111,74 @@ fun recuperarPasswordUsuario(emailRecuperacion: String, exito: () -> Unit, error
             println("Error al enviar el enlace para modificar la contraseña: ${ex.message}")
             error("Error al enviar el email de recuperación.")
         }
+}
+
+// función auxiliar para que el usuario que el usuario inicie sesión en la aplicación
+fun loguearUsuario(controladorNavegacion: NavController, context: Context, scope: CoroutineScope, snackbarHostState: SnackbarHostState, email: String, password: String) {
+
+    // instancia a la base de datos local (en el mismo hilo)
+    val db = Room.databaseBuilder(context, klass = AppDB::class.java, name = Estructura.DB.NAME).allowMainThreadQueries().build()
+
+    val auth = FirebaseAuth.getInstance() // instancia al sistema de autenticación de Firebase
+
+    val dbfire = FirebaseFirestore.getInstance()  // instancia a la base de datos de Firebase asociada a la aplicación
+
+    // se autentica el usuario en Firebase con su email y contraseña
+    auth.signInWithEmailAndPassword(email, password)
+        .addOnSuccessListener { result ->
+            val user = result.user  // si la autenticación salió bien, se obtiene el usuario resultante
+
+            if (user == null) {
+                // si el usuario no existe, se muestra un mensaje al usuario
+                notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Usuario no registrado.")
+                return@addOnSuccessListener
+            }
+            else if (!user.isEmailVerified) {
+                // si el usuario no tiene verificado su email, se cerrará su sesión y se muestra un mensaje al usuario
+                auth.signOut()
+                notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Usuario con email no verificado.")
+                return@addOnSuccessListener
+            }
+            else {
+                // si el usuario verificado existe, se procede a obtener sus datos de Firebase a partir de su UID
+                dbfire.collection("usuarios").document(user.uid).get()
+                    .addOnSuccessListener { document ->
+
+                        // se obtienen los datos del usuario de Firebase (que almacenamos en su clase correspondiente)
+                        val usuarioFirebase = document.toObject(UsuarioFirebase::class.java) ?: return@addOnSuccessListener
+
+                        // se convierten los datos de Firebase a datos locales
+                        val usuarioLocal = convertirUsuarioFirebaseLocal(usuarioFirebase = usuarioFirebase, uid = user.uid)
+
+                        db.usuarioDao().nuevoUsuario(usuarioData = usuarioLocal)  // se agrega el usuario a la base de datos local
+
+                        // se navega a la pantalla de inicio y se limpia el historial de navegación
+                        controladorNavegacion.navigate(AppScreens.Inicio.route) { popUpTo(AppScreens.Login.route) { inclusive = true } }
+
+
+                    }
+                    .addOnFailureListener { ex ->
+                        // si se falla al obtener los datos se muestra un mensaje de error por terminal y al usuario
+                        println("Error al obtener los datos del usuario: ${ex.message}")
+                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Error al obtener los datos del usuario.")
+                    }
+            }
+        }
+        .addOnFailureListener { ex ->
+            // si fallo la autenticación, se obtiene el mensaje para mostrar al usuario
+            val mensajeError = when (ex) {
+                is FirebaseAuthInvalidCredentialsException -> "Credenciales incorrectas."  // sí se escriben mal las credenciales o el usuario no existe
+                else -> "Error en el inicio de sesión."  // otro tipo de errores
+            }
+
+            println("Error al iniciar sesión: ${ex.message}")  // mensaje que se muestra en la terminal
+
+            notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = mensajeError)  // mensaje que se muestra al usuario
+        }
+}
+
+// función auxiliar para cerrar la sesión del usuario
+fun cerrarSesionUsuario(db: AppDB, usuario: UsuarioData) {
+    FirebaseAuth.getInstance().signOut()                           // se cierra la sesión de Firebase
+    db.usuarioDao().eliminarUsuario(email = usuario.emailUsuario)  // se elimina el usuario local
 }

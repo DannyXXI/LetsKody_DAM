@@ -2,7 +2,6 @@ package com.juandeherrera.letskody.metodosAuxiliares.componentes
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Class
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
@@ -19,28 +18,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.composables.icons.lucide.Book
 import com.composables.icons.lucide.BriefcaseBusiness
 import com.composables.icons.lucide.Lucide
 import com.juandeherrera.letskody.navigation.AppScreens
 
-// metodo auxiliar para cargar la barra de navegación inferior de la aplicacion
+// metodo auxiliar para cargar la barra de navegación inferior de la aplicación
 @Composable
-fun BarraNavegacionInferior(badcomic: FontFamily, controladorNavegacion: NavController, selectInicio: Boolean, selectClases: Boolean, selectPerfil: Boolean) {
+fun BarraNavegacionInferior(fuenteTipografica: FontFamily, controladorNavegacion: NavController, selectInicio: Boolean, selectMaterias: Boolean, selectPerfil: Boolean) {
     // BARRA DE NAVEGACIÓN INFERIOR
     NavigationBar(
         containerColor = Color(0xFF2364C9) // color de fondo de la barra de navegación inferior
     ){
         // INICIO
         NavigationBarItem(
-            selected = selectInicio, // comprueba si esta seleccionado el item de navegación
+            selected = selectInicio, // comprueba si se ha seleccionado el item de navegación
             onClick = {
-                controladorNavegacion.navigate(AppScreens.Perfil.route)  // al pulsarlo se navega a la seccion de inicio
+                controladorNavegacion.navigate(AppScreens.Perfil.route)  // al pulsarlo se navega a la sección de inicio
             },
             icon = {
                 Icon(
                     imageVector = Icons.Default.Home, // icono
-                    contentDescription = "inicio",    // descripcion del icono
+                    contentDescription = "inicio",    // descripción del icono
                     modifier = Modifier.size(30.dp)   // tamaño del icono
                 )
             },
@@ -48,8 +46,8 @@ fun BarraNavegacionInferior(badcomic: FontFamily, controladorNavegacion: NavCont
                 Text(
                     text = "Inicio",  // texto
                     style = TextStyle(
-                        fontFamily = badcomic,  // fuente tipografica del texto
-                        fontSize = 14.sp,       // tamaño de la fuente del texto
+                        fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                        fontSize = 14.sp,                // tamaño del texto
                         fontWeight = if (selectInicio) FontWeight.Bold else FontWeight.Normal  // texto en negrita si esta seleccionado
                     )
                 )
@@ -65,23 +63,23 @@ fun BarraNavegacionInferior(badcomic: FontFamily, controladorNavegacion: NavCont
 
         // MATERIAS
         NavigationBarItem(
-            selected = selectInicio, // comprueba si esta seleccionado el item de navegación
+            selected = selectMaterias, // comprueba si se ha seleccionado el item de navegación
             onClick = {
-                controladorNavegacion.navigate(AppScreens.Perfil.route)  // al pulsarlo se navega a la seccion de inicio
+                controladorNavegacion.navigate(AppScreens.Perfil.route)  // al pulsarlo se navega a la sección de materias
             },
             icon = {
                 Icon(
                     imageVector = Lucide.BriefcaseBusiness, // icono
-                    contentDescription = "materias",    // descripcion del icono
-                    modifier = Modifier.size(30.dp)   // tamaño del icono
+                    contentDescription = "materias",        // descripción del icono
+                    modifier = Modifier.size(30.dp)         // tamaño del icono
                 )
             },
             label = {
                 Text(
                     text = "Materias",  // texto
                     style = TextStyle(
-                        fontFamily = badcomic,  // fuente tipografica del texto
-                        fontSize = 14.sp,       // tamaño de la fuente del texto
+                        fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                        fontSize = 14.sp,                // tamaño del texto
                         fontWeight = if (selectInicio) FontWeight.Bold else FontWeight.Normal  // texto en negrita si esta seleccionado
                     )
                 )
@@ -97,23 +95,23 @@ fun BarraNavegacionInferior(badcomic: FontFamily, controladorNavegacion: NavCont
 
         // PERFIL
         NavigationBarItem(
-            selected = selectInicio, // comprueba si esta seleccionado el item de navegación
+            selected = selectPerfil, // comprueba si se ha seleccionado el item de navegación
             onClick = {
-                controladorNavegacion.navigate(AppScreens.Perfil.route)  // al pulsarlo se navega a la seccion de inicio
+                controladorNavegacion.navigate(AppScreens.Perfil.route)  // al pulsarlo se navega a la sección de perfil
             },
             icon = {
                 Icon(
                     imageVector = Icons.Default.Person, // icono
-                    contentDescription = "perfil",    // descripcion del icono
-                    modifier = Modifier.size(30.dp)   // tamaño del icono
+                    contentDescription = "perfil",      // descripción del icono
+                    modifier = Modifier.size(30.dp)     // tamaño del icono
                 )
             },
             label = {
                 Text(
                     text = "Perfil",  // texto
                     style = TextStyle(
-                        fontFamily = badcomic,  // fuente tipografica del texto
-                        fontSize = 14.sp,       // tamaño de la fuente del texto
+                        fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                        fontSize = 14.sp,                // tamaño del texto
                         fontWeight = if (selectInicio) FontWeight.Bold else FontWeight.Normal  // texto en negrita si esta seleccionado
                     )
                 )
