@@ -14,7 +14,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -142,3 +145,84 @@ fun MenuLateralInicio(estadoMenuLateral: DrawerState, titulo: String, selectInic
         }
     }
 }
+
+// función auxiliar para cargar el menu lateral del perfil
+@Composable
+fun MenuLateralPerfil(estadoMenuLateral: DrawerState, titulo: String, selectPerfil: Boolean, selectEditarPerfil: Boolean, scope: CoroutineScope, controladorNavegacion: NavController, fuenteTipografica: FontFamily) {
+    // contenedor visual del menu lateral
+    ModalDrawerSheet(
+        modifier = Modifier.width(280.dp),        // ancho del menú lateral
+        drawerShape = RectangleShape,             // bordes rectangulares (sin bordes redondeados)
+        drawerContainerColor = Color(0xFF5FB2FF)  // color de fondo del menu lateral
+    ){
+        // columna con el contenido del menu lateral
+        Column(
+            modifier = Modifier.padding(all = 16.dp),         // padding interno
+            verticalArrangement = Arrangement.spacedBy(18.dp) // separación vertical entre elementos
+        ){
+            Spacer(modifier = Modifier.height(26.dp))  // espaciado superior (para que no quede tan pegado arriba)
+
+            // titulo del menu lateral
+            Text(
+                text = titulo,            // texto
+                color = Color(0xFF003E83),  // color del texto
+                style = TextStyle(
+                    fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                    fontSize = 26.sp,                // tamaño del texto
+                    fontWeight = FontWeight.Bold     // texto en negrita
+                )
+            )
+
+            HorizontalDivider(thickness = 1.dp, color = Color(0xFF003E83)) // linea separadora
+
+            // elemento 1: ir a la pantalla de mi perfil
+            ElementoMenuLateral(
+                fuenteTipografica = fuenteTipografica,
+                icono = Icons.Default.Person,
+                texto = "Mi perfil",
+                seleccionado = selectPerfil,
+                accion = {
+                    if (selectPerfil) {
+                        scope.launch { estadoMenuLateral.close() }
+                    }
+                    else {
+                        println("Otra acción")
+                    }
+                }
+            )
+
+            // elemento 2: ir a la pantalla para editar los datos del perfil
+            ElementoMenuLateral(
+                fuenteTipografica = fuenteTipografica,
+                icono = Icons.Default.Edit,
+                texto = "Editar mi perfil",
+                seleccionado = selectEditarPerfil,
+                accion = {
+                    if (selectEditarPerfil) {
+                        scope.launch { estadoMenuLateral.close() }
+                    }
+                    else {
+                        println("Otra acción")
+                    }
+                }
+            )
+
+            Spacer(modifier = Modifier.height(24.dp)) // separación horizontal entre componentes
+
+            // elemento 3: mostrar el modal para eliminar la cuenta del usuario
+            ElementoMenuLateral(
+                fuenteTipografica = fuenteTipografica,
+                icono = Icons.Default.Delete,
+                texto = "Borrar cuenta",
+                seleccionado = false,
+                peligro = true,
+                accion = {
+                    scope.launch { estadoMenuLateral.close() }
+                }
+            )
+        }
+    }
+}
+
+
+

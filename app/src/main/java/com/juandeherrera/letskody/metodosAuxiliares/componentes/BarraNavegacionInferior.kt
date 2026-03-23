@@ -33,7 +33,7 @@ fun BarraNavegacionInferior(fuenteTipografica: FontFamily, controladorNavegacion
         NavigationBarItem(
             selected = selectInicio, // comprueba si se ha seleccionado el item de navegación
             onClick = {
-                controladorNavegacion.navigate(AppScreens.Perfil.route)  // al pulsarlo se navega a la sección de inicio
+                controladorNavegacion.navigate(AppScreens.Inicio.route)  // al pulsarlo se navega a la sección de inicio
             },
             icon = {
                 Icon(
