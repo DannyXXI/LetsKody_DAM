@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
@@ -18,7 +20,11 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -47,11 +53,14 @@ import com.juandeherrera.letskody.localdb.Estructura
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraNavegacionInferior
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraSuperior
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.ImagenUsuario
+import com.juandeherrera.letskody.metodosAuxiliares.componentes.MensajeSnackbarHost
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.MenuLateralPerfil
+import com.juandeherrera.letskody.metodosAuxiliares.componentes.notificationSnackbar
 import com.juandeherrera.letskody.metodosAuxiliares.interfaz.colorFondo
 import com.juandeherrera.letskody.metodosAuxiliares.interfaz.colorTexto
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.calcularEdad
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.cerrarSesionUsuario
+import com.juandeherrera.letskody.metodosAuxiliares.operaciones.refrescarBaseDatos
 import com.juandeherrera.letskody.navigation.AppScreens
 import kotlinx.coroutines.launch
 
@@ -63,6 +72,10 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
     val badcomic = FontFamily(Font(R.font.badcomic))  // fuente tipográfica por defecto
 
     val scope = rememberCoroutineScope() // variable que crea un ámbito de corrutinas que se mantienen en la recomposición de la interfaz
+
+    val snackbarHostState = remember { SnackbarHostState() } // variable de estado que controla el estado (mostrar/ocultar) del Snackbar
+
+    val tipoSnackbar = remember { mutableStateOf(value = "error") }  // variable de estado para indicar el tipo de snackbar a mostrar por defecto
 
     val context = LocalContext.current // variable que obtiene el contexto actual
 
@@ -88,6 +101,10 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
     var abrirToolbar by remember { mutableStateOf(value = false) } // variable para el estado (abrir/cerrar) del menu desplegable del toolbar
 
     val abrirMenuLateral = rememberDrawerState(initialValue = DrawerValue.Closed)  // variable para el estado (abrir/cerrar) del menu lateral de navegación
+
+    var refrescarPantalla by remember { mutableStateOf(value = false) } // variable de estado para refrescar
+
+    val estadoRefrescoPantalla = rememberPullToRefreshState()  // variable para el estado del refresco de pantalla
 
     // MENU LATERAL DE NAVEGACIÓN
     ModalNavigationDrawer(
@@ -132,128 +149,89 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
                     selectMaterias = false,
                     selectPerfil = true
                 )
+            },
+            // define el lugar donde se mostraran los Snackbar
+            snackbarHost = {
+                MensajeSnackbarHost(snackbarHostState = snackbarHostState, fuenteTipografica = badcomic, tipo = tipoSnackbar.value)
             }
         ){
             innerPadding ->
 
-            Column(
-                modifier = Modifier.fillMaxSize()       // se ocupa la pantalla completa
-                    .background(Color(0xFFC2DAFD))      // color de fondo
-                    .padding(innerPadding),
-                horizontalAlignment = Alignment.CenterHorizontally,  // centrado horizontal
-                verticalArrangement = Arrangement.Center             // centrado vertical
-            ){
-                // TARJETA CON LA INFORMACIÓN DEL USUARIO
-                ElevatedCard(
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),  // sombreado de la tarjeta
-                    colors = CardDefaults.cardColors(containerColor = Color.White),   // color de fondo de la tarjeta
-                    modifier = Modifier.fillMaxWidth()    // ocupa el maximo ancho disponible
-                        .padding(horizontal = 24.dp)      // padding en los laterales
-                ){
-                    // columna con el contenido de la tarjeta de información
-                    Column(
-                        modifier = Modifier.fillMaxWidth()    // ocupa el maximo ancho disponible
-                            .padding(all = 24.dp),            // padding externo
-                        horizontalAlignment = Alignment.CenterHorizontally,  // centrado horizontal
-                        verticalArrangement = Arrangement.spacedBy(16.dp)    // espacio vertical entre elementos
-                    ){
+            // contenedor que permite hacer el gesto de arrastrar hacia abajo para refrescar
+            PullToRefreshBox(
+                state = estadoRefrescoPantalla,    // estado de refresco de la pantalla
+                isRefreshing = refrescarPantalla,  // indica si se muestra el indicador de carga
+                // función que se ejecuta cuando el usuario refresca
+                onRefresh = {
+                    refrescarPantalla = true  // se activa el indicador de carga
 
-                        ImagenUsuario(usuario = usuario!!)  // se carga la imagen del usuario
-
-                        // nombre completo del usuario
-                        Text(
-                            text = "${usuario!!.nombreUsuario} ${usuario!!.apellidosUsuario}",  // texto
-                            color = colorTexto(genero = usuario!!.sexoUsuario),   // color del texto
-                            style = TextStyle(
-                                fontFamily = badcomic,   // fuente tipográfica del texto
-                                fontSize = 26.sp,        // tamaño del texto
-                                fontWeight = FontWeight.Bold,  // texto en negrita
-                                textAlign = TextAlign.Center   // se centra el texto
-                            )
+                    // se lanza la corrutina para ejecutar la sincronización
+                    scope.launch {
+                        // se sincronizan los datos de Firebase con los locales
+                        refrescarBaseDatos(
+                            uidUsuario = usuario!!.uidUsuario,
+                            db = db,
+                            error = { mensaje ->
+                                notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = mensaje)
+                            }
                         )
 
-                        // contenedor del email del usuario
-                        ElevatedCard(
-                            colors = CardDefaults.cardColors(containerColor = colorFondo(genero = usuario!!.sexoUsuario)),   // color de fondo de la tarjeta
-                            modifier = Modifier.fillMaxWidth(),    // ocupa el maximo ancho disponible
-                        ){
-                            // fila para el contenido del contenedor
-                            Row(
-                                modifier = Modifier.fillMaxWidth()    // ocupa el maximo ancho disponible
-                                    .padding(all = 8.dp),             // padding interno
-                                verticalAlignment = Alignment.CenterVertically  // centrado vertical
-                            ){
-                                // label
-                                Text(
-                                    text = "Email:",  // texto
-                                    color = colorTexto(genero = usuario!!.sexoUsuario),   // color del texto
-                                    style = TextStyle(
-                                        fontFamily = badcomic,   // fuente tipográfica del texto
-                                        fontSize = 16.sp,        // tamaño del texto
-                                        fontWeight = FontWeight.Bold,  // texto en negrita
-                                    )
-                                )
-
-                                // email del usuario
-                                Text(
-                                    text = usuario!!.emailUsuario,  // texto
-                                    color = Color.Black,            // color del texto
-                                    style = TextStyle(
-                                        fontFamily = badcomic,       // fuente tipográfica del texto
-                                        fontSize = 16.sp,            // tamaño del texto
-                                        textAlign = TextAlign.Center // texto alineado en el centro
-                                    ),
-                                    modifier = Modifier.weight(1f)  // se ocupa el resto del espacio disponible
-                                )
-                            }
-                        }
-
-                        // contenedor del teléfono del usuario
-                        ElevatedCard(
-                            colors = CardDefaults.cardColors(containerColor = colorFondo(genero = usuario!!.sexoUsuario)),   // color de fondo de la tarjeta
-                            modifier = Modifier.fillMaxWidth(),    // ocupa el maximo ancho disponible
-                        ){
-                            // fila para el contenido del contenedor
-                            Row(
-                                modifier = Modifier.fillMaxWidth()    // ocupa el maximo ancho disponible
-                                    .padding(all = 8.dp),             // padding interno
-                                verticalAlignment = Alignment.CenterVertically  // centrado vertical
-                            ){
-                                // label
-                                Text(
-                                    text = "Teléfono:",  // texto
-                                    color = colorTexto(genero = usuario!!.sexoUsuario),   // color del texto
-                                    style = TextStyle(
-                                        fontFamily = badcomic,   // fuente tipográfica del texto
-                                        fontSize = 16.sp,        // tamaño del texto
-                                        fontWeight = FontWeight.Bold,  // texto en negrita
-                                    )
-                                )
-
-                                // email del usuario
-                                Text(
-                                    text = usuario!!.telefonoUsuario,  // texto
-                                    color = Color.Black,            // color del texto
-                                    style = TextStyle(
-                                        fontFamily = badcomic,       // fuente tipográfica del texto
-                                        fontSize = 16.sp,            // tamaño del texto
-                                        textAlign = TextAlign.Center // texto alineado en el centro
-                                    ),
-                                    modifier = Modifier.weight(1f)  // se ocupa el resto del espacio disponible
-                                )
-                            }
-                        }
-
-                        // fila para los contenedores de la edad y el género
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),    // ocupa el maximo ancho disponible
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)  // espaciado horizontal entre elementos
+                        refrescarPantalla = false  // se oculta el indicador tras finalizar la sincronización
+                    }
+                },
+                // indicador de refrescar pantalla
+                indicator = {
+                    Indicator(
+                        modifier = Modifier.align(Alignment.TopCenter), // centrado arriba
+                        isRefreshing = refrescarPantalla,
+                        containerColor = Color(0xFF9CC6FF), // color de fondo del circulo
+                        color = Color(0xFF2364C9),          // color del icono girando
+                        state = estadoRefrescoPantalla      // estado de refresco de la pantalla
+                    )
+                },
+                modifier = Modifier.fillMaxSize()          // se ocupa la pantalla completa
+                    .padding(paddingValues = innerPadding) // padding por defecto
+            ){
+                Column(
+                    modifier = Modifier.fillMaxSize()       // se ocupa la pantalla completa
+                        .verticalScroll(state = rememberScrollState())  // scroll vertical
+                        .background(Color(0xFFC2DAFD)),     // color de fondo
+                    horizontalAlignment = Alignment.CenterHorizontally,  // centrado horizontal
+                    verticalArrangement = Arrangement.Center             // centrado vertical
+                ){
+                    // TARJETA CON LA INFORMACIÓN DEL USUARIO
+                    ElevatedCard(
+                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),  // sombreado de la tarjeta
+                        colors = CardDefaults.cardColors(containerColor = Color.White),   // color de fondo de la tarjeta
+                        modifier = Modifier.fillMaxWidth()    // ocupa el maximo ancho disponible
+                            .padding(horizontal = 24.dp)      // padding en los laterales
+                    ){
+                        // columna con el contenido de la tarjeta de información
+                        Column(
+                            modifier = Modifier.fillMaxWidth()    // ocupa el maximo ancho disponible
+                                .padding(all = 24.dp),            // padding externo
+                            horizontalAlignment = Alignment.CenterHorizontally,  // centrado horizontal
+                            verticalArrangement = Arrangement.spacedBy(16.dp)    // espacio vertical entre elementos
                         ){
 
-                            // contenedor la edad del usuario
+                            ImagenUsuario(usuario = usuario!!)  // se carga la imagen del usuario
+
+                            // nombre completo del usuario
+                            Text(
+                                text = "${usuario!!.nombreUsuario} ${usuario!!.apellidosUsuario}",  // texto
+                                color = colorTexto(genero = usuario!!.sexoUsuario),   // color del texto
+                                style = TextStyle(
+                                    fontFamily = badcomic,   // fuente tipográfica del texto
+                                    fontSize = 26.sp,        // tamaño del texto
+                                    fontWeight = FontWeight.Bold,  // texto en negrita
+                                    textAlign = TextAlign.Center   // se centra el texto
+                                )
+                            )
+
+                            // contenedor del email del usuario
                             ElevatedCard(
                                 colors = CardDefaults.cardColors(containerColor = colorFondo(genero = usuario!!.sexoUsuario)),   // color de fondo de la tarjeta
-                                modifier = Modifier.weight(1f)  // se ocupa el resto del espacio disponible
+                                modifier = Modifier.fillMaxWidth(),    // ocupa el maximo ancho disponible
                             ){
                                 // fila para el contenido del contenedor
                                 Row(
@@ -263,7 +241,7 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
                                 ){
                                     // label
                                     Text(
-                                        text = "Edad:",  // texto
+                                        text = "Email:",  // texto
                                         color = colorTexto(genero = usuario!!.sexoUsuario),   // color del texto
                                         style = TextStyle(
                                             fontFamily = badcomic,   // fuente tipográfica del texto
@@ -272,9 +250,9 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
                                         )
                                     )
 
-                                    // edad del usuario
+                                    // email del usuario
                                     Text(
-                                        text = "${calcularEdad(fechaNacimiento = usuario!!.fnacUsuario)} años",  // texto
+                                        text = usuario!!.emailUsuario,  // texto
                                         color = Color.Black,            // color del texto
                                         style = TextStyle(
                                             fontFamily = badcomic,       // fuente tipográfica del texto
@@ -286,10 +264,10 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
                                 }
                             }
 
-                            // contenedor del género del usuario
+                            // contenedor del teléfono del usuario
                             ElevatedCard(
                                 colors = CardDefaults.cardColors(containerColor = colorFondo(genero = usuario!!.sexoUsuario)),   // color de fondo de la tarjeta
-                                modifier = Modifier.weight(1f)  // se ocupa el resto del espacio disponible
+                                modifier = Modifier.fillMaxWidth(),    // ocupa el maximo ancho disponible
                             ){
                                 // fila para el contenido del contenedor
                                 Row(
@@ -299,7 +277,7 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
                                 ){
                                     // label
                                     Text(
-                                        text = "Género:",  // texto
+                                        text = "Teléfono:",  // texto
                                         color = colorTexto(genero = usuario!!.sexoUsuario),   // color del texto
                                         style = TextStyle(
                                             fontFamily = badcomic,   // fuente tipográfica del texto
@@ -308,9 +286,9 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
                                         )
                                     )
 
-                                    // género del usuario
+                                    // email del usuario
                                     Text(
-                                        text = usuario!!.sexoUsuario,  // texto
+                                        text = usuario!!.telefonoUsuario,  // texto
                                         color = Color.Black,            // color del texto
                                         style = TextStyle(
                                             fontFamily = badcomic,       // fuente tipográfica del texto
@@ -319,6 +297,85 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
                                         ),
                                         modifier = Modifier.weight(1f)  // se ocupa el resto del espacio disponible
                                     )
+                                }
+                            }
+
+                            // fila para los contenedores de la edad y el género
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),    // ocupa el maximo ancho disponible
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)  // espaciado horizontal entre elementos
+                            ){
+
+                                // contenedor la edad del usuario
+                                ElevatedCard(
+                                    colors = CardDefaults.cardColors(containerColor = colorFondo(genero = usuario!!.sexoUsuario)),   // color de fondo de la tarjeta
+                                    modifier = Modifier.weight(1f)  // se ocupa el resto del espacio disponible
+                                ){
+                                    // fila para el contenido del contenedor
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth()    // ocupa el maximo ancho disponible
+                                            .padding(all = 8.dp),             // padding interno
+                                        verticalAlignment = Alignment.CenterVertically  // centrado vertical
+                                    ){
+                                        // label
+                                        Text(
+                                            text = "Edad:",  // texto
+                                            color = colorTexto(genero = usuario!!.sexoUsuario),   // color del texto
+                                            style = TextStyle(
+                                                fontFamily = badcomic,   // fuente tipográfica del texto
+                                                fontSize = 16.sp,        // tamaño del texto
+                                                fontWeight = FontWeight.Bold,  // texto en negrita
+                                            )
+                                        )
+
+                                        // edad del usuario
+                                        Text(
+                                            text = "${calcularEdad(fechaNacimiento = usuario!!.fnacUsuario)} años",  // texto
+                                            color = Color.Black,            // color del texto
+                                            style = TextStyle(
+                                                fontFamily = badcomic,       // fuente tipográfica del texto
+                                                fontSize = 16.sp,            // tamaño del texto
+                                                textAlign = TextAlign.Center // texto alineado en el centro
+                                            ),
+                                            modifier = Modifier.weight(1f)  // se ocupa el resto del espacio disponible
+                                        )
+                                    }
+                                }
+
+                                // contenedor del género del usuario
+                                ElevatedCard(
+                                    colors = CardDefaults.cardColors(containerColor = colorFondo(genero = usuario!!.sexoUsuario)),   // color de fondo de la tarjeta
+                                    modifier = Modifier.weight(1f)  // se ocupa el resto del espacio disponible
+                                ){
+                                    // fila para el contenido del contenedor
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth()    // ocupa el maximo ancho disponible
+                                            .padding(all = 8.dp),             // padding interno
+                                        verticalAlignment = Alignment.CenterVertically  // centrado vertical
+                                    ){
+                                        // label
+                                        Text(
+                                            text = "Género:",  // texto
+                                            color = colorTexto(genero = usuario!!.sexoUsuario),   // color del texto
+                                            style = TextStyle(
+                                                fontFamily = badcomic,   // fuente tipográfica del texto
+                                                fontSize = 16.sp,        // tamaño del texto
+                                                fontWeight = FontWeight.Bold,  // texto en negrita
+                                            )
+                                        )
+
+                                        // género del usuario
+                                        Text(
+                                            text = usuario!!.sexoUsuario,  // texto
+                                            color = Color.Black,            // color del texto
+                                            style = TextStyle(
+                                                fontFamily = badcomic,       // fuente tipográfica del texto
+                                                fontSize = 16.sp,            // tamaño del texto
+                                                textAlign = TextAlign.Center // texto alineado en el centro
+                                            ),
+                                            modifier = Modifier.weight(1f)  // se ocupa el resto del espacio disponible
+                                        )
+                                    }
                                 }
                             }
                         }

@@ -2,6 +2,7 @@ package com.juandeherrera.letskody.localdb
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
@@ -17,6 +18,10 @@ interface UsuarioDAO {
     // AGREGAR UN NUEVO USUARIO
     @Insert
     fun nuevoUsuario (usuarioData: UsuarioData)
+
+    // REFRESCAR UN USUARIO EXISTENTE
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun refrescarUsuario(usuarioData: UsuarioData)
 
     // AGREGAR LA LISTA DE USUARIOS DE FIREBASE A LOCAL
     @Insert
