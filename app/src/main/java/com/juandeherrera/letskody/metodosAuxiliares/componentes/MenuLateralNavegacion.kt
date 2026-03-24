@@ -24,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -148,7 +149,7 @@ fun MenuLateralInicio(estadoMenuLateral: DrawerState, titulo: String, selectInic
 
 // función auxiliar para cargar el menu lateral del perfil
 @Composable
-fun MenuLateralPerfil(estadoMenuLateral: DrawerState, titulo: String, selectPerfil: Boolean, selectEditarPerfil: Boolean, scope: CoroutineScope, controladorNavegacion: NavController, fuenteTipografica: FontFamily) {
+fun MenuLateralPerfil(estadoMenuLateral: DrawerState, titulo: String, selectPerfil: Boolean, selectEditarPerfil: Boolean, scope: CoroutineScope, controladorNavegacion: NavController, fuenteTipografica: FontFamily, mostrarModalEliminarCuenta: MutableState<Boolean>) {
     // contenedor visual del menu lateral
     ModalDrawerSheet(
         modifier = Modifier.width(280.dp),        // ancho del menú lateral
@@ -218,6 +219,7 @@ fun MenuLateralPerfil(estadoMenuLateral: DrawerState, titulo: String, selectPerf
                 peligro = true,
                 accion = {
                     scope.launch { estadoMenuLateral.close() }
+                    mostrarModalEliminarCuenta.value = true    // se muestra el modal de eliminar cuenta
                 }
             )
         }

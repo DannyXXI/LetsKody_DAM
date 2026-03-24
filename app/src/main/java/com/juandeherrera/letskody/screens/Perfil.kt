@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -55,11 +57,13 @@ import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraSuperior
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.ImagenUsuario
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.MensajeSnackbarHost
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.MenuLateralPerfil
+import com.juandeherrera.letskody.metodosAuxiliares.componentes.ModalEliminarCuenta
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.notificationSnackbar
 import com.juandeherrera.letskody.metodosAuxiliares.interfaz.colorFondo
 import com.juandeherrera.letskody.metodosAuxiliares.interfaz.colorTexto
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.calcularEdad
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.cerrarSesionUsuario
+import com.juandeherrera.letskody.metodosAuxiliares.operaciones.eliminarCuentaUsuario
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.refrescarBaseDatos
 import com.juandeherrera.letskody.navigation.AppScreens
 import kotlinx.coroutines.launch
@@ -106,6 +110,12 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
 
     val estadoRefrescoPantalla = rememberPullToRefreshState()  // variable para el estado del refresco de pantalla
 
+    val abrirModalEliminarCuenta = remember { mutableStateOf(value = false) } // variable para el estado (abrir/cerrar) del modal de eliminar cuenta
+
+    val passwordVerficacion = rememberTextFieldState()  // contraseña de verificación para eliminar la cuenta del usuario
+
+    var passVisibleVerificacion by remember { mutableStateOf(value = false) }  // variable de estado (mostrar/ocultar) la contraseña de verificación
+
     // MENU LATERAL DE NAVEGACIÓN
     ModalNavigationDrawer(
         drawerState = abrirMenuLateral,  // controla el estado del menu lateral de navegación
@@ -118,7 +128,8 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
                 selectEditarPerfil = false,
                 scope = scope,
                 controladorNavegacion = controladorNavegacion,
-                fuenteTipografica = badcomic
+                fuenteTipografica = badcomic,
+                mostrarModalEliminarCuenta = abrirModalEliminarCuenta
             )
         }
     ){
@@ -156,6 +167,34 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
             }
         ){
             innerPadding ->
+
+            // si el estado del modal de eliminar cuenta es abierto
+            if (abrirModalEliminarCuenta.value) {
+                // se muestra el modal
+                ModalEliminarCuenta(
+                    context = context,
+                    fuenteTipografica = badcomic,
+                    password = passwordVerficacion,
+                    passVisible = passVisibleVerificacion,
+                    mostrarPassword = { passVisibleVerificacion = !passVisibleVerificacion },
+                    cerrar = {
+                        abrirModalEliminarCuenta.value = false
+                        passwordVerficacion.clearText()
+                        passVisibleVerificacion = false
+                    },
+                    enviar = {
+                        eliminarCuentaUsuario(
+                            usuario = usuario!!,
+                            password = passwordVerficacion.text.toString(),
+                            db = db,
+                            controladorNavegacion = controladorNavegacion,
+                            error = { mensaje ->
+                                notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = mensaje)
+                            }
+                        )
+                    }
+                )
+            }
 
             // contenedor que permite hacer el gesto de arrastrar hacia abajo para refrescar
             PullToRefreshBox(

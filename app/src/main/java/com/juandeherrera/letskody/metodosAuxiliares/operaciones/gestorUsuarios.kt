@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.material3.SnackbarHostState
 import androidx.navigation.NavController
 import androidx.room.Room
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.firestore.FirebaseFirestore
@@ -181,4 +182,57 @@ fun loguearUsuario(controladorNavegacion: NavController, context: Context, scope
 fun cerrarSesionUsuario(db: AppDB, usuario: UsuarioData) {
     FirebaseAuth.getInstance().signOut()                           // se cierra la sesión de Firebase
     db.usuarioDao().eliminarUsuario(email = usuario.emailUsuario)  // se elimina el usuario local
+}
+
+// funcion auxiliar para eliminar la cuenta del usuario
+fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, controladorNavegacion: NavController, error: (String) -> Unit) {
+
+    val auth = FirebaseAuth.getInstance() // instancia al sistema de autenticación de Firebase
+
+    val dbfire = FirebaseFirestore.getInstance()  // instancia a la base de datos de Firebase asociada a la aplicación
+
+    val user = auth.currentUser  // usuario autenticado de Firebase
+
+    if (user == null) {
+        error("No hay usuario autenticado.") // si no hay usuario autenticado se manda un mensaje de error
+        return
+    }
+
+    // se obtiene las credenciales del usuario necesarias para la reautenticacion
+    val credencialesUsuario = EmailAuthProvider.getCredential(usuario.emailUsuario, password)
+
+    // se reautentica el usuario
+    user.reauthenticate(credencialesUsuario)
+        .addOnSuccessListener {
+
+            // si funciona la reautenticación, se borra el usuario de la base de datos de Firebase
+            dbfire.collection("usuarios").document(user.uid).delete()
+                .addOnSuccessListener {
+                    // si ha funcionado el borrado de todos los datos relacionados con el usuario, se borra el usuario autenticado
+                    user.delete()
+                        .addOnSuccessListener {
+                            db.usuarioDao().eliminarUsuario(email = usuario.emailUsuario)  // se elimina el usuario local
+
+                            auth.signOut()  // se cierra la sesión de Firebase
+
+                            controladorNavegacion.navigate(AppScreens.Login.route) { popUpTo(0) }  // se vuelve a la pantalla de login (se borra el historial de navegación)
+                        }
+                        .addOnFailureListener { ex ->
+                            // si falla el borrado del usuario autenticado se muestra un mensaje en la terminal y al usuario
+                            error("Error al eliminar el usuario autenticado.")
+                            println("Error al eliminar el usuario autenticado: ${ex.message}")
+                        }
+                }
+                .addOnFailureListener { ex ->
+                    // si falla el borrado en Firebase se muestra un mensaje en la terminal y al usuario
+                    error("Error al eliminar el usuario de Firebase.")
+                    println("Error al eliminar el usuario de Firebase: ${ex.message}")
+                }
+
+        }
+        .addOnFailureListener { ex ->
+            // si falla la reautenticacion se muestra un mensaje en la terminal y al usuario
+            error("Error al reautenticar el usuario.")
+            println("Error al reautenticar el usuario: ${ex.message}")
+        }
 }

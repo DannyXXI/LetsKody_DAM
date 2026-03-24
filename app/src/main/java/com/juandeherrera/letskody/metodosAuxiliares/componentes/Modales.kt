@@ -13,12 +13,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.TextObfuscationMode
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -171,3 +179,152 @@ fun ModalModificarPassword(context: Context, fuenteTipografica: FontFamily, emai
         }
     }
 }
+
+// función auxiliar para cargar el modal para la eliminación de la cuenta del usuario
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ModalEliminarCuenta(context: Context, fuenteTipografica: FontFamily, password: TextFieldState, passVisible: Boolean, mostrarPassword: () -> Unit, cerrar: () -> Unit, enviar: () -> Unit) {
+    // MODAL (cuadro de diálogo)
+    BasicAlertDialog(
+        onDismissRequest = { cerrar() }  // se cierra el modal cuando se pulsa afuera de él
+    ){
+        // tarjeta que conformará el modal
+        ElevatedCard(
+            shape = RoundedCornerShape(size = 10.dp),                         // bordes redondeados
+            colors = CardDefaults.cardColors(containerColor = Color.White),   // color de fondo de la tarjeta
+            modifier = Modifier.fillMaxWidth()                                // ocupa el máximo ancho posible
+                .padding(all = 20.dp)                                         // padding externo
+        ){
+            // columna que contiene el contenido de la tarjeta
+            Column(
+                modifier = Modifier.padding(all = 20.dp),           // padding externo
+                horizontalAlignment = Alignment.CenterHorizontally  // centrado horizontalmente
+            ){
+                // TITULO
+                Text(
+                    text = "Eliminar cuenta",   // texto
+                    color = Color(0xFF017DB2),       // color del texto
+                    style = TextStyle(
+                        fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                        fontSize = 22.sp,                // tamaño del texto
+                        fontWeight = FontWeight.Bold     // texto en negrita
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))  // separación vertical entre componentes
+
+                // MENSAJE
+                Text(
+                    text = "¿Estás seguro de querer eliminar todos tus datos?\n\nKody necesita tu contraseña para realizar esa acción.",
+                    color = Color.Black,    // color del texto
+                    style = TextStyle(
+                        fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                        fontSize = 15.sp,                // tamaño del texto
+                        textAlign = TextAlign.Justify    // texto alineado de manera justificada
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))  // separación vertical entre componentes
+
+                // se pide la contraseña del usuario
+                OutlinedSecureTextField(
+                    state = password,  // estado que contiene el texto introducido (la contraseña)
+                    label = {
+                        Text(
+                            text = "Contraseña",   // texto
+                            color = Color.Black,   // color del texto
+                            fontFamily = fuenteTipografica  // fuente tipográfica del texto
+                        )
+                    },
+                    modifier = Modifier.width(310.dp),  // ancho del campo de texto
+                    // icono situado al final del campo de texto
+                    trailingIcon = {
+                        IconButton(
+                            onClick = { mostrarPassword() }  // al pulsar el icono cambia el estado para mostrar/ocultar la contraseña
+                        ){
+                            Icon(
+                                // se cambia el icono si la contraseña es visible o no
+                                imageVector = if (passVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+
+                                // se cambia la descripción para lectores de pantalla en función si la contraseña es visible o no
+                                contentDescription = if (passVisible) "Ocultar contraseña" else "Mostrar contraseña",
+
+                                tint = Color.Black // color del icono
+                            )
+                        }
+                    },
+                    // controla como se oculta el texto (lo hace visible completamente o solo muestra el último carácter)
+                    textObfuscationMode = if (passVisible) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color(0xFF017DB2),   // borde del campo cuando está activo
+                        unfocusedIndicatorColor = Color(0xFF017DB2), // borde del campo cuando no está activo
+                        focusedContainerColor = Color.White,         // color del fondo del campo cuando está activo
+                        unfocusedContainerColor = Color.White,       // color del fondo del campo cuando no está activo
+                        cursorColor = Color(0xFF017DB2)              // color del cursor en el campo de texto
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,         // tipo de teclado para el campo de texto
+                        capitalization = KeyboardCapitalization.None, // no se capitaliza (no se trata las mayúsculas) el texto del usuario
+                        autoCorrectEnabled = false,                   // se inhabilita el autocorrector mientras escribe el usuario
+                        showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
+                    ),
+                    textStyle = TextStyle(
+                        color = Color.Black,              // color del texto introducido
+                        fontFamily = fuenteTipografica    // fuente tipográfica del texto introducida
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
+
+                // fila que contiene los botones
+                Row(
+                    horizontalArrangement = Arrangement.End,        // alineacion horizontal a la derecha
+                    verticalAlignment = Alignment.CenterVertically, // centrado vertical
+                    modifier = Modifier.fillMaxWidth()              // ocupa el espacio disponible
+                ){
+                    // BOTÓN DE CANCELAR (texto seleccionable)
+                    Text(
+                        text = "Cancelar",             // texto
+                        color = Color(0xFF017DB2),     // color del texto
+                        style = TextStyle(
+                            fontFamily = fuenteTipografica,      // fuente tipográfica del texto
+                            fontSize = 14.sp                     // tamaño del texto
+                        ),
+                        modifier = Modifier.padding(all = 8.dp)  // padding externo
+                            .clickable{ cerrar() }               // al pulsar se cierra el modal
+                    )
+
+                    Spacer(modifier = Modifier.width(16.dp))  // separación horizontal entre componentes
+
+                    // BOTÓN DE ENVIAR
+                    Button(
+                        onClick = {
+                            // validaciones básicas del campo de texto del email
+                            when{
+                                password.text.length < 8 -> {
+                                    Toast.makeText(context, "La contraseña debe tener 8 caracteres.", Toast.LENGTH_LONG).show()
+                                }
+                                else -> {
+                                    enviar()  // se procesa la eliminación de la cuenta del usuario
+                                }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Red,    // color de fondo del botón
+                            contentColor = Color.White             // color del texto del botón
+                        )
+                    ){
+                        Text(
+                            text = "Eliminar cuenta",                     // texto del botón
+                            style = TextStyle(
+                                fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                                fontSize = 14.sp                 // tamaño de fuente del texto
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
