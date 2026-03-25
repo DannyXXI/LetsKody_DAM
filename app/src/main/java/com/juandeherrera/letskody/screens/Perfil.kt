@@ -112,7 +112,7 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
 
     val abrirModalEliminarCuenta = remember { mutableStateOf(value = false) } // variable para el estado (abrir/cerrar) del modal de eliminar cuenta
 
-    val passwordVerficacion = rememberTextFieldState()  // contraseña de verificación para eliminar la cuenta del usuario
+    val passwordVerificacion = rememberTextFieldState()  // contraseña de verificación para eliminar la cuenta del usuario
 
     var passVisibleVerificacion by remember { mutableStateOf(value = false) }  // variable de estado (mostrar/ocultar) la contraseña de verificación
 
@@ -174,18 +174,18 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
                 ModalEliminarCuenta(
                     context = context,
                     fuenteTipografica = badcomic,
-                    password = passwordVerficacion,
+                    password = passwordVerificacion,
                     passVisible = passVisibleVerificacion,
                     mostrarPassword = { passVisibleVerificacion = !passVisibleVerificacion },
                     cerrar = {
                         abrirModalEliminarCuenta.value = false
-                        passwordVerficacion.clearText()
+                        passwordVerificacion.clearText()
                         passVisibleVerificacion = false
                     },
                     enviar = {
                         eliminarCuentaUsuario(
                             usuario = usuario!!,
-                            password = passwordVerficacion.text.toString(),
+                            password = passwordVerificacion.text.toString(),
                             db = db,
                             controladorNavegacion = controladorNavegacion,
                             error = { mensaje ->

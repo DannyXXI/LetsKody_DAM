@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.juandeherrera.letskody.navigation.AppScreens
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -187,7 +188,8 @@ fun MenuLateralPerfil(estadoMenuLateral: DrawerState, titulo: String, selectPerf
                         scope.launch { estadoMenuLateral.close() }
                     }
                     else {
-                        println("Otra acción")
+                        scope.launch { estadoMenuLateral.close() }
+                        controladorNavegacion.navigate(route = AppScreens.Perfil.route)
                     }
                 }
             )
@@ -203,7 +205,8 @@ fun MenuLateralPerfil(estadoMenuLateral: DrawerState, titulo: String, selectPerf
                         scope.launch { estadoMenuLateral.close() }
                     }
                     else {
-                        println("Otra acción")
+                        scope.launch { estadoMenuLateral.close() }
+                        controladorNavegacion.navigate(route = AppScreens.EditarPerfil.route)
                     }
                 }
             )
