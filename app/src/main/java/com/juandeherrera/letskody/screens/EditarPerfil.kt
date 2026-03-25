@@ -167,8 +167,10 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
     var nombre by remember { mutableStateOf(value = usuario!!.nombreUsuario) }           // nombre
     var apellidos by remember { mutableStateOf(value = usuario!!.apellidosUsuario) }     // apellidos
     var email by remember { mutableStateOf(value = usuario!!.emailUsuario) }             // correo electrónico
-    val password = rememberTextFieldState()                                              // contraseña
-    var passVisible by remember { mutableStateOf(value = false) }                        // variable para mostrar la contraseña
+    val passwordOriginal = rememberTextFieldState()                                      // contraseña original
+    var passVisibleOriginal by remember { mutableStateOf(value = false) }                // variable para mostrar la contraseña original
+    val passwordNueva = rememberTextFieldState()                                         // nueva contraseña
+    var passVisibleNueva by remember { mutableStateOf(value = false) }                   // variable para mostrar la nueva contraseña
     var fechaNacimiento by remember { mutableStateOf(value = usuario!!.fnacUsuario) }    // fecha de nacimiento
     var mostrarCalendario by remember { mutableStateOf(value = false) }                  // variable para mostrar el popup del calendario para elegir fecha
     val opcionesSexo = listOf("Hombre", "Mujer", "Otro")                                 // lista de sexo disponibles a escoger
@@ -312,7 +314,7 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
                             color = Color(0xFF017DB2),   // color del texto
                             style = TextStyle(
                                 fontFamily = badcomic,   // fuente tipográfica del texto
-                                fontSize = 40.sp         // tamaño de fuente del texto
+                                fontSize = 32.sp         // tamaño de fuente del texto
                             )
                         )
 
@@ -523,7 +525,9 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
                         // se pide el email del usuario
                         OutlinedTextField(
                             value = email,  // valor del campo de texto
-                            onValueChange = { if (it.length < 41){ email = it } },  // se limita la longitud a 40 caracteres
+                            onValueChange = {},  // no se puede editar manualmente
+                            readOnly = true,     // solo lectura
+                            enabled = false,     // se inhabilita
                             label = {
                                 Text(
                                     text = "Email del usuario",  // texto
@@ -532,20 +536,7 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
                                 )
                             },
                             modifier = Modifier.width(310.dp),  // ancho del campo de texto
-                            colors = TextFieldDefaults.colors(
-                                focusedIndicatorColor = Color(0xFF017DB2),   // borde del campo cuando está activo
-                                unfocusedIndicatorColor = Color(0xFF017DB2), // borde del campo cuando no está activo
-                                focusedContainerColor = Color.White,         // color del fondo del campo cuando está activo
-                                unfocusedContainerColor = Color.White,       // color del fondo del campo cuando no está activo
-                                cursorColor = Color(0xFF017DB2)              // color del cursor en el campo de texto
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Email,            // tipo de teclado para el campo de texto
-                                capitalization = KeyboardCapitalization.None, // no se capitaliza (no se trata las mayúsculas) el texto del usuario
-                                autoCorrectEnabled = true,                    // se habilita el autocorrector mientras escribe el usuario
-                                imeAction = ImeAction.Next,                   // se habilita la acción de ir al siguiente campo de texto desde el teclado
-                                showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
-                            ),
+
                             textStyle = TextStyle(
                                 color = Color.Black,      // color del texto introducido
                                 fontFamily = badcomic     // fuente tipográfica del texto introducida
@@ -555,12 +546,12 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
 
                         Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
 
-                        // se pide la contraseña del usuario
+                        // se pide la contraseña original del usuario
                         OutlinedSecureTextField(
-                            state = password,  // estado que contiene el texto introducido (la contraseña)
+                            state = passwordOriginal,  // estado que contiene el texto introducido (la contraseña)
                             label = {
                                 Text(
-                                    text = "Contraseña",   // texto
+                                    text = "Contraseña original",   // texto
                                     color = Color.Black,   // color del texto
                                     fontFamily = badcomic  // fuente tipográfica
                                 )
@@ -569,21 +560,72 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
                             // icono que va al final del campo de texto
                             trailingIcon = {
                                 IconButton(
-                                    onClick = { passVisible = !passVisible }  // al pulsar el icono cambia el estado para mostrar/ocultar la contraseña
+                                    onClick = { passVisibleOriginal = !passVisibleOriginal }  // al pulsar el icono cambia el estado para mostrar/ocultar la contraseña
                                 ){
                                     Icon(
                                         // se cambia el icono si la contraseña es visible o no
-                                        imageVector = if (passVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                                        imageVector = if (passVisibleOriginal) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
 
                                         // se cambia la descripción para lectores de pantalla en función si la contraseña es visible o no
-                                        contentDescription = if (passVisible) "Ocultar contraseña" else "Mostrar contraseña",
+                                        contentDescription = if (passVisibleOriginal) "Ocultar contraseña" else "Mostrar contraseña",
 
                                         tint = Color.Black // color del icono
                                     )
                                 }
                             },
                             // controla como se oculta el texto (lo hace visible completamente o solo muestra el último carácter)
-                            textObfuscationMode = if (passVisible) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
+                            textObfuscationMode = if (passVisibleOriginal) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
+                            colors = TextFieldDefaults.colors(
+                                focusedIndicatorColor = Color(0xFF017DB2),   // borde del campo cuando está activo
+                                unfocusedIndicatorColor = Color(0xFF017DB2), // borde del campo cuando no está activo
+                                focusedContainerColor = Color.White,         // color del fondo del campo cuando está activo
+                                unfocusedContainerColor = Color.White,       // color del fondo del campo cuando no está activo
+                                cursorColor = Color(0xFF017DB2)              // color del cursor en el campo de texto
+                            ),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password,         // tipo de teclado para el campo de texto
+                                capitalization = KeyboardCapitalization.None, // no se capitaliza (no se trata las mayúsculas) el texto del usuario
+                                autoCorrectEnabled = false,                   // se inhabilita el autocorrector mientras escribe el usuario
+                                imeAction = ImeAction.Next,                   // se habilita la acción de ir al siguiente campo de texto desde el teclado
+                                showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
+                            ),
+                            textStyle = TextStyle(
+                                color = Color.Black,         // color del texto introducido
+                                fontFamily = badcomic        // fuente tipográfica del texto introducida
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
+
+                        // se pide la nueva contraseña del usuario
+                        OutlinedSecureTextField(
+                            state = passwordNueva,  // estado que contiene el texto introducido (la contraseña)
+                            label = {
+                                Text(
+                                    text = "Nueva contraseña",   // texto
+                                    color = Color.Black,   // color del texto
+                                    fontFamily = badcomic  // fuente tipográfica
+                                )
+                            },
+                            modifier = Modifier.width(310.dp),  // ancho del campo de texto
+                            // icono que va al final del campo de texto
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = { passVisibleNueva = !passVisibleNueva }  // al pulsar el icono cambia el estado para mostrar/ocultar la contraseña
+                                ){
+                                    Icon(
+                                        // se cambia el icono si la contraseña es visible o no
+                                        imageVector = if (passVisibleNueva) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+
+                                        // se cambia la descripción para lectores de pantalla en función si la contraseña es visible o no
+                                        contentDescription = if (passVisibleNueva) "Ocultar contraseña" else "Mostrar contraseña",
+
+                                        tint = Color.Black // color del icono
+                                    )
+                                }
+                            },
+                            // controla como se oculta el texto (lo hace visible completamente o solo muestra el último carácter)
+                            textObfuscationMode = if (passVisibleNueva) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
                             colors = TextFieldDefaults.colors(
                                 focusedIndicatorColor = Color(0xFF017DB2),   // borde del campo cuando está activo
                                 unfocusedIndicatorColor = Color(0xFF017DB2), // borde del campo cuando no está activo
@@ -798,7 +840,7 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
 
                             // texto para indicar si se cargó la foto de la galería
                             Text(
-                                text = if (uriImagenGaleria == null) { "No existe foto" } else { "Foto cargada" },  // texto según haya foto guardada
+                                text = if (imagen.isEmpty()) { "No existe foto" } else { "Foto cargada" },  // texto según haya foto guardada
                                 color = Color.Black,      // color del texto
                                 style = TextStyle(
                                     fontFamily = badcomic,  // fuente tipográfica del texto
@@ -826,14 +868,11 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
                                     telefono.length < 9 -> {
                                         notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El teléfono debe tener 9 dígitos.")
                                     }
-                                    email.isBlank() -> {
-                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El email no puede estar vacío.")
+                                    passwordOriginal.text.length < 8 ||  passwordNueva.text.length < 8 -> {
+                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Las contraseñas deben tener 8 caracteres.")
                                     }
-                                    !email.matches(regex = emailPattern) -> {
-                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El email no tiene un formato válido.")
-                                    }
-                                    password.text.length < 8 -> {
-                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La contraseña debe tener 8 caracteres.")
+                                    passwordOriginal == passwordNueva -> {
+                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La nueva contraseña debe ser distinta a la original.")
                                     }
                                     sexoSeleccionado.isEmpty() -> {
                                         notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Se debe elegir un sexo.")
@@ -845,21 +884,10 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
                                         notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Se debe elegir una foto de perfil.")
                                     }
                                     else -> {
-                                        // se crea el usuario temporal
-                                        crearUsuarioTemporal(
-                                            controladorNavegacion = controladorNavegacion,
-                                            scope = scope,
-                                            snackbarHostState = snackbarHostState,
-                                            context = context,
-                                            nombre = nombre,
-                                            apellidos = apellidos,
-                                            telefono = paisSeleccionado.prefijo + telefono,
-                                            email = email,
-                                            password = password.text.toString(),
-                                            sexo = sexoSeleccionado,
-                                            fechaNacimiento = fechaNacimiento,
-                                            foto = imagen
-                                        )
+
+
+
+
                                     }
                                 }
                             },
@@ -869,20 +897,13 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
                             )
                         ){
                             Text(
-                                text = "Registrar usuario",   // texto del botón
+                                text = "Actualizar usuario",   // texto del botón
                                 style = TextStyle(
                                     fontFamily = badcomic,      // fuente tipográfica del texto
                                     fontSize = 16.sp            // tamaño de fuente del texto
                                 )
                             )
                         }
-
-
-
-
-
-
-
                     }
                 }
             }
