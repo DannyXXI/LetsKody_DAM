@@ -59,7 +59,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -97,9 +96,10 @@ import com.juandeherrera.letskody.metodosAuxiliares.componentes.MensajeSnackbarH
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.MenuLateralPerfil
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.ModalEliminarCuenta
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.notificationSnackbar
+import com.juandeherrera.letskody.metodosAuxiliares.operaciones.actualizarUsuario
+import com.juandeherrera.letskody.metodosAuxiliares.operaciones.calcularEdad
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.cerrarSesionUsuario
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.convertirURIenBase64
-import com.juandeherrera.letskody.metodosAuxiliares.operaciones.crearUsuarioTemporal
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.eliminarCuentaUsuario
 import com.juandeherrera.letskody.navigation.AppScreens
 import kotlinx.coroutines.launch
@@ -130,8 +130,6 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
     var paisSeleccionado by remember { mutableStateOf(value = paises[0]) }   // país seleccionado en el prefijo telefónico
     var expandedPrefijo by remember { mutableStateOf(value = false) }        // variable para abrir el menu desplegable del prefijo telefónico
     var telefono by remember { mutableStateOf(value = "") }                  // teléfono
-
-    val emailPattern = Regex(pattern = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}") // patron que debe cumplir el email
 
     when (usuario) {
         null -> {
@@ -840,7 +838,7 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
 
                             // texto para indicar si se cargó la foto de la galería
                             Text(
-                                text = if (imagen.isEmpty()) { "No existe foto" } else { "Foto cargada" },  // texto según haya foto guardada
+                                text = if (imagen.isEmpty()) { "No existe foto" } else { "Foto cargada" },  // texto según haya una foto guardada
                                 color = Color.Black,      // color del texto
                                 style = TextStyle(
                                     fontFamily = badcomic,  // fuente tipográfica del texto
@@ -868,11 +866,14 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
                                     telefono.length < 9 -> {
                                         notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El teléfono debe tener 9 dígitos.")
                                     }
-                                    passwordOriginal.text.length < 8 ||  passwordNueva.text.length < 8 -> {
-                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Las contraseñas deben tener 8 caracteres.")
+                                    passwordOriginal.text.length < 8 -> {
+                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La contraseña original necesita 8 caracteres.")
                                     }
-                                    passwordOriginal == passwordNueva -> {
-                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La nueva contraseña debe ser distinta a la original.")
+                                    passwordNueva.text.isNotBlank() && passwordNueva.text.length < 8 -> {
+                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La nueva contraseña necesita 8 caracteres.")
+                                    }
+                                    passwordNueva.text.isNotBlank() && passwordOriginal.text.toString() == passwordNueva.text.toString() -> {
+                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Las dos contraseñas no pueden ser iguales.")
                                     }
                                     sexoSeleccionado.isEmpty() -> {
                                         notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Se debe elegir un sexo.")
@@ -880,13 +881,35 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
                                     fechaNacimiento.isBlank() -> {
                                         notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La fecha de nacimiento no puede estar vacía.")
                                     }
+                                    calcularEdad(fechaNacimiento) <= 6 -> {
+                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "No se supera la edad mínima (6 años).")
+                                    }
                                     imagen.isBlank() -> {
                                         notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Se debe elegir una foto de perfil.")
                                     }
                                     else -> {
+                                        // se crea una copia del usuario local pero con los nuevos datos actualizados
+                                        val usuarioActualizado = usuario!!.copy(
+                                            nombreUsuario = nombre,
+                                            apellidosUsuario = apellidos,
+                                            telefonoUsuario = paisSeleccionado.prefijo + telefono,
+                                            emailUsuario = email,
+                                            sexoUsuario = sexoSeleccionado,
+                                            fnacUsuario = fechaNacimiento,
+                                            fotoUsuario = imagen
+                                        )
 
-
-
+                                        // se actualiza el usuario en Firebase y local
+                                        actualizarUsuario(
+                                            usuarioActualizado = usuarioActualizado,
+                                            passwordOriginal = passwordOriginal.text.toString(),
+                                            passwordNueva = passwordNueva.text.toString(),
+                                            controladorNavegacion = controladorNavegacion,
+                                            db = db,
+                                            error = { mensaje ->
+                                                notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = mensaje)
+                                            }
+                                        )
 
                                     }
                                 }

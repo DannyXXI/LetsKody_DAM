@@ -87,6 +87,7 @@ import com.juandeherrera.letskody.clasesAuxiliares.paises
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.MensajeSnackbarHost
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.notificationSnackbar
 import com.juandeherrera.letskody.metodosAuxiliares.interfaz.fondoDegradadoDiagonal
+import com.juandeherrera.letskody.metodosAuxiliares.operaciones.calcularEdad
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.convertirURIenBase64
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.crearUsuarioTemporal
 import com.juandeherrera.letskody.navigation.AppScreens
@@ -731,6 +732,9 @@ fun PantallaCrearUsuario(controladorNavegacion: NavController) {
                                 }
                                 fechaNacimiento.isBlank() -> {
                                     notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La fecha de nacimiento no puede estar vacía.")
+                                }
+                                calcularEdad(fechaNacimiento) <= 6 -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "No se supera la edad mínima (6 años).")
                                 }
                                 imagen.isBlank() -> {
                                     notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Se debe elegir una foto de perfil.")

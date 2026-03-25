@@ -339,82 +339,39 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
                                 }
                             }
 
-                            // fila para los contenedores de la edad y el género
-                            Row(
+                            // contenedor de la edad del usuario
+                            ElevatedCard(
+                                colors = CardDefaults.cardColors(containerColor = colorFondo(genero = usuario!!.sexoUsuario)),   // color de fondo de la tarjeta
                                 modifier = Modifier.fillMaxWidth(),    // ocupa el maximo ancho disponible
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)  // espaciado horizontal entre elementos
                             ){
-
-                                // contenedor la edad del usuario
-                                ElevatedCard(
-                                    colors = CardDefaults.cardColors(containerColor = colorFondo(genero = usuario!!.sexoUsuario)),   // color de fondo de la tarjeta
-                                    modifier = Modifier.weight(1f)  // se ocupa el resto del espacio disponible
+                                // fila para el contenido del contenedor
+                                Row(
+                                    modifier = Modifier.fillMaxWidth()    // ocupa el maximo ancho disponible
+                                        .padding(all = 8.dp),             // padding interno
+                                    verticalAlignment = Alignment.CenterVertically  // centrado vertical
                                 ){
-                                    // fila para el contenido del contenedor
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth()    // ocupa el maximo ancho disponible
-                                            .padding(all = 8.dp),             // padding interno
-                                        verticalAlignment = Alignment.CenterVertically  // centrado vertical
-                                    ){
-                                        // label
-                                        Text(
-                                            text = "Edad:",  // texto
-                                            color = colorTexto(genero = usuario!!.sexoUsuario),   // color del texto
-                                            style = TextStyle(
-                                                fontFamily = badcomic,   // fuente tipográfica del texto
-                                                fontSize = 16.sp,        // tamaño del texto
-                                                fontWeight = FontWeight.Bold,  // texto en negrita
-                                            )
+                                    // label
+                                    Text(
+                                        text = "Edad:",  // texto
+                                        color = colorTexto(genero = usuario!!.sexoUsuario),   // color del texto
+                                        style = TextStyle(
+                                            fontFamily = badcomic,   // fuente tipográfica del texto
+                                            fontSize = 16.sp,        // tamaño del texto
+                                            fontWeight = FontWeight.Bold,  // texto en negrita
                                         )
+                                    )
 
-                                        // edad del usuario
-                                        Text(
-                                            text = "${calcularEdad(fechaNacimiento = usuario!!.fnacUsuario)} años",  // texto
-                                            color = Color.Black,            // color del texto
-                                            style = TextStyle(
-                                                fontFamily = badcomic,       // fuente tipográfica del texto
-                                                fontSize = 16.sp,            // tamaño del texto
-                                                textAlign = TextAlign.Center // texto alineado en el centro
-                                            ),
-                                            modifier = Modifier.weight(1f)  // se ocupa el resto del espacio disponible
-                                        )
-                                    }
-                                }
-
-                                // contenedor del género del usuario
-                                ElevatedCard(
-                                    colors = CardDefaults.cardColors(containerColor = colorFondo(genero = usuario!!.sexoUsuario)),   // color de fondo de la tarjeta
-                                    modifier = Modifier.weight(1f)  // se ocupa el resto del espacio disponible
-                                ){
-                                    // fila para el contenido del contenedor
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth()    // ocupa el maximo ancho disponible
-                                            .padding(all = 8.dp),             // padding interno
-                                        verticalAlignment = Alignment.CenterVertically  // centrado vertical
-                                    ){
-                                        // label
-                                        Text(
-                                            text = "Género:",  // texto
-                                            color = colorTexto(genero = usuario!!.sexoUsuario),   // color del texto
-                                            style = TextStyle(
-                                                fontFamily = badcomic,   // fuente tipográfica del texto
-                                                fontSize = 16.sp,        // tamaño del texto
-                                                fontWeight = FontWeight.Bold,  // texto en negrita
-                                            )
-                                        )
-
-                                        // género del usuario
-                                        Text(
-                                            text = usuario!!.sexoUsuario,  // texto
-                                            color = Color.Black,            // color del texto
-                                            style = TextStyle(
-                                                fontFamily = badcomic,       // fuente tipográfica del texto
-                                                fontSize = 16.sp,            // tamaño del texto
-                                                textAlign = TextAlign.Center // texto alineado en el centro
-                                            ),
-                                            modifier = Modifier.weight(1f)  // se ocupa el resto del espacio disponible
-                                        )
-                                    }
+                                    // edad del usuario
+                                    Text(
+                                        text = "${calcularEdad(fechaNacimiento = usuario!!.fnacUsuario)} años",  // texto
+                                        color = Color.Black,            // color del texto
+                                        style = TextStyle(
+                                            fontFamily = badcomic,       // fuente tipográfica del texto
+                                            fontSize = 16.sp,            // tamaño del texto
+                                            textAlign = TextAlign.Center // texto alineado en el centro
+                                        ),
+                                        modifier = Modifier.weight(1f)  // se ocupa el resto del espacio disponible
+                                    )
                                 }
                             }
                         }

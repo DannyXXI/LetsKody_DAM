@@ -7,7 +7,9 @@ import androidx.room.Room
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.juandeherrera.letskody.firebase.UsuarioFirebase
 import com.juandeherrera.letskody.localdb.AppDB
 import com.juandeherrera.letskody.localdb.Estructura
@@ -233,6 +235,93 @@ fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, con
         .addOnFailureListener { ex ->
             // si falla la reautenticacion se muestra un mensaje en la terminal y al usuario
             error("Error al reautenticar el usuario.")
+            println("Error al reautenticar el usuario: ${ex.message}")
+        }
+}
+
+// función auxiliar para actualizar los datos del usuario en Firebase y local
+fun actualizarUsuario(usuarioActualizado: UsuarioData, passwordOriginal: String, passwordNueva: String, controladorNavegacion: NavController, db: AppDB, error: (String) -> Unit) {
+
+    val auth = FirebaseAuth.getInstance() // instancia al sistema de autenticación de Firebase
+
+    val dbfire = FirebaseFirestore.getInstance()  // instancia a la base de datos de Firebase asociada a la aplicación
+
+    val user = auth.currentUser  // usuario autenticado de Firebase
+
+    if (user == null) {
+        error("No hay usuario autenticado.") // si no hay usuario autenticado se manda un mensaje de error
+        return
+    }
+
+    // se obtiene las credenciales del usuario necesarias para la reautenticacion
+    val credencialesUsuario = EmailAuthProvider.getCredential(usuarioActualizado.emailUsuario, passwordOriginal)
+
+    // se reautentica el usuario
+    user.reauthenticate(credencialesUsuario)
+        .addOnSuccessListener {
+            // si funciona la reautenticación, se actualiza la contraseña del usuario si la contraseña nueva no esta vacía
+            if (passwordNueva.isNotBlank()) {
+                user.updatePassword(passwordNueva)
+                    .addOnFailureListener { ex ->
+                        // si la actualización sale mal se muestra un mensaje al usuario y en terminal, y se sale de la función
+                        error("No se pudo actualizar la contraseña.")
+                        println("Erron al actualizar la contraseña: ${ex.message}")
+                        return@addOnFailureListener
+                    }
+            }
+
+            // se accede a la colección de Firebase para obtener el usuario almacenado
+            dbfire.collection("usuarios").document(usuarioActualizado.uidUsuario).get()
+                .addOnSuccessListener { doc ->
+                    // si funciona se extrae el usuario de Firebase a modificar
+                    val usuarioFirebase = doc.toObject(UsuarioFirebase::class.java)
+
+                    if (usuarioFirebase != null) {
+                        // se crea una copia del usuario de Firebase con los datos actualizados
+                        val usuarioFirebaseActualizado = usuarioFirebase.copy(
+                            nombre = usuarioActualizado.nombreUsuario,
+                            apellidos = usuarioActualizado.apellidosUsuario,
+                            telefono = usuarioActualizado.telefonoUsuario,
+                            email = usuarioActualizado.emailUsuario,
+                            sexo = usuarioActualizado.sexoUsuario,
+                            fechaNacimiento = usuarioActualizado.fnacUsuario,
+                            foto = usuarioActualizado.fotoUsuario
+                        )
+
+                        // se actualiza el usuario en la base de datos de Firebase
+                        dbfire.collection("usuarios").document(usuarioActualizado.uidUsuario).set(usuarioFirebaseActualizado, SetOptions.merge())
+                            .addOnSuccessListener {
+                                // si funciona se actualiza el usuario local
+                                db.usuarioDao().actualizarUsuario(usuarioActualizado)
+
+                                controladorNavegacion.navigate(AppScreens.Perfil.route) // se vuelve a la pantalla de perfil inicial
+                            }
+                            .addOnFailureListener { ex ->
+                                // si falla la actualizacion del usuario se muestra un mensaje en la terminal y al usuario
+                                error("Error al actualizar el usuario en Firebase.")
+                                println("Error al actualizar el usuario en Firebase: ${ex.message}")
+                            }
+                    }
+                }
+                .addOnFailureListener { ex ->
+                    // si falla la obtención del usuario se muestra un mensaje en la terminal y al usuario
+                    error("Error al obtener el usuario de Firebase.")
+                    println("Error al obtener el usuario de Firebase: ${ex.message}")
+                }
+        }
+        .addOnFailureListener { ex ->
+            // si falla la reautenticacion se muestra un mensaje en la terminal y al usuario
+            when (ex) {
+                is FirebaseAuthInvalidCredentialsException -> {
+                    error("La contraseña original es incorrecta.")
+                }
+                is FirebaseAuthInvalidUserException -> {
+                    error("El usuario no existe o ha sido eliminado.")
+                }
+                else -> {
+                    error("Error de autenticación.")
+                }
+            }
             println("Error al reautenticar el usuario: ${ex.message}")
         }
 }
