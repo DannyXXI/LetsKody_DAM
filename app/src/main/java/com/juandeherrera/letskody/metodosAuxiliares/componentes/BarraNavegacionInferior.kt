@@ -33,7 +33,7 @@ fun BarraNavegacionInferior(fuenteTipografica: FontFamily, controladorNavegacion
         NavigationBarItem(
             selected = selectInicio, // comprueba si se ha seleccionado el item de navegación
             onClick = {
-                controladorNavegacion.navigate(AppScreens.Inicio.route)  // al pulsarlo se navega a la sección de inicio
+                controladorNavegacion.navigate(route = AppScreens.Inicio.route)  // al pulsarlo se navega a la sección de inicio
             },
             icon = {
                 Icon(
@@ -65,7 +65,7 @@ fun BarraNavegacionInferior(fuenteTipografica: FontFamily, controladorNavegacion
         NavigationBarItem(
             selected = selectMaterias, // comprueba si se ha seleccionado el item de navegación
             onClick = {
-                controladorNavegacion.navigate(AppScreens.Perfil.route)  // al pulsarlo se navega a la sección de materias
+                controladorNavegacion.navigate(route = AppScreens.Materias.route)  // al pulsarlo se navega a la sección de materias
             },
             icon = {
                 Icon(
@@ -97,7 +97,7 @@ fun BarraNavegacionInferior(fuenteTipografica: FontFamily, controladorNavegacion
         NavigationBarItem(
             selected = selectPerfil, // comprueba si se ha seleccionado el item de navegación
             onClick = {
-                controladorNavegacion.navigate(AppScreens.Perfil.route)  // al pulsarlo se navega a la sección de perfil
+                controladorNavegacion.navigate(route = AppScreens.Perfil.route)  // al pulsarlo se navega a la sección de perfil
             },
             icon = {
                 Icon(

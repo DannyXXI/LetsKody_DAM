@@ -17,6 +17,7 @@ import com.juandeherrera.letskody.screens.PantallaCrearUsuario
 import com.juandeherrera.letskody.screens.PantallaEditarPerfil
 import com.juandeherrera.letskody.screens.PantallaInicio
 import com.juandeherrera.letskody.screens.PantallaLogin
+import com.juandeherrera.letskody.screens.PantallaMaterias
 import com.juandeherrera.letskody.screens.PantallaPerfil
 import com.juandeherrera.letskody.screens.PantallaSinConexion
 import com.juandeherrera.letskody.screens.PantallaVerificarEmailUsuario
@@ -58,6 +59,11 @@ fun AppNavigation() {
             composable(route = AppScreens.Inicio.route) {
                 BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
                 PantallaInicio(controladorNavegacion = controladorNavegacion)
+            }
+
+            composable(route = AppScreens.Materias.route) {
+                BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
+                PantallaMaterias(controladorNavegacion = controladorNavegacion)
             }
 
             composable(route = AppScreens.Perfil.route) {

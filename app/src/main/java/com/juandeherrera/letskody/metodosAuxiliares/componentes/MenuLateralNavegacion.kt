@@ -36,6 +36,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.composables.icons.lucide.BriefcaseBusiness
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Medal
 import com.juandeherrera.letskody.navigation.AppScreens
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -229,5 +232,68 @@ fun MenuLateralPerfil(estadoMenuLateral: DrawerState, titulo: String, selectPerf
     }
 }
 
+// función auxiliar para cargar el menu lateral del inicio
+@Composable
+fun MenuLateralMaterias(estadoMenuLateral: DrawerState, titulo: String, selectMaterias: Boolean, selectRanking: Boolean, scope: CoroutineScope, controladorNavegacion: NavController, fuenteTipografica: FontFamily) {
+    // contenedor visual del menu lateral
+    ModalDrawerSheet(
+        modifier = Modifier.width(280.dp),        // ancho del menú lateral
+        drawerShape = RectangleShape,             // bordes rectangulares (sin bordes redondeados)
+        drawerContainerColor = Color(0xFF5FB2FF)  // color de fondo del menu lateral
+    ){
+        // columna con el contenido del menu lateral
+        Column(
+            modifier = Modifier.padding(all = 16.dp),         // padding interno
+            verticalArrangement = Arrangement.spacedBy(18.dp) // separación vertical entre elementos
+        ){
+            Spacer(modifier = Modifier.height(26.dp))  // espaciado superior (para que no quede tan pegado arriba)
+
+            // titulo del menu lateral
+            Text(
+                text = titulo,            // texto
+                color = Color(0xFF003E83),  // color del texto
+                style = TextStyle(
+                    fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                    fontSize = 26.sp,                // tamaño del texto
+                    fontWeight = FontWeight.Bold     // texto en negrita
+                )
+            )
+
+            HorizontalDivider(thickness = 1.dp, color = Color(0xFF003E83)) // linea separadora
+
+            // elemento 1: ir a la pantalla del carrusel de materias
+            ElementoMenuLateral(
+                fuenteTipografica = fuenteTipografica,
+                icono = Lucide.BriefcaseBusiness,
+                texto = "Materias",
+                seleccionado = selectMaterias,
+                accion = {
+                    if (selectMaterias) {
+                        scope.launch { estadoMenuLateral.close() }
+                    }
+                    else {
+                        println("Otra acción")
+                    }
+                }
+            )
+
+            // elemento 2: ir a la pantalla del ranking
+            ElementoMenuLateral(
+                fuenteTipografica = fuenteTipografica,
+                icono = Lucide.Medal,
+                texto = "Ranking",
+                seleccionado = selectRanking,
+                accion = {
+                    if (selectRanking) {
+                        scope.launch { estadoMenuLateral.close() }
+                    }
+                    else {
+                        println("Otra acción")
+                    }
+                }
+            )
+        }
+    }
+}
 
 
