@@ -215,7 +215,7 @@ fun ModalEliminarCuenta(context: Context, fuenteTipografica: FontFamily, passwor
 
                 // MENSAJE
                 Text(
-                    text = "¿Estás seguro de querer eliminar todos tus datos?\n\nKody necesita tu contraseña para realizar esa acción.",
+                    text = "¿Estás seguro de querer eliminar todos tus datos?\n\nKody necesita tu contraseña para realizar esta acción.",
                     color = Color.Black,    // color del texto
                     style = TextStyle(
                         fontFamily = fuenteTipografica,  // fuente tipográfica del texto
@@ -278,7 +278,7 @@ fun ModalEliminarCuenta(context: Context, fuenteTipografica: FontFamily, passwor
 
                 // fila que contiene los botones
                 Row(
-                    horizontalArrangement = Arrangement.End,        // alineacion horizontal a la derecha
+                    horizontalArrangement = Arrangement.End,        // alineación horizontal a la derecha
                     verticalAlignment = Alignment.CenterVertically, // centrado vertical
                     modifier = Modifier.fillMaxWidth()              // ocupa el espacio disponible
                 ){

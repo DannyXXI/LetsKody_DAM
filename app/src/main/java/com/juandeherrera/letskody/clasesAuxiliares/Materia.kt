@@ -18,17 +18,17 @@ data class Materia (
 val materias = listOf(
     Materia(
         nombre = "Geografía",
-        color1 = Color(0xFF311B92),
-        color2 = Color(0xFF512DA8),
-        color3 = Color(0xFF673AB7),
+        color1 = Color(0xFF5B2ACC),
+        color2 = Color(0xFF6337CC),
+        color3 = Color(0xFF8856E1),
         idRecursoImagen = R.drawable.kody_geografia,
         ruta = AppScreens.Perfil.route
     ),
     Materia(
         nombre = "Matemáticas",
-        color1 = Color(0xFF921B1B),
-        color2 = Color(0xFFA82D2D),
-        color3 = Color(0xFFB73A3A),
+        color1 = Color(0xFFE31C1C),
+        color2 = Color(0xFFD73939),
+        color3 = Color(0xFFE04848),
         idRecursoImagen = R.drawable.kody_mates,
         ruta = AppScreens.Perfil.route
     )

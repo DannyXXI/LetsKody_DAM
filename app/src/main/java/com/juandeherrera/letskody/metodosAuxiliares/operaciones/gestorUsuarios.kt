@@ -186,7 +186,7 @@ fun cerrarSesionUsuario(db: AppDB, usuario: UsuarioData) {
     db.usuarioDao().eliminarUsuario(email = usuario.emailUsuario)  // se elimina el usuario local
 }
 
-// funcion auxiliar para eliminar la cuenta del usuario
+// función auxiliar para eliminar la cuenta del usuario
 fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, controladorNavegacion: NavController, error: (String) -> Unit) {
 
     val auth = FirebaseAuth.getInstance() // instancia al sistema de autenticación de Firebase
@@ -200,7 +200,7 @@ fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, con
         return
     }
 
-    // se obtiene las credenciales del usuario necesarias para la reautenticacion
+    // se obtiene las credenciales del usuario necesarias para la reautenticación
     val credencialesUsuario = EmailAuthProvider.getCredential(usuario.emailUsuario, password)
 
     // se reautentica el usuario
@@ -233,7 +233,7 @@ fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, con
 
         }
         .addOnFailureListener { ex ->
-            // si falla la reautenticacion se muestra un mensaje en la terminal y al usuario
+            // si falla la reautenticación se muestra un mensaje en la terminal y al usuario
             error("Error al reautenticar el usuario.")
             println("Error al reautenticar el usuario: ${ex.message}")
         }
@@ -253,7 +253,7 @@ fun actualizarUsuario(usuarioActualizado: UsuarioData, passwordOriginal: String,
         return
     }
 
-    // se obtiene las credenciales del usuario necesarias para la reautenticacion
+    // se obtiene las credenciales del usuario necesarias para la reautenticación
     val credencialesUsuario = EmailAuthProvider.getCredential(usuarioActualizado.emailUsuario, passwordOriginal)
 
     // se reautentica el usuario
@@ -265,7 +265,7 @@ fun actualizarUsuario(usuarioActualizado: UsuarioData, passwordOriginal: String,
                     .addOnFailureListener { ex ->
                         // si la actualización sale mal se muestra un mensaje al usuario y en terminal, y se sale de la función
                         error("No se pudo actualizar la contraseña.")
-                        println("Erron al actualizar la contraseña: ${ex.message}")
+                        println("Error al actualizar la contraseña: ${ex.message}")
                         return@addOnFailureListener
                     }
             }
@@ -297,7 +297,7 @@ fun actualizarUsuario(usuarioActualizado: UsuarioData, passwordOriginal: String,
                                 controladorNavegacion.navigate(AppScreens.Perfil.route) // se vuelve a la pantalla de perfil inicial
                             }
                             .addOnFailureListener { ex ->
-                                // si falla la actualizacion del usuario se muestra un mensaje en la terminal y al usuario
+                                // si falla la actualización del usuario se muestra un mensaje en la terminal y al usuario
                                 error("Error al actualizar el usuario en Firebase.")
                                 println("Error al actualizar el usuario en Firebase: ${ex.message}")
                             }
@@ -310,7 +310,7 @@ fun actualizarUsuario(usuarioActualizado: UsuarioData, passwordOriginal: String,
                 }
         }
         .addOnFailureListener { ex ->
-            // si falla la reautenticacion se muestra un mensaje en la terminal y al usuario
+            // si falla la reautenticación se muestra un mensaje en la terminal y al usuario
             when (ex) {
                 is FirebaseAuthInvalidCredentialsException -> {
                     error("La contraseña original es incorrecta.")
