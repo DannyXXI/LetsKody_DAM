@@ -8,9 +8,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.google.firebase.auth.FirebaseAuth
 import com.juandeherrera.letskody.clasesAuxiliares.DetectorRed
 import com.juandeherrera.letskody.screens.PantallaCrearUsuario
@@ -18,6 +20,7 @@ import com.juandeherrera.letskody.screens.PantallaEditarPerfil
 import com.juandeherrera.letskody.screens.PantallaInicio
 import com.juandeherrera.letskody.screens.PantallaLogin
 import com.juandeherrera.letskody.screens.PantallaMaterias
+import com.juandeherrera.letskody.screens.PantallaMenuJuegosMaterias
 import com.juandeherrera.letskody.screens.PantallaPerfil
 import com.juandeherrera.letskody.screens.PantallaSinConexion
 import com.juandeherrera.letskody.screens.PantallaVerificarEmailUsuario
@@ -64,6 +67,24 @@ fun AppNavigation() {
             composable(route = AppScreens.Materias.route) {
                 BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
                 PantallaMaterias(controladorNavegacion = controladorNavegacion)
+            }
+
+            composable(
+                route = AppScreens.MenuJuegosMaterias.route + "/{materia}",
+                arguments = listOf(
+                    navArgument(name = "materia"){ type = NavType.StringType } // se indica el tipo del argumento de la ruta
+                )
+            ){
+                backStackEntry ->
+
+                BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
+
+                val materia = backStackEntry.arguments?.getString("materia")  // variable con el valor del argumento
+
+                // si el argumento no es nulo, se realiza la navegación
+                if (materia != null) {
+                    PantallaMenuJuegosMaterias(controladorNavegacion = controladorNavegacion, materia = materia)
+                }
             }
 
             composable(route = AppScreens.Perfil.route) {

@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
@@ -54,8 +55,9 @@ fun CarruselMaterias(controladorNavegacion: NavController, fuenteTipografica: Fo
             ElevatedCard(
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp), // sombreado de elevación de la tarjeta
                 shape = RoundedCornerShape(size = 30.dp),  // bordes redondeados
-                modifier = Modifier.width(260.dp)   // ancho fijo de la pantalla
-                    .height(280.dp)                 // altura fija de la pantalla
+                modifier = Modifier.width(260.dp)   // ancho fijo de la tarjeta
+                    .height(280.dp)                 // altura fija de la tarjeta
+                    .clip(shape = RoundedCornerShape(size = 30.dp)) // recorta el contenido seleccionado con el mismo borde redondeado
                     .clickable {
                         controladorNavegacion.navigate(route = materia.ruta)  // al pulsar la tarjeta se navega a la pantalla correspondiente
                     }
@@ -87,7 +89,7 @@ fun CarruselMaterias(controladorNavegacion: NavController, fuenteTipografica: Fo
                             color = Color.White,     // color del texto
                             style = TextStyle(
                                 fontFamily = fuenteTipografica,  // fuente tipográfica del texto
-                                fontSize = 22.sp,                // tamaño del texto
+                                fontSize = 24.sp,                // tamaño del texto
                                 fontWeight = FontWeight.Bold,    // texto en negrita
                                 textAlign = TextAlign.Center,    // texto alineado centralmente
                                 shadow = Shadow(

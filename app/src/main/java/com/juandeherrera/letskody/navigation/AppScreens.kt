@@ -13,6 +13,8 @@ sealed class AppScreens (val route: String) {
 
     object Materias: AppScreens(route = "Materias")
 
+    object MenuJuegosMaterias: AppScreens(route = "MenuJuegosMaterias")
+
     object Perfil: AppScreens(route = "Perfil")
 
     object EditarPerfil: AppScreens(route = "EditarPerfil")
