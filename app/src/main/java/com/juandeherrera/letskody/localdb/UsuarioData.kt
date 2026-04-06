@@ -51,5 +51,9 @@ data class UsuarioData (
 
     // columna de la foto del usuario
     @ColumnInfo(name = Estructura.Usuario.FOTO_PERFIL)
-    val fotoUsuario: String
+    val fotoUsuario: String,
+
+    // columna de la marca temporal del último ticket enviado al servicio técnico con valor inicial de 0L
+    @ColumnInfo(name = Estructura.Usuario.ULTIMO_ENVIO_TICKET)
+    val ultimoEnvioTicket: Long = 0L
 )

@@ -81,7 +81,8 @@ fun registrarUsuarioFirebase(uid: String, usuarioTemporal: UsuarioData, db: AppD
         email = usuarioTemporal.emailUsuario,
         sexo = usuarioTemporal.sexoUsuario,
         fechaNacimiento = usuarioTemporal.fnacUsuario,
-        foto = usuarioTemporal.fotoUsuario
+        foto = usuarioTemporal.fotoUsuario,
+        ultimoEnvioTicket = usuarioTemporal.ultimoEnvioTicket
     )
 
     // se almacena el usuario de Firebase en la colección 'usuarios' como un documento identificado por su UID
@@ -285,7 +286,8 @@ fun actualizarUsuario(usuarioActualizado: UsuarioData, passwordOriginal: String,
                             email = usuarioActualizado.emailUsuario,
                             sexo = usuarioActualizado.sexoUsuario,
                             fechaNacimiento = usuarioActualizado.fnacUsuario,
-                            foto = usuarioActualizado.fotoUsuario
+                            foto = usuarioActualizado.fotoUsuario,
+                            ultimoEnvioTicket = usuarioActualizado.ultimoEnvioTicket
                         )
 
                         // se actualiza el usuario en la base de datos de Firebase

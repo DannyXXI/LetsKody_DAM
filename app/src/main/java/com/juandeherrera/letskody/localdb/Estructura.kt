@@ -23,6 +23,8 @@ class Estructura {
         const val SEXO = "sexoUsuario"
         const val FECHA_NACIMIENTO = "fnacUsuario"
         const val FOTO_PERFIL = "fotoUsuario"
+
+        const val ULTIMO_ENVIO_TICKET = "ultimoEnvioTicket"
     }
 
 

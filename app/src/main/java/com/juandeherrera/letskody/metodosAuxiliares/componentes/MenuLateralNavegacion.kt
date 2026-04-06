@@ -127,7 +127,8 @@ fun MenuLateralInicio(estadoMenuLateral: DrawerState, titulo: String, selectInic
                         scope.launch { estadoMenuLateral.close() }
                     }
                     else {
-                        println("Otra acción")
+                        scope.launch { estadoMenuLateral.close() }
+                        controladorNavegacion.navigate(route = AppScreens.Inicio.route)
                     }
                 }
             )
@@ -143,7 +144,8 @@ fun MenuLateralInicio(estadoMenuLateral: DrawerState, titulo: String, selectInic
                         scope.launch { estadoMenuLateral.close() }
                     }
                     else {
-                        println("Otra acción")
+                        scope.launch { estadoMenuLateral.close() }
+                        controladorNavegacion.navigate(route = AppScreens.ServicioTecnico.route)
                     }
                 }
             )

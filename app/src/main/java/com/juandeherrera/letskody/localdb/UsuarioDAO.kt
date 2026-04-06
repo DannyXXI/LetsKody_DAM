@@ -23,21 +23,17 @@ interface UsuarioDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun refrescarUsuario(usuarioData: UsuarioData)
 
-    // AGREGAR LA LISTA DE USUARIOS DE FIREBASE A LOCAL
-    @Insert
-    fun agregarUsuarios (usuarios: List<UsuarioData>)
-
     // ACTUALIZAR UN USUARIO EXISTENTE
     @Update
     fun actualizarUsuario(usuarioData: UsuarioData)
 
+    // ACTUALIZAR LA MARCA TEMPORAL DEL ÚLTIMO TICKET ENVIADO AL SERVICIO TÉCNICO
+    @Query(value = "UPDATE ${Estructura.Usuario.TABLE_NAME} SET ${Estructura.Usuario.ULTIMO_ENVIO_TICKET} = :marca WHERE ${Estructura.Usuario.UID_USUARIO} = :uid")
+    fun actualizarUltimoEnvioTicket(uid: String, marca: Long)
+
     // ELIMINAR EL USUARIO DEL PERFIL
     // se usan el parámetro (:email) para evitar inyección SQL y que sea gestionado a través de la función
     // se usa ? para comprobar si el resultado es null antes de usarlo
-    @Query("DELETE FROM ${Estructura.Usuario.TABLE_NAME} WHERE emailUsuario = :email")
+    @Query(value = "DELETE FROM ${Estructura.Usuario.TABLE_NAME} WHERE emailUsuario = :email")
     fun eliminarUsuario(email:String): Int
-
-    // ELIMINAR TODOS LOS USUARIOS
-    @Query("DELETE FROM ${Estructura.Usuario.TABLE_NAME}")
-    fun eliminarTodosUsuarios(): Int
 }

@@ -1,6 +1,8 @@
 package com.juandeherrera.letskody.metodosAuxiliares.operaciones
 
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 // función auxiliar para obtener la edad del usuario
 fun calcularEdad(fechaNacimiento: String): Int {
@@ -26,4 +28,11 @@ fun calcularEdad(fechaNacimiento: String): Int {
         println("Error al calcular la edad del usuario: ${ex.message}")
         return -1
     }
+}
+
+// función auxiliar para obtener la fecha completa (fecha y hora) actual
+fun obtenerFechaCompletaActual(): String {
+    val fechaActual = LocalDateTime.now()
+    val formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+    return fechaActual.format(formato)
 }

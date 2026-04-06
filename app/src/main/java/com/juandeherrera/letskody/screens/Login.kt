@@ -267,15 +267,29 @@ fun PantallaLogin(controladorNavegacion: NavController) {
                             showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
                         ),
                         onKeyboardAction = {
-                            // inicia sesión el usuario
-                            loguearUsuario(
-                                controladorNavegacion = controladorNavegacion,
-                                context = context,
-                                scope = scope,
-                                snackbarHostState = snackbarHostState,
-                                email = email,
-                                password = password.text.toString()
-                            )
+                            // validaciones de los campos del formulario
+                            when{
+                                email.isBlank() -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El email no puede estar vacío.")
+                                }
+                                !email.matches(regex = emailPattern) -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El email no tiene un formato válido.")
+                                }
+                                password.text.length < 8 -> {
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La contraseña debe tener 8 caracteres.")
+                                }
+                                else -> {
+                                    // inicia sesión el usuario
+                                    loguearUsuario(
+                                        controladorNavegacion = controladorNavegacion,
+                                        context = context,
+                                        scope = scope,
+                                        snackbarHostState = snackbarHostState,
+                                        email = email,
+                                        password = password.text.toString()
+                                    )
+                                }
+                            }
                         },
                         textStyle = TextStyle(
                             color = Color.Black,        // color del texto introducido

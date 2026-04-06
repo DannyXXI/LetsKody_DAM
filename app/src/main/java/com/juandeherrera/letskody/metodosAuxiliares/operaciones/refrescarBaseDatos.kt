@@ -31,7 +31,8 @@ suspend fun refrescarBaseDatos(uidUsuario: String, db: AppDB, error: (String) ->
                 passwordUsuario = "",  // se guarda en Firebase Authentication
                 sexoUsuario = usuarioFirebase.sexo ?: "",
                 fnacUsuario = usuarioFirebase.fechaNacimiento ?: "",
-                fotoUsuario = usuarioFirebase.foto ?: ""
+                fotoUsuario = usuarioFirebase.foto ?: "",
+                ultimoEnvioTicket = usuarioFirebase.ultimoEnvioTicket
             )
 
             db.usuarioDao().refrescarUsuario(usuarioData = usuarioLocal)  // se actualiza el usuario en la base de datos local

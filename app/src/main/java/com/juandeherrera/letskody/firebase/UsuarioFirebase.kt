@@ -8,5 +8,6 @@ data class UsuarioFirebase (
     val email: String? = null,
     val sexo: String? = null,
     val fechaNacimiento: String? = null,
-    val foto: String? = null
+    val foto: String? = null,
+    val ultimoEnvioTicket: Long = 0L
 )

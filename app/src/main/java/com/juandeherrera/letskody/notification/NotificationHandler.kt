@@ -30,4 +30,20 @@ class NotificationHandler(private val context: Context) {
         // se envía la notificación al sistema (id aleatorio para que no sobrescriba otra notificación)
         controladorNotificaciones.notify(Random.nextInt(), notificacion)
     }
+
+    // función para la creación de la notificación de la creación del usuario
+    fun notificacionCreacionIncidencia() {
+
+        // builder que construye la notificación
+        val notificacion = NotificationCompat.Builder(context, canalID)
+            .setContentTitle("Incidencia enviada") // título de la notificación
+            .setContentText("Se ha enviado su incidencia al servicio técnico.")  // cuerpo de la notificación
+            .setSmallIcon(R.drawable.ic_stat_kody)  // icono pequeño obligatorio que aparece en la barra de estado
+            .setColor(0xFF017DB2.toInt())        // color de la barra lateral de la notificación
+            .setAutoCancel(true)                 // hace que desaparezca la notificación cuando el usuario la pulse
+            .build()                             // se construye la notificación
+
+        // se envía la notificación al sistema (id aleatorio para que no sobrescriba otra notificación)
+        controladorNotificaciones.notify(Random.nextInt(), notificacion)
+    }
 }

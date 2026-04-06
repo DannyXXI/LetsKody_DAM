@@ -5,22 +5,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -133,41 +125,6 @@ fun MenuJuegosMateria(materia: String, controladorNavegacion: NavController, fue
                         )
                     }
                 }
-            }
-        }
-
-        // item al final de la lista
-        item {
-            // botón para volver al menu de materias
-            ElevatedButton(
-                onClick = { controladorNavegacion.popBackStack() }, // al pulsar el botón se vuelve a la pantalla del menu de materias
-                modifier = Modifier.height(50.dp),                  // altura fija del botón
-                shape = RoundedCornerShape(size = 25.dp), // bordes redondeados
-                elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 8.dp), // sombreado de elevación del botón
-                colors = ButtonDefaults.elevatedButtonColors(
-                    containerColor = Color(0xFF017DB2),  // color de fondo del botón
-                    contentColor = Color.White           // color del texto del botón
-                )
-            ){
-                // icono de flecha hacia atrás
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack, // icono
-                    contentDescription = "Volver atrás",               // descripción del icono
-                    tint = Color.White,                                // color del icono
-                    modifier = Modifier.size(20.dp)                    // tamaño del icono
-                )
-
-                Spacer(modifier = Modifier.width(8.dp)) // separación horizontal entre componentes
-
-                // texto del botón
-                Text(
-                    text = "Volver atrás",   // texto
-                    style = TextStyle(
-                        fontFamily = fuenteTipografica,  // fuente tipográfica del texto
-                        fontSize = 20.sp,                // tamaño del texto
-                        fontWeight = FontWeight.Bold,    // texto en negrita
-                    )
-                )
             }
         }
     }
