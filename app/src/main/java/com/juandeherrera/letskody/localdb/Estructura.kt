@@ -27,7 +27,30 @@ class Estructura {
         const val ULTIMO_ENVIO_TICKET = "ultimoEnvioTicket"
     }
 
+    // Tabla 2: Banderas de Europa
+    object BanderasEuropa {
+        const val TABLE_NAME = "banderasEuropa"  // nombre de la tabla
 
+        // nombre de los campos de la tabla
+        const val ID = "idBandera"
+        const val URL_BANDERA = "urlBandera"
+        const val OPCION1 = "opcion1"
+        const val OPCION2 = "opcion2"
+        const val OPCION3 = "opcion3"
+        const val OPCION4 = "opcion4"
+        const val OPCION_CORRECTA = "opcionCorrecta"
+    }
+
+    // Tabla 3: Puntuaciones del juego Euro-banderas
+    object PuntuacionEuroBanderas {
+        const val TABLE_NAME = "puntuacionEuroBanderas"  // nombre de la tabla
+
+        // nombre de los campos de la tabla
+        const val ID = "idPuntuacion"
+        const val PUNTOS = "puntos"
+        const val TIEMPO = "tiempo"
+        const val USUARIO = "usuario"
+    }
 
 
 
