@@ -17,7 +17,7 @@ data class UsuarioData (
     @ColumnInfo(name = Estructura.Usuario.ID)
     val idUsuario: Int = 0,
 
-    // columna del id del usuario
+    // columna del uid del usuario en Firebase
     @ColumnInfo(name = Estructura.Usuario.UID_USUARIO)
     val uidUsuario: String,
 

@@ -1,4 +1,4 @@
-package com.juandeherrera.letskody.screens
+package com.juandeherrera.letskody.screens.juegos.euroBanderas
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,7 +34,7 @@ import com.juandeherrera.letskody.localdb.AppDB
 import com.juandeherrera.letskody.localdb.Estructura
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraNavegacionInferior
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraSuperiorSinMenuLateral
-import com.juandeherrera.letskody.metodosAuxiliares.componentes.MenuJuegosMateria
+import com.juandeherrera.letskody.metodosAuxiliares.componentes.MensajeSnackbarHost
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.cerrarSesionUsuario
 import com.juandeherrera.letskody.navigation.AppScreens
 
@@ -40,8 +42,14 @@ import com.juandeherrera.letskody.navigation.AppScreens
 @RequiresApi(value = Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
-fun PantallaMenuJuegosMaterias(controladorNavegacion: NavController, materia: String) {
+fun PantallaEuroBanderas(controladorNavegacion: NavController) {
     val badcomic = FontFamily(Font(R.font.badcomic))  // fuente tipográfica por defecto
+
+    val scope = rememberCoroutineScope() // variable que crea un ámbito de corrutinas que se mantienen en la recomposición de la interfaz
+
+    val snackbarHostState = remember { SnackbarHostState() } // variable de estado que controla el estado (mostrar/ocultar) del Snackbar
+
+    val tipoSnackbar = remember { mutableStateOf(value = "error") }  // variable de estado para indicar el tipo de snackbar a mostrar por defecto
 
     val context = LocalContext.current // variable que obtiene el contexto actual
 
@@ -70,11 +78,7 @@ fun PantallaMenuJuegosMaterias(controladorNavegacion: NavController, materia: St
         // BARRA SUPERIOR
         topBar = {
             BarraSuperiorSinMenuLateral(
-                titulo = when(materia){
-                    "geografía" -> "Geografía"
-                    "matemáticas" -> "Matemáticas"
-                    else -> "ERROR"
-                },
+                titulo = "Euro-banderas",
                 fuenteTipografica = badcomic,
                 controladorNavegacion = controladorNavegacion,
                 estadoMenuDesplegable = abrirToolbar,
@@ -95,6 +99,10 @@ fun PantallaMenuJuegosMaterias(controladorNavegacion: NavController, materia: St
                 selectMaterias = true,
                 selectPerfil = false
             )
+        },
+        // define el lugar donde se mostraran los Snackbar
+        snackbarHost = {
+            MensajeSnackbarHost(snackbarHostState = snackbarHostState, fuenteTipografica = badcomic, tipo = tipoSnackbar.value)
         }
     ){
         innerPadding ->
@@ -106,8 +114,13 @@ fun PantallaMenuJuegosMaterias(controladorNavegacion: NavController, materia: St
             horizontalAlignment = Alignment.CenterHorizontally,  // centrado horizontal
             verticalArrangement = Arrangement.Center             // centrado vertical
         ){
-            // lista con los distintos juegos de la materia seleccionada (es pasada por parámetro)
-            MenuJuegosMateria(materia = materia, controladorNavegacion = controladorNavegacion, fuenteTipografica = badcomic)
+
+
+
+
+
+
         }
     }
 }
+

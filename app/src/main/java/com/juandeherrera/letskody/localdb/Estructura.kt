@@ -33,6 +33,7 @@ class Estructura {
 
         // nombre de los campos de la tabla
         const val ID = "idBandera"
+        const val UID_BANDERA = "uidBandera"
         const val URL_BANDERA = "urlBandera"
         const val OPCION1 = "opcion1"
         const val OPCION2 = "opcion2"
@@ -46,6 +47,7 @@ class Estructura {
         const val TABLE_NAME = "puntuacionEuroBanderas"  // nombre de la tabla
 
         // nombre de los campos de la tabla
+        const val UID_PUNTOS_EUROBANDERAS = "uidPuntosEuroBanderas"
         const val ID = "idPuntuacion"
         const val PUNTOS = "puntos"
         const val TIEMPO = "tiempo"

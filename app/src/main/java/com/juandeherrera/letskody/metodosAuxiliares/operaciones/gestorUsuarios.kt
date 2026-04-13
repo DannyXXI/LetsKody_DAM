@@ -154,12 +154,44 @@ fun loguearUsuario(controladorNavegacion: NavController, context: Context, scope
                         // se convierten los datos de Firebase a datos locales
                         val usuarioLocal = convertirUsuarioFirebaseLocal(usuarioFirebase = usuarioFirebase, uid = user.uid)
 
-                        db.usuarioDao().nuevoUsuario(usuarioData = usuarioLocal)  // se agrega el usuario a la base de datos local
+                        // se cargan todas las banderas de Europa guardadas en Firebase a local
+                        dbfire.collection("banderasEuropa").get()
+                            .addOnSuccessListener { listaBanderasEuropa ->
 
-                        // se navega a la pantalla de inicio y se limpia el historial de navegación
-                        controladorNavegacion.navigate(AppScreens.Inicio.route) { popUpTo(AppScreens.Login.route) { inclusive = true } }
+                                // si se ha obtenido los datos, se convierten para la base de datos local
+                                val listaBanderasEuropaLocal = convertirBanderasEuropaFirebaseLocal(listaBanderasEuropaFirebase = listaBanderasEuropa)
 
+                                // se cargan todas las puntuaciones del juego Euro-banderas guardadas en Firebase a local
+                                dbfire.collection("puntuaciones_EuroBanderas").get()
+                                    .addOnSuccessListener { listaPuntuacionesEuroBanderas ->
 
+                                        // si se ha obtenido los datos, se convierten para la base de datos local
+                                        val puntuacionesEuroBanderasLocal = convertirPuntuacionesEuroBanderasFirebaseLocal(listaPuntuacionEuroBanderas = listaPuntuacionesEuroBanderas)
+
+                                        // si la lista de puntuaciones de Euro-banderas no está vacía, se agrega a la base de datos local
+                                        if (puntuacionesEuroBanderasLocal.isNotEmpty()) {
+                                            db.puntuacionEuroBanderasDao().agregarPuntuacionesEuroBanderas(puntuaciones = puntuacionesEuroBanderasLocal)
+                                        }
+
+                                        db.banderasEuropaDao().agregarBanderas(banderas = listaBanderasEuropaLocal) // se agregan la lista de banderas de Europa
+
+                                        db.usuarioDao().nuevoUsuario(usuarioData = usuarioLocal)  // se agrega el usuario a la base de datos local
+
+                                        // se navega a la pantalla de inicio y se limpia el historial de navegación
+                                        controladorNavegacion.navigate(AppScreens.Inicio.route) { popUpTo(AppScreens.Login.route) { inclusive = true } }
+
+                                    }
+                                    .addOnFailureListener { ex ->
+                                        // si se falla al obtener los datos se muestra un mensaje de error por terminal y al usuario
+                                        println("Error al obtener las puntuaciones de Euro-banderas: ${ex.message}")
+                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Error al obtener las puntuaciones de Euro-banderas.")
+                                    }
+                            }
+                            .addOnFailureListener { ex ->
+                                // si se falla al obtener los datos se muestra un mensaje de error por terminal y al usuario
+                                println("Error al obtener los datos de las banderas de Europa: ${ex.message}")
+                                notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Error al obtener las banderas de Europa.")
+                            }
                     }
                     .addOnFailureListener { ex ->
                         // si se falla al obtener los datos se muestra un mensaje de error por terminal y al usuario
@@ -185,6 +217,8 @@ fun loguearUsuario(controladorNavegacion: NavController, context: Context, scope
 fun cerrarSesionUsuario(db: AppDB, usuario: UsuarioData) {
     FirebaseAuth.getInstance().signOut()                           // se cierra la sesión de Firebase
     db.usuarioDao().eliminarUsuario(email = usuario.emailUsuario)  // se elimina el usuario local
+    db.banderasEuropaDao().eliminarTodasBanderasEuropa()           // se eliminan todas las banderas de Europa locales
+    db.puntuacionEuroBanderasDao().eliminarTodasPuntuacionesEuroBanderas()  // se eliminan todas las puntuaciones de Euro-banderas locales
 }
 
 // función auxiliar para eliminar la cuenta del usuario
@@ -207,30 +241,68 @@ fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, con
     // se reautentica el usuario
     user.reauthenticate(credencialesUsuario)
         .addOnSuccessListener {
+            // si ha funcionado la reautenticación, se obtiene el documento de la puntuación del juego Euro-Banderas del usuario para eliminarlo
+            dbfire.collection("puntuaciones_EuroBanderas").whereEqualTo("usuario", user.uid).get()
+                .addOnSuccessListener { documentos ->
+                    val batchPuntuacionEuroBanderas = dbfire.batch() // se crea un batch para eliminar la puntuación en una sola operacion
 
-            // si funciona la reautenticación, se borra el usuario de la base de datos de Firebase
-            dbfire.collection("usuarios").document(user.uid).delete()
-                .addOnSuccessListener {
-                    // si ha funcionado el borrado de todos los datos relacionados con el usuario, se borra el usuario autenticado
-                    user.delete()
+                    // se agrega la referencia (UID del documento a eliminar) al batch
+                    for (doc in documentos.documents) {
+                        val ref = dbfire.collection("puntuaciones Euro-Banderas").document(doc.id)
+                        batchPuntuacionEuroBanderas.delete(ref)
+                    }
+
+                    batchPuntuacionEuroBanderas.commit() // se ejecuta el batch
                         .addOnSuccessListener {
-                            db.usuarioDao().eliminarUsuario(email = usuario.emailUsuario)  // se elimina el usuario local
 
-                            auth.signOut()  // se cierra la sesión de Firebase
+                            // si funciona la reautenticación, se borra el usuario de la base de datos de Firebase
+                            dbfire.collection("usuarios").document(user.uid).delete()
+                                .addOnSuccessListener {
+                                    // si ha funcionado el borrado de todos los datos relacionados con el usuario, se borra el usuario autenticado
+                                    user.delete()
+                                        .addOnSuccessListener {
+                                            db.usuarioDao().eliminarUsuario(email = usuario.emailUsuario)  // se elimina el usuario local
 
-                            controladorNavegacion.navigate(AppScreens.Login.route) { popUpTo(0) }  // se vuelve a la pantalla de login (se borra el historial de navegación)
+                                            db.banderasEuropaDao().eliminarTodasBanderasEuropa()           // se eliminan todas las banderas de Europa locales
+
+                                            db.puntuacionEuroBanderasDao().eliminarTodasPuntuacionesEuroBanderas()  // se eliminan todas las puntuaciones de Euro-banderas locales
+
+                                            auth.signOut()  // se cierra la sesión de Firebase
+
+                                            controladorNavegacion.navigate(AppScreens.Login.route) { popUpTo(0) }  // se vuelve a la pantalla de login (se borra el historial de navegación)
+                                        }
+                                        .addOnFailureListener { ex ->
+                                            // si falla el borrado del usuario autenticado se muestra un mensaje en la terminal y al usuario
+                                            error("Error al eliminar el usuario autenticado.")
+                                            println("Error al eliminar el usuario autenticado: ${ex.message}")
+                                        }
+                                }
+                                .addOnFailureListener { ex ->
+                                    // si falla se muestra un mensaje en la terminal y al usuario
+                                    error("Error al eliminar el usuario de Firebase.")
+                                    println("Error al eliminar el usuario de Firebase: ${ex.message}")
+                                }
                         }
                         .addOnFailureListener { ex ->
-                            // si falla el borrado del usuario autenticado se muestra un mensaje en la terminal y al usuario
-                            error("Error al eliminar el usuario autenticado.")
-                            println("Error al eliminar el usuario autenticado: ${ex.message}")
+                            // si falla se muestra un mensaje en la terminal y al usuario
+                            error("Error al eliminar la puntuación de Euro-banderas del usuario.")
+                            println("Error al eliminar la puntuación de Euro-banderas del usuario: ${ex.message}")
                         }
                 }
                 .addOnFailureListener { ex ->
-                    // si falla el borrado en Firebase se muestra un mensaje en la terminal y al usuario
-                    error("Error al eliminar el usuario de Firebase.")
-                    println("Error al eliminar el usuario de Firebase: ${ex.message}")
+                    // si falla se muestra un mensaje en la terminal y al usuario
+                    error("Error al obtener la puntuación de Euro-banderas del usuario.")
+                    println("Error al obtener la puntuación de Euro-banderas del usuario: ${ex.message}")
                 }
+
+
+
+
+
+
+
+
+
 
         }
         .addOnFailureListener { ex ->

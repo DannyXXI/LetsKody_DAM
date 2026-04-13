@@ -25,6 +25,7 @@ import com.juandeherrera.letskody.screens.PantallaPerfil
 import com.juandeherrera.letskody.screens.PantallaServicioTecnico
 import com.juandeherrera.letskody.screens.PantallaSinConexion
 import com.juandeherrera.letskody.screens.PantallaVerificarEmailUsuario
+import com.juandeherrera.letskody.screens.juegos.euroBanderas.PantallaEuroBanderas
 
 @RequiresApi(value = Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
 @Composable
@@ -91,6 +92,11 @@ fun AppNavigation() {
                 if (materia != null) {
                     PantallaMenuJuegosMaterias(controladorNavegacion = controladorNavegacion, materia = materia)
                 }
+            }
+
+            composable(route = AppScreens.EuroBanderas.route) {
+                BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
+                PantallaEuroBanderas(controladorNavegacion = controladorNavegacion)
             }
 
             composable(route = AppScreens.Perfil.route) {

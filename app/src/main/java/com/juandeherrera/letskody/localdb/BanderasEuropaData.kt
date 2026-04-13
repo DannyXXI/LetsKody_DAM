@@ -14,6 +14,10 @@ data class BanderasEuropaData (
     @ColumnInfo(name = Estructura.BanderasEuropa.ID)
     val idBandera: Int = 0,
 
+    // columna del uid de la bandera europea en Firebase
+    @ColumnInfo(name = Estructura.BanderasEuropa.UID_BANDERA)
+    val uidBandera: String,
+
     // columna de la URL de la imagen de la bandera
     @ColumnInfo(name = Estructura.BanderasEuropa.URL_BANDERA)
     val urlBandera: String,
@@ -35,6 +39,6 @@ data class BanderasEuropaData (
     val opcion4: String,
 
     // columna de la opción correcta
-    @ColumnInfo(name = Estructura.BanderasEuropa.OPCION1)
+    @ColumnInfo(name = Estructura.BanderasEuropa.OPCION_CORRECTA)
     val opcionCorrecta: String
 )

@@ -14,6 +14,10 @@ class PuntuacionEuroBanderasData (
     @ColumnInfo(name = Estructura.PuntuacionEuroBanderas.ID)
     val idPuntuacion: Int = 0,
 
+    // columna del uid de la bandera europea en Firebase
+    @ColumnInfo(name = Estructura.PuntuacionEuroBanderas.UID_PUNTOS_EUROBANDERAS)
+    val uidPuntosEuroBanderas: String,
+
     // columna de la puntuación del usuario
     @ColumnInfo(name = Estructura.PuntuacionEuroBanderas.PUNTOS)
     val puntos: Int,
