@@ -1,5 +1,6 @@
 package com.juandeherrera.letskody.metodosAuxiliares.operaciones
 
+import android.annotation.SuppressLint
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -35,4 +36,12 @@ fun obtenerFechaCompletaActual(): String {
     val fechaActual = LocalDateTime.now()
     val formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
     return fechaActual.format(formato)
+}
+
+// función auxiliar para formatear una cantidad de segundos en MM:SS
+@SuppressLint("DefaultLocale")
+fun formatearSegundos(segundos: Int): String {
+    val m = segundos / 60
+    val s = segundos % 60
+    return String.format("%02d:%02d", m, s)
 }

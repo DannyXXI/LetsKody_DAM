@@ -5,12 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.juandeherrera.letskody.clasesAuxiliares.ResultadoJuego
 import com.juandeherrera.letskody.localdb.AppDB
 import com.juandeherrera.letskody.localdb.BanderasEuropaData
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // CONSTANTES DEL JUEGO
 private const val TOTAL_PREGUNTAS = 12            // número de banderas que se mostrarán en la partida
@@ -19,28 +21,6 @@ private const val PUNTOS_FALLO = -50              // puntos que se restan al fal
 private const val PENALIZACION_FALLO = 10         // segundos extras que se agregan al tiempo final por cada fallo
 private const val TIEMPO_INACTIVIDAD = 30         // segundos sin tocar la pantalla antes de mostrar el aviso por inactividad
 private const val TIEMPO_ALERTA_INACTIVIDAD = 30  // segundos que tiene el usuario para reaccionar al aviso por inactividad
-
-// clase sellada para indicar los diferentes estados del juego (cargando, jugando, juego finalizado, error)
-sealed class EstadoJuego {
-
-    object Cargando: EstadoJuego()  // pantalla de carga mientras se leen las banderas de la base de datos
-
-    // estado principal que guarda los principales datos durante la partida
-    data class Jugando(
-        val preguntaActual: BanderasEuropaData,  // objeto completo de la bandera que se muestra
-        val opciones: List<String>,              // lista con las 4 opciones de respuesta ya mezcladas aleatoriamente
-        val numeroPregunta: Int,                 // número de la pregunta actual (desde 1 a hasta 12)
-        val puntos: Int,                         // puntuación acumulada hasta el momento
-        val tiempoCronometro: Int,               // segundos que han pasado desde que empezó la partida
-        val respuestaSeleccionada: String?,      // opción que el usuario ha escogido (es null si aún no ha respondido)
-        val opcionCorrecta: String,              // texto de la respuesta correcta
-        val penalizacionAcumulada: Int           // segundos totales de penalización acumulados por fallos
-    ): EstadoJuego()
-
-    object JuegoTerminado: EstadoJuego()    // se muestra el modal con los resultados del jugador
-
-    object ErrorSinBanderas: EstadoJuego()  // error si la base de datos no tiene suficientes banderas para completar una partida
-}
 
 // clase ViewModel que contiene la lógica del juego
 // se recomienda porque sobrevive a cambios de configuración y separa la lógica de la interfaz gráfica
@@ -88,7 +68,7 @@ class EuroBanderasViewModel (private val db: AppDB) : ViewModel() {
     // función para iniciar una partida nueva desde cero
     fun iniciarJuego() {
         // se abre una corrutina que existe mientras este el ViewModel, ya que al salir de la pantalla, este se destruye y la corrutina se cancela sola
-        viewModelScope.launch {
+        viewModelScope.launch(context = Dispatchers.IO) {
             _estado.value = EstadoJuego.Cargando  // se pone la pantalla de carga
 
             val todasBanderas = db.banderasEuropaDao().getListaBanderasEuropa() // se lee todas las banderas de la base de datos
@@ -108,8 +88,11 @@ class EuroBanderasViewModel (private val db: AppDB) : ViewModel() {
             penalizacion = 0
             esperandoSiguiente = false
 
-            iniciarCronometro()  // se inicia el cronómetro
-            mostrarPregunta()    // se carga la primera pregunta en la pantalla
+            withContext(Dispatchers.Main) {
+                iniciarCronometro()      // se inicia el cronómetro
+                mostrarPregunta()        // se carga la primera pregunta en la pantalla
+                iniciarJobInactividad()  // se inicia el job de inactividad
+            }
         }
     }
 
@@ -253,8 +236,6 @@ class EuroBanderasViewModel (private val db: AppDB) : ViewModel() {
                 delay(timeMillis = 1000)
                 _cuentaAtrasInactividad.value -= 1  // decrementar el contador visible
             }
-
-            _mostrarModalInactividad.value = false // se oculta el modal porque el usuario no toco nada
         }
     }
 

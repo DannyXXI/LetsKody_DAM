@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = Estructura.PuntuacionEuroBanderas.TABLE_NAME
 )
-class PuntuacionEuroBanderasData (
+data class PuntuacionEuroBanderasData (
     // clave primaria autogenerada incremental cuyo valor inicial es 0
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = Estructura.PuntuacionEuroBanderas.ID)

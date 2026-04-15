@@ -2,6 +2,7 @@ package com.juandeherrera.letskody.metodosAuxiliares.operaciones
 
 import com.google.firebase.firestore.QuerySnapshot
 import com.juandeherrera.letskody.firebase.BanderasEuropaFirebase
+import com.juandeherrera.letskody.firebase.PuntuacionEuroBanderasFirebase
 import com.juandeherrera.letskody.firebase.UsuarioFirebase
 import com.juandeherrera.letskody.localdb.BanderasEuropaData
 import com.juandeherrera.letskody.localdb.PuntuacionEuroBanderasData
@@ -48,15 +49,15 @@ fun convertirBanderasEuropaFirebaseLocal(listaBanderasEuropaFirebase: QuerySnaps
 fun convertirPuntuacionesEuroBanderasFirebaseLocal(listaPuntuacionEuroBanderas: QuerySnapshot) : List<PuntuacionEuroBanderasData> {
     return listaPuntuacionEuroBanderas.documents.map { doc ->
 
-        val puntuacionEuroBanderas = doc.toObject(PuntuacionEuroBanderasData::class.java)!!  // se obtiene una puntuación de Euro-Banderas
+        val puntuacionEuroBanderas = doc.toObject(PuntuacionEuroBanderasFirebase::class.java)!!  // se obtiene una puntuación de Euro-Banderas
 
         // constructor para puntuaciones de Euro-banderas locales
         PuntuacionEuroBanderasData(
             idPuntuacion = 0,                             // ID incremental del registro
             uidPuntosEuroBanderas = doc.id,               // UID de Firebase de la puntuación
-            puntos = puntuacionEuroBanderas.puntos,       // puntos obtenidos
-            tiempo = puntuacionEuroBanderas.tiempo,       // tiempo (segundos) que ha tardado el usuario
-            usuario = puntuacionEuroBanderas.usuario      // UID del usuario que ha realizado la puntuación
+            puntos = puntuacionEuroBanderas.puntos ?: 0,       // puntos obtenidos
+            tiempo = puntuacionEuroBanderas.tiempo ?: 0,       // tiempo (segundos) que ha tardado el usuario
+            usuario = puntuacionEuroBanderas.usuario ?: "",      // UID del usuario que ha realizado la puntuación
         )
     }
 }
