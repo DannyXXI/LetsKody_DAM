@@ -57,7 +57,7 @@ fun CabeceraJuego(segundosCronometro: Int, numeroPregunta: Int, preguntasTotales
                     color = Color.White,       // color del texto
                     style = TextStyle(
                         fontFamily = fuenteTipografica,  // fuente tipográfica del texto
-                        fontSize = 20.sp,                // tamaño del texto
+                        fontSize = 18.sp,                // tamaño del texto
                         fontWeight = FontWeight.Bold    // texto en negrita
                     ),
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp) // padding interno
@@ -70,7 +70,7 @@ fun CabeceraJuego(segundosCronometro: Int, numeroPregunta: Int, preguntasTotales
                 color = Color.Black,       // color del texto
                 style = TextStyle(
                     fontFamily = fuenteTipografica,    // fuente tipográfica del texto
-                    fontSize = 20.sp,                  // tamaño del texto
+                    fontSize = 16.sp,                  // tamaño del texto
                     fontWeight = FontWeight.SemiBold   // texto en negrita
                 )
             )
@@ -85,7 +85,7 @@ fun CabeceraJuego(segundosCronometro: Int, numeroPregunta: Int, preguntasTotales
                     color = Color.White,       // color del texto
                     style = TextStyle(
                         fontFamily = fuenteTipografica,  // fuente tipográfica del texto
-                        fontSize = 20.sp,                // tamaño del texto
+                        fontSize = 18.sp,                // tamaño del texto
                         fontWeight = FontWeight.Bold    // texto en negrita
                     ),
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp) // padding interno
@@ -159,7 +159,7 @@ fun BotonOpcion (texto: String, opcionSeleccionada: String?, opcionCorrecta: Str
             text = texto,                         // texto del botón
             style = TextStyle(
                 fontFamily = fuenteTipografica,   // fuente tipográfica del texto
-                fontSize = 16.sp,                 // tamaño de fuente del texto
+                fontSize = 18.sp,                 // tamaño de fuente del texto
                 fontWeight = FontWeight.Bold,     // texto en negrita
                 textAlign = TextAlign.Center      // alinear en el centro
             )

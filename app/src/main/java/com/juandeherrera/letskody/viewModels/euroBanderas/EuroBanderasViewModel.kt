@@ -1,7 +1,10 @@
 package com.juandeherrera.letskody.viewModels.euroBanderas
 
+import android.content.Context
+import android.media.MediaPlayer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.juandeherrera.letskody.R
 import com.juandeherrera.letskody.clasesAuxiliares.ResultadoJuego
 import com.juandeherrera.letskody.localdb.AppDB
 import com.juandeherrera.letskody.localdb.BanderasEuropaData
@@ -24,7 +27,7 @@ private const val TIEMPO_ALERTA_INACTIVIDAD = 30  // segundos que tiene el usuar
 
 // clase ViewModel que contiene la lógica del juego
 // se recomienda porque sobrevive a cambios de configuración y separa la lógica de la interfaz gráfica
-class EuroBanderasViewModel (private val db: AppDB) : ViewModel() {
+class EuroBanderasViewModel (private val db: AppDB, private val context: Context) : ViewModel() {
 
     // variables públicas que observa la pantalla
     // con StateFlow hace que sea un flujo de datos reactivo (si el valor cambia, todos los Composables que lo estén observando se recomponen)
@@ -45,6 +48,8 @@ class EuroBanderasViewModel (private val db: AppDB) : ViewModel() {
     // resultado final de la partida (null durante la partida y al finalizar se rellena)
     private val _resultado = MutableStateFlow<ResultadoJuego?>(value = null)
     val resultado: StateFlow<ResultadoJuego?> = _resultado.asStateFlow()
+
+    private var reproductor: MediaPlayer? = null  // reproductor de música del juego
 
     // variables internas privadas (solo las usa el ViewModel)
     private var banderas: List<BanderasEuropaData> = emptyList()  // lista de las 12 banderas seleccionadas aleatoriamente
@@ -89,6 +94,7 @@ class EuroBanderasViewModel (private val db: AppDB) : ViewModel() {
             esperandoSiguiente = false
 
             withContext(Dispatchers.Main) {
+                iniciarMusica()          // se inicia la reproducción de la música de fondo
                 iniciarCronometro()      // se inicia el cronómetro
                 mostrarPregunta()        // se carga la primera pregunta en la pantalla
                 iniciarJobInactividad()  // se inicia el job de inactividad
@@ -247,6 +253,24 @@ class EuroBanderasViewModel (private val db: AppDB) : ViewModel() {
         reiniciarJobInactividad()  // el usuario sigue jugando
     }
 
+    // función para iniciar la música de fondo en bucle
+    private fun iniciarMusica() {
+        // solo inicia la música si no existe ya (evita reiniciar al repetir partida)
+        if (reproductor == null) {
+            reproductor = MediaPlayer.create(context, R.raw.musicageografia).apply {
+                isLooping = true  // reproducción en bucle continuo
+                start()
+            }
+        }
+    }
+
+    // función para detener y liberar el reproductor de música
+    private fun detenerMusica() {
+        reproductor?.stop()
+        reproductor?.release() // se liberan los recursos de audio del sistema
+        reproductor = null
+    }
+
     // función para cuando se ha respondido todas las preguntas correspondientes
     private fun finalizarJuego() {
         jobCronometro?.cancel()  // se detiene el cronómetro
@@ -269,5 +293,6 @@ class EuroBanderasViewModel (private val db: AppDB) : ViewModel() {
         jobCronometro?.cancel()
         jobInactividad?.cancel()
         jobCuentaAtras?.cancel()
+        detenerMusica()
     }
 }
