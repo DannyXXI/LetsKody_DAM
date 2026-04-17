@@ -90,7 +90,7 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
     // efecto de vigilancia de la pantalla (si la cuenta atrás del modal llega a cero, sales del juego)
     LaunchedEffect(key1 = cuentaAtras, key2 = mostrarModalInactividad) {
         if (mostrarModalInactividad && cuentaAtras <= 0) {
-            controladorNavegacion.navigate(route = AppScreens.Inicio.route) { popUpTo(id = 0) { inclusive = true } } // se navega al menu del juego (se limpia el historial)
+            controladorNavegacion.navigate(route = AppScreens.MenuEuroBanderas.route) { popUpTo(id = 0) { inclusive = true } } // se navega al menu del juego (se limpia el historial)
         }
     }
 
@@ -210,11 +210,11 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
                             tiempoTotal = resultado!!.tiempoTotal
                         )
 
-                        controladorNavegacion.navigate(AppScreens.Inicio.route) { popUpTo(id = 0) { inclusive = true } }  // se navega al menu del juego (se limpia el historial)
+                        // se navega al menu del juego (se limpia el historial)
+                        controladorNavegacion.navigate(AppScreens.MenuEuroBanderas.route) { popUpTo(id = 0) { inclusive = true } }
                     }
                 )
             }
-
 
         }
     }

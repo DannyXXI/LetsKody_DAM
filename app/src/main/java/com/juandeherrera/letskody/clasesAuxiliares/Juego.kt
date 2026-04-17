@@ -21,7 +21,7 @@ val juegos = listOf(
         color1 = Color(0xFF5B2ACC),
         color2 = Color(0xFF6337CC),
         color3 = Color(0xFF8856E1),
-        ruta = AppScreens.EuroBanderas.route
+        ruta = AppScreens.MenuEuroBanderas.route
     ),
     Juego(
         materia = "matemáticas",
