@@ -44,6 +44,15 @@ suspend fun refrescarBaseDatos(uidUsuario: String, db: AppDB, error: (String) ->
 
             db.puntuacionEuroBanderasDao().agregarPuntuacionesEuroBanderas(puntuaciones = listaPuntuacionesEuroBanderas)  // se agregan la nueva lista de puntuaciones
 
+            /* ----------PUNTUACIÓN DEL JUEGO NUMINARIO 1---------- */
+            val puntuacionesNuminario1Doc = dbfire.collection("puntuaciones_Numinario1").get().await()  // se obtiene la lista de documentos con todas las puntuaciones de Firebase
+
+            // se convierte la lista de puntuaciones de Numinario 1 de firebase a una lista de puntuaciones de Numinario 1 locales
+            val listaPuntuacionesNuminario1 = convertirPuntuacionesNuminario1FirebaseLocal(listaPuntuacionNuminario1 = puntuacionesNuminario1Doc)
+
+            db.puntuacionNuminario1Dao().eliminarTodasPuntuacionesNuminario1()      // se eliminan todas las puntuaciones anteriores
+
+            db.puntuacionNuminario1Dao().agregarPuntuacionesNuminario1(puntuaciones = listaPuntuacionesNuminario1)  // se agregan la nueva lista de puntuaciones
         }
         catch (ex: Exception) {
             // si hay algún error en la sincronización se muestra un mensaje al usuario y en la terminal

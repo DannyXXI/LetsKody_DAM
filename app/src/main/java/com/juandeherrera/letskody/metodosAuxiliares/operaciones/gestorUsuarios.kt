@@ -168,18 +168,36 @@ fun loguearUsuario(controladorNavegacion: NavController, context: Context, scope
                                         // si se ha obtenido los datos, se convierten para la base de datos local
                                         val puntuacionesEuroBanderasLocal = convertirPuntuacionesEuroBanderasFirebaseLocal(listaPuntuacionEuroBanderas = listaPuntuacionesEuroBanderas)
 
-                                        // si la lista de puntuaciones de Euro-banderas no está vacía, se agrega a la base de datos local
-                                        if (puntuacionesEuroBanderasLocal.isNotEmpty()) {
-                                            db.puntuacionEuroBanderasDao().agregarPuntuacionesEuroBanderas(puntuaciones = puntuacionesEuroBanderasLocal)
-                                        }
+                                        // se cargan todas las puntuaciones del juego Numinario 1 guardadas en Firebase a local
+                                        dbfire.collection("puntuaciones_Numinario1").get()
+                                            .addOnSuccessListener { listaPuntuacionesNuminario1 ->
 
-                                        db.banderasEuropaDao().agregarBanderas(banderas = listaBanderasEuropaLocal) // se agregan la lista de banderas de Europa
+                                                // si se ha obtenido los datos, se convierten para la base de datos local
+                                                val puntuacionesNuminario1Local = convertirPuntuacionesNuminario1FirebaseLocal(listaPuntuacionNuminario1 = listaPuntuacionesNuminario1)
 
-                                        db.usuarioDao().nuevoUsuario(usuarioData = usuarioLocal)  // se agrega el usuario a la base de datos local
+                                                // si la lista de puntuaciones de Numinario 1 no está vacía, se agrega a la base de datos local
+                                                if (puntuacionesNuminario1Local.isNotEmpty()) {
+                                                    db.puntuacionNuminario1Dao().agregarPuntuacionesNuminario1(puntuaciones = puntuacionesNuminario1Local)
+                                                }
 
-                                        // se navega a la pantalla de inicio y se limpia el historial de navegación
-                                        controladorNavegacion.navigate(AppScreens.Inicio.route) { popUpTo(AppScreens.Login.route) { inclusive = true } }
+                                                // si la lista de puntuaciones de Euro-banderas no está vacía, se agrega a la base de datos local
+                                                if (puntuacionesEuroBanderasLocal.isNotEmpty()) {
+                                                    db.puntuacionEuroBanderasDao().agregarPuntuacionesEuroBanderas(puntuaciones = puntuacionesEuroBanderasLocal)
+                                                }
 
+                                                db.banderasEuropaDao().agregarBanderas(banderas = listaBanderasEuropaLocal) // se agregan la lista de banderas de Europa
+
+                                                db.usuarioDao().nuevoUsuario(usuarioData = usuarioLocal)  // se agrega el usuario a la base de datos local
+
+                                                // se navega a la pantalla de inicio y se limpia el historial de navegación
+                                                controladorNavegacion.navigate(AppScreens.Inicio.route) { popUpTo(AppScreens.Login.route) { inclusive = true } }
+
+                                            }
+                                            .addOnFailureListener { ex ->
+                                                // si se falla al obtener los datos se muestra un mensaje de error por terminal y al usuario
+                                                println("Error al obtener las puntuaciones de Numinario 1: ${ex.message}")
+                                                notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "Error al obtener las puntuaciones de Numinario 1.")
+                                            }
                                     }
                                     .addOnFailureListener { ex ->
                                         // si se falla al obtener los datos se muestra un mensaje de error por terminal y al usuario
@@ -219,6 +237,7 @@ fun cerrarSesionUsuario(db: AppDB, usuario: UsuarioData) {
     db.usuarioDao().eliminarUsuario(email = usuario.emailUsuario)  // se elimina el usuario local
     db.banderasEuropaDao().eliminarTodasBanderasEuropa()           // se eliminan todas las banderas de Europa locales
     db.puntuacionEuroBanderasDao().eliminarTodasPuntuacionesEuroBanderas()  // se eliminan todas las puntuaciones de Euro-banderas locales
+    db.puntuacionNuminario1Dao().eliminarTodasPuntuacionesNuminario1()      // se eliminan todas las puntuaciones de Numinario 1 locales
 }
 
 // función auxiliar para eliminar la cuenta del usuario
@@ -248,39 +267,65 @@ fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, con
 
                     // se agrega la referencia (UID del documento a eliminar) al batch
                     for (doc in documentos.documents) {
-                        val ref = dbfire.collection("puntuaciones Euro-Banderas").document(doc.id)
+                        val ref = dbfire.collection("puntuaciones_EuroBanderas").document(doc.id)
                         batchPuntuacionEuroBanderas.delete(ref)
                     }
 
                     batchPuntuacionEuroBanderas.commit() // se ejecuta el batch
                         .addOnSuccessListener {
+                            // si se ha eliminado correctamente, se obtiene el documento de la puntuación del juego Numinario 1 del usuario para eliminarlo
+                            dbfire.collection("puntuaciones_Numinario1").whereEqualTo("usuario", user.uid).get()
+                                .addOnSuccessListener { documentos ->
+                                    val batchPuntuacionNuminario1 = dbfire.batch() // se crea un batch para eliminar la puntuación en una sola operacion
 
-                            // si funciona la reautenticación, se borra el usuario de la base de datos de Firebase
-                            dbfire.collection("usuarios").document(user.uid).delete()
-                                .addOnSuccessListener {
-                                    // si ha funcionado el borrado de todos los datos relacionados con el usuario, se borra el usuario autenticado
-                                    user.delete()
+                                    // se agrega la referencia (UID del documento a eliminar) al batch
+                                    for (doc in documentos.documents) {
+                                        val ref = dbfire.collection("puntuaciones_Numinario1").document(doc.id)
+                                        batchPuntuacionNuminario1.delete(ref)
+                                    }
+
+                                    batchPuntuacionNuminario1.commit() // se ejecuta el batch
                                         .addOnSuccessListener {
-                                            db.usuarioDao().eliminarUsuario(email = usuario.emailUsuario)  // se elimina el usuario local
+                                            // si se ha eliminado correctamente, se borra el usuario de la base de datos de Firebase
+                                            dbfire.collection("usuarios").document(user.uid).delete()
+                                                .addOnSuccessListener {
+                                                    // si ha funcionado el borrado de todos los datos relacionados con el usuario, se borra el usuario autenticado
+                                                    user.delete()
+                                                        .addOnSuccessListener {
+                                                            db.usuarioDao().eliminarUsuario(email = usuario.emailUsuario)  // se elimina el usuario local
 
-                                            db.banderasEuropaDao().eliminarTodasBanderasEuropa()           // se eliminan todas las banderas de Europa locales
+                                                            db.banderasEuropaDao().eliminarTodasBanderasEuropa()           // se eliminan todas las banderas de Europa locales
 
-                                            db.puntuacionEuroBanderasDao().eliminarTodasPuntuacionesEuroBanderas()  // se eliminan todas las puntuaciones de Euro-banderas locales
+                                                            db.puntuacionEuroBanderasDao().eliminarTodasPuntuacionesEuroBanderas()  // se eliminan todas las puntuaciones de Euro-banderas locales
 
-                                            auth.signOut()  // se cierra la sesión de Firebase
+                                                            db.puntuacionNuminario1Dao().eliminarTodasPuntuacionesNuminario1()      // se eliminan todas las puntuaciones de Numinario 1 locales
 
-                                            controladorNavegacion.navigate(AppScreens.Login.route) { popUpTo(0) }  // se vuelve a la pantalla de login (se borra el historial de navegación)
+                                                            auth.signOut()  // se cierra la sesión de Firebase
+
+                                                            controladorNavegacion.navigate(AppScreens.Login.route) { popUpTo(0) }  // se vuelve a la pantalla de login (se borra el historial de navegación)
+                                                        }
+                                                        .addOnFailureListener { ex ->
+                                                            // si falla el borrado del usuario autenticado se muestra un mensaje en la terminal y al usuario
+                                                            error("Error al eliminar el usuario autenticado.")
+                                                            println("Error al eliminar el usuario autenticado: ${ex.message}")
+                                                        }
+                                                }
+                                                .addOnFailureListener { ex ->
+                                                    // si falla se muestra un mensaje en la terminal y al usuario
+                                                    error("Error al eliminar el usuario de Firebase.")
+                                                    println("Error al eliminar el usuario de Firebase: ${ex.message}")
+                                                }
                                         }
                                         .addOnFailureListener { ex ->
-                                            // si falla el borrado del usuario autenticado se muestra un mensaje en la terminal y al usuario
-                                            error("Error al eliminar el usuario autenticado.")
-                                            println("Error al eliminar el usuario autenticado: ${ex.message}")
+                                            // si falla se muestra un mensaje en la terminal y al usuario
+                                            error("Error al eliminar la puntuación de Numinario 1 del usuario.")
+                                            println("Error al eliminar la puntuación de Numinario 1 del usuario: ${ex.message}")
                                         }
                                 }
                                 .addOnFailureListener { ex ->
                                     // si falla se muestra un mensaje en la terminal y al usuario
-                                    error("Error al eliminar el usuario de Firebase.")
-                                    println("Error al eliminar el usuario de Firebase: ${ex.message}")
+                                    error("Error al obtener la puntuación de Numinario 1 del usuario.")
+                                    println("Error al obtener la puntuación de Numinario 1 del usuario: ${ex.message}")
                                 }
                         }
                         .addOnFailureListener { ex ->
@@ -294,16 +339,6 @@ fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, con
                     error("Error al obtener la puntuación de Euro-banderas del usuario.")
                     println("Error al obtener la puntuación de Euro-banderas del usuario: ${ex.message}")
                 }
-
-
-
-
-
-
-
-
-
-
         }
         .addOnFailureListener { ex ->
             // si falla la reautenticación se muestra un mensaje en la terminal y al usuario

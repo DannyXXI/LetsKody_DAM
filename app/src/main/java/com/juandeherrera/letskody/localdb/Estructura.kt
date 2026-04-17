@@ -54,6 +54,15 @@ class Estructura {
         const val USUARIO = "usuario"
     }
 
+    // Tabla 4: Puntuaciones del juego Numinario 1
+    object PuntuacionNuminario1 {
+        const val TABLE_NAME = "puntuacionNuminario1"  // nombre de la tabla
 
-
+        // nombre de los campos de la tabla
+        const val UID_PUNTOS_NUMINARIO1 = "uidPuntosNuminario1"
+        const val ID = "idPuntuacion"
+        const val PUNTOS = "puntos"
+        const val FALLOS = "fallos"
+        const val USUARIO = "usuario"
+    }
 }

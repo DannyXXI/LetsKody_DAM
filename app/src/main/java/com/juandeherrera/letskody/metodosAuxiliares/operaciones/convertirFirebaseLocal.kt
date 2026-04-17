@@ -3,9 +3,11 @@ package com.juandeherrera.letskody.metodosAuxiliares.operaciones
 import com.google.firebase.firestore.QuerySnapshot
 import com.juandeherrera.letskody.firebase.BanderasEuropaFirebase
 import com.juandeherrera.letskody.firebase.PuntuacionEuroBanderasFirebase
+import com.juandeherrera.letskody.firebase.PuntuacionNuminario1Firebase
 import com.juandeherrera.letskody.firebase.UsuarioFirebase
 import com.juandeherrera.letskody.localdb.BanderasEuropaData
 import com.juandeherrera.letskody.localdb.PuntuacionEuroBanderasData
+import com.juandeherrera.letskody.localdb.PuntuacionNuminario1Data
 import com.juandeherrera.letskody.localdb.UsuarioData
 
 // función auxiliar para transformar el usuario de Firebase en un usuario local
@@ -58,6 +60,23 @@ fun convertirPuntuacionesEuroBanderasFirebaseLocal(listaPuntuacionEuroBanderas: 
             puntos = puntuacionEuroBanderas.puntos ?: 0,       // puntos obtenidos
             tiempo = puntuacionEuroBanderas.tiempo ?: 0,       // tiempo (segundos) que ha tardado el usuario
             usuario = puntuacionEuroBanderas.usuario ?: "",      // UID del usuario que ha realizado la puntuación
+        )
+    }
+}
+
+// función auxiliar para transformar una lista de puntuaciones de Numinario 1 de Firebase en puntuaciones de Numinario 1 locales
+fun convertirPuntuacionesNuminario1FirebaseLocal(listaPuntuacionNuminario1: QuerySnapshot) : List<PuntuacionNuminario1Data> {
+    return listaPuntuacionNuminario1.documents.map { doc ->
+
+        val puntuacionNuminario1 = doc.toObject(PuntuacionNuminario1Firebase::class.java)!!  // se obtiene una puntuación de Euro-Banderas
+
+        // constructor para puntuaciones de Numinario 1 locales
+        PuntuacionNuminario1Data(
+            idPuntuacion = 0,                             // ID incremental del registro
+            uidPuntosNuminario1 = doc.id,                 // UID de Firebase de la puntuación
+            puntos = puntuacionNuminario1.puntos ?: 0,       // puntos obtenidos
+            fallos = puntuacionNuminario1.fallos ?: 0,       // fallos que ha tenido el usuario
+            usuario = puntuacionNuminario1.usuario ?: "",    // UID del usuario que ha realizado la puntuación
         )
     }
 }
