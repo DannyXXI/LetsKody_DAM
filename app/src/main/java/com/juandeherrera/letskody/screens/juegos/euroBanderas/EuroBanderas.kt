@@ -42,7 +42,7 @@ import com.juandeherrera.letskody.metodosAuxiliares.componentes.juegos.PantallaJ
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.cerrarSesionUsuario
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.juegos.GestorPuntuacionEuroBanderas
 import com.juandeherrera.letskody.navigation.AppScreens
-import com.juandeherrera.letskody.viewModels.euroBanderas.EstadoJuego
+import com.juandeherrera.letskody.viewModels.euroBanderas.EstadoEuroBanderas
 import com.juandeherrera.letskody.viewModels.euroBanderas.EuroBanderasViewModel
 import com.juandeherrera.letskody.viewModels.euroBanderas.EuroBanderasViewModelFactory
 
@@ -142,7 +142,7 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
             when (val s = estado) {
 
                 // sí se está cargando el juego que muestre el círculo de carga
-                is EstadoJuego.Cargando -> {
+                is EstadoEuroBanderas.Cargando -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),  // ocupa el espacio disponible
                         contentAlignment = Alignment.Center // contenido centrado
@@ -152,7 +152,7 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
                 }
 
                 // sí no hay suficientes banderas en la base de datos, se mostrará mensaje de error
-                is EstadoJuego.ErrorSinBanderas -> {
+                is EstadoEuroBanderas.ErrorSinBanderas -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),  // ocupa el espacio disponible
                         contentAlignment = Alignment.Center // contenido centrado
@@ -170,7 +170,7 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
                 }
 
                 // si el usuario está jugando
-                is EstadoJuego.Jugando -> {
+                is EstadoEuroBanderas.Jugando -> {
                     PantallaJugando(
                         estado = s,
                         fuenteTipografica = badcomic,
@@ -179,7 +179,7 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
                 }
 
                 // si el juego ha finalizado
-                is EstadoJuego.JuegoTerminado -> {
+                is EstadoEuroBanderas.Terminado -> {
                     Box(modifier = Modifier.fillMaxSize()) // ocupa el espacio disponible
                 }
             }
@@ -196,7 +196,7 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
             }
 
             // se muestra el modal de resultado final cuando el usuario ha terminado las preguntas
-            if (estado is EstadoJuego.JuegoTerminado && resultado != null) {
+            if (estado is EstadoEuroBanderas.Terminado && resultado != null) {
                 ModalPuntuacionEuroBanderas(
                     resultado = resultado!!,
                     fuenteTipografica = badcomic,

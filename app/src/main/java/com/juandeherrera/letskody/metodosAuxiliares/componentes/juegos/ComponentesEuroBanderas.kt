@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.formatearSegundos
-import com.juandeherrera.letskody.viewModels.euroBanderas.EstadoJuego
+import com.juandeherrera.letskody.viewModels.euroBanderas.EstadoEuroBanderas
 
 
 // función auxiliar para cargar la parte superior de la pantalla del juego (cronometro y puntuación)
@@ -169,7 +169,7 @@ fun BotonOpcion (texto: String, opcionSeleccionada: String?, opcionCorrecta: Str
 
 // función auxiliar que agrupa la pantalla del juego mientras el usuario está jugándolo
 @Composable
-fun PantallaJugando(estado: EstadoJuego.Jugando, fuenteTipografica: FontFamily, respuesta: (String) -> Unit) {
+fun PantallaJugando(estado: EstadoEuroBanderas.Jugando, fuenteTipografica: FontFamily, respuesta: (String) -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize(),  // ocupa el espacio disponible
         horizontalAlignment = Alignment.CenterHorizontally,  // centrado horizontal

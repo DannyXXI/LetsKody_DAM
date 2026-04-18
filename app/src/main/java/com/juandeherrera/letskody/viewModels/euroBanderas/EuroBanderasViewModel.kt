@@ -5,7 +5,7 @@ import android.media.MediaPlayer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.juandeherrera.letskody.R
-import com.juandeherrera.letskody.clasesAuxiliares.ResultadoJuego
+import com.juandeherrera.letskody.clasesAuxiliares.ResultadoJuegoCronometro
 import com.juandeherrera.letskody.localdb.AppDB
 import com.juandeherrera.letskody.localdb.BanderasEuropaData
 import kotlinx.coroutines.Dispatchers
@@ -34,8 +34,8 @@ class EuroBanderasViewModel (private val db: AppDB, private val context: Context
     // las variables privadas _nombre solo las puede modificar el ViewModel y las publicas para que la pantalla solo pueda leer su valor
 
     // estado general del juego
-    private val _estado = MutableStateFlow<EstadoJuego>(value = EstadoJuego.Cargando)
-    val estado: StateFlow<EstadoJuego> = _estado.asStateFlow()
+    private val _estado = MutableStateFlow<EstadoEuroBanderas>(value = EstadoEuroBanderas.Cargando)
+    val estado: StateFlow<EstadoEuroBanderas> = _estado.asStateFlow()
 
     // controla si el modal de inactividad está visible o no
     private val _mostrarModalInactividad = MutableStateFlow(value = false)
@@ -46,8 +46,8 @@ class EuroBanderasViewModel (private val db: AppDB, private val context: Context
     val cuentaAtrasInactividad: StateFlow<Int> = _cuentaAtrasInactividad.asStateFlow()
 
     // resultado final de la partida (null durante la partida y al finalizar se rellena)
-    private val _resultado = MutableStateFlow<ResultadoJuego?>(value = null)
-    val resultado: StateFlow<ResultadoJuego?> = _resultado.asStateFlow()
+    private val _resultado = MutableStateFlow<ResultadoJuegoCronometro?>(value = null)
+    val resultado: StateFlow<ResultadoJuegoCronometro?> = _resultado.asStateFlow()
 
     private var reproductor: MediaPlayer? = null  // reproductor de música del juego
 
@@ -74,13 +74,13 @@ class EuroBanderasViewModel (private val db: AppDB, private val context: Context
     fun iniciarJuego() {
         // se abre una corrutina que existe mientras este el ViewModel, ya que al salir de la pantalla, este se destruye y la corrutina se cancela sola
         viewModelScope.launch(context = Dispatchers.IO) {
-            _estado.value = EstadoJuego.Cargando  // se pone la pantalla de carga
+            _estado.value = EstadoEuroBanderas.Cargando  // se pone la pantalla de carga
 
             val todasBanderas = db.banderasEuropaDao().getListaBanderasEuropa() // se lee todas las banderas de la base de datos
 
             // se comprueba si el número de banderas es menor a las preguntas que se harán
             if (todasBanderas.size < TOTAL_PREGUNTAS) {
-                _estado.value = EstadoJuego.ErrorSinBanderas  // se cambia el estado
+                _estado.value = EstadoEuroBanderas.ErrorSinBanderas  // se cambia el estado
                 return@launch                                 // se sale de la corrutina sin continuar
             }
 
@@ -116,7 +116,7 @@ class EuroBanderasViewModel (private val db: AppDB, private val context: Context
         val opciones = listOf(bandera.opcion1, bandera.opcion2, bandera.opcion3, bandera.opcion4).shuffled()
 
         // se actualiza el estado con todos los datos de la pregunta actual
-        _estado.value = EstadoJuego.Jugando(
+        _estado.value = EstadoEuroBanderas.Jugando(
             preguntaActual = bandera,
             opciones = opciones,
             numeroPregunta = indicePregunta + 1,
@@ -135,7 +135,7 @@ class EuroBanderasViewModel (private val db: AppDB, private val context: Context
         if (esperandoSiguiente) return  // si ya respondió esta pregunta, se ignora (evita doble pulsación)
 
         // se comprueba que el estado actual corresponda al de jugando el juego (si no devuelve null)
-        val estadoActual = _estado.value as? EstadoJuego.Jugando ?: return
+        val estadoActual = _estado.value as? EstadoEuroBanderas.Jugando ?: return
 
         esperandoSiguiente = true    // se bloquea por si hay más pulsaciones hasta la siguiente pregunta
         detenerJobInactividad()      // el usuario acaba de interactuar, ya no necesitamos el aviso
@@ -159,7 +159,7 @@ class EuroBanderasViewModel (private val db: AppDB, private val context: Context
             penalizacionAcumulada = penalizacion
         )
 
-        // se espera 1.5 segundos para que el usuario vea la correción y se avanza
+        // se espera 1.5 segundos para que el usuario vea la corrección y se avanza
         viewModelScope.launch {
             delay(timeMillis = 1500)  // pausa de 1.5 segundos
 
@@ -191,7 +191,7 @@ class EuroBanderasViewModel (private val db: AppDB, private val context: Context
 
                 // actualizar la interfaz de usuario si el juego sigue en marcha
                 val actual = _estado.value
-                if (actual is EstadoJuego.Jugando) {
+                if (actual is EstadoEuroBanderas.Jugando) {
                     _estado.value = actual.copy(tiempoCronometro = tiempoCronometro)
                 }
             }
@@ -217,7 +217,7 @@ class EuroBanderasViewModel (private val db: AppDB, private val context: Context
         // se inicia el temporizador
         jobInactividad = viewModelScope.launch {
             delay(timeMillis = TIEMPO_INACTIVIDAD * 1000L) // esperar el tiempo determinado
-            mostrarModalInactividad()                     // mostrar el aviso si llega aqui
+            mostrarModalInactividad()                      // mostrar el aviso si llega aquí
         }
     }
 
@@ -277,14 +277,14 @@ class EuroBanderasViewModel (private val db: AppDB, private val context: Context
         detenerJobInactividad()  // se detiene el detector de inactividad
 
         // se construye el resumen final de la partida
-        _resultado.value = ResultadoJuego(
+        _resultado.value = ResultadoJuegoCronometro(
             puntos = puntos,
             tiempoBase = tiempoCronometro,
             penalizacion = penalizacion,
             tiempoTotal = tiempoCronometro + penalizacion
         )
 
-        _estado.value = EstadoJuego.JuegoTerminado // se cambia el estado a juego terminado
+        _estado.value = EstadoEuroBanderas.Terminado // se cambia el estado a juego terminado
     }
 
     // función de limpieza al destruir el ViewModel (cancelar todas las corrutinas para evitar problemas de memoria)

@@ -11,9 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -47,12 +45,8 @@ import com.juandeherrera.letskody.localdb.AppDB
 import com.juandeherrera.letskody.localdb.Estructura
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraNavegacionInferior
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraSuperiorSinMenuLateral
-import com.juandeherrera.letskody.metodosAuxiliares.componentes.notificationSnackbar
-import com.juandeherrera.letskody.metodosAuxiliares.interfaz.mensajeTiempoRestante
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.cerrarSesionUsuario
-import com.juandeherrera.letskody.metodosAuxiliares.operaciones.registrarTicketServicioTecnico
 import com.juandeherrera.letskody.navigation.AppScreens
-import com.juandeherrera.letskody.notification.NotificationHandler
 
 @SuppressLint("DefaultLocale")
 @RequiresApi(value = Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)

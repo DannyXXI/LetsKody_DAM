@@ -37,12 +37,4 @@ interface PuntuacionNuminario1DAO {
     // ELIMINAR TODAS LAS PUNTUACIONES DE LA BASE DE DATOS LOCAL
     @Query(value = "DELETE FROM ${Estructura.PuntuacionNuminario1.TABLE_NAME}")
     fun eliminarTodasPuntuacionesNuminario1(): Int
-
-
-
-
-
-
-
-
 }
