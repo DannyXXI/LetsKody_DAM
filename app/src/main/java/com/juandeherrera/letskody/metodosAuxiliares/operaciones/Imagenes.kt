@@ -36,3 +36,4 @@ fun convertirURIenBase64(uriImagen: Uri, context: Context, error: (String) -> Un
         return Base64.encodeToString(bytes, Base64.DEFAULT)
     }
 }
+

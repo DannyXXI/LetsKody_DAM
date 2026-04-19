@@ -1,9 +1,11 @@
 package com.juandeherrera.letskody.metodosAuxiliares.operaciones
 
 import android.annotation.SuppressLint
+import com.juandeherrera.letskody.clasesAuxiliares.MomentoDelDia
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 
 // función auxiliar para obtener la edad del usuario
 fun calcularEdad(fechaNacimiento: String): Int {
@@ -44,4 +46,16 @@ fun formatearSegundos(segundos: Int): String {
     val m = segundos / 60
     val s = segundos % 60
     return String.format("%02d:%02d", m, s)
+}
+
+// función auxiliar para obtener el momento del día correspondiente a la hora actual
+fun obtenerMomentoDelDia() : MomentoDelDia {
+    val hora = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    return when {
+        hora in 6..13 -> MomentoDelDia.MANANA
+        hora in 14..20 -> MomentoDelDia.TARDE
+        else -> MomentoDelDia.NOCHE
+    }
+
+
 }

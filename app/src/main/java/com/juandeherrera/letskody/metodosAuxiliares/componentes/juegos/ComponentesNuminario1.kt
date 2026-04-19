@@ -155,7 +155,7 @@ fun CampoRespuesta(valor: String, pista: Pista?, fuenteTipografica: FontFamily, 
                 showKeyboardOnFocus = false                    // no se muestra el teclado cuando el campo recibe el foco
             ),
             keyboardActions = KeyboardActions(
-                onDone = { comprobar() }  // se comprueba el valor introducido por el usuario
+                onDone = { if (valor.isNotBlank()) comprobar() }  // se comprueba el valor introducido por el usuario
             ),
             textStyle = TextStyle(
                 color = Color.Black,              // color del texto introducido

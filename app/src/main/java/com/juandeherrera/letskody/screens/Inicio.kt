@@ -3,21 +3,28 @@ package com.juandeherrera.letskody.screens
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -41,8 +48,15 @@ import com.juandeherrera.letskody.localdb.AppDB
 import com.juandeherrera.letskody.localdb.Estructura
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraNavegacionInferior
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraSuperior
+import com.juandeherrera.letskody.metodosAuxiliares.componentes.ImagenKodyFlotando
+import com.juandeherrera.letskody.metodosAuxiliares.componentes.MensajeSnackbarHost
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.MenuLateralInicio
+import com.juandeherrera.letskody.metodosAuxiliares.componentes.notificationSnackbar
+import com.juandeherrera.letskody.metodosAuxiliares.interfaz.FondoDinamico
+import com.juandeherrera.letskody.metodosAuxiliares.interfaz.MensajeBienvenida
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.cerrarSesionUsuario
+import com.juandeherrera.letskody.metodosAuxiliares.operaciones.obtenerMomentoDelDia
+import com.juandeherrera.letskody.metodosAuxiliares.operaciones.refrescarBaseDatos
 import com.juandeherrera.letskody.navigation.AppScreens
 import kotlinx.coroutines.launch
 
@@ -54,6 +68,10 @@ fun PantallaInicio(controladorNavegacion: NavController) {
     val badcomic = FontFamily(Font(R.font.badcomic))  // fuente tipográfica por defecto
 
     val scope = rememberCoroutineScope() // variable que crea un ámbito de corrutinas que se mantienen en la recomposición de la interfaz
+
+    val snackbarHostState = remember { SnackbarHostState() } // variable de estado que controla el estado (mostrar/ocultar) del Snackbar
+
+    val tipoSnackbar = remember { mutableStateOf(value = "error") }  // variable de estado para indicar el tipo de snackbar a mostrar por defecto
 
     val context = LocalContext.current // variable que obtiene el contexto actual
 
@@ -79,6 +97,20 @@ fun PantallaInicio(controladorNavegacion: NavController) {
     var abrirToolbar by remember { mutableStateOf(value = false) } // variable para el estado (abrir/cerrar) del menu desplegable del toolbar
 
     val abrirMenuLateral = rememberDrawerState(initialValue = DrawerValue.Closed)  // variable para el estado (abrir/cerrar) del menu lateral de navegación
+
+    var refrescarPantalla by remember { mutableStateOf(value = false) } // variable de estado para refrescar
+
+    val estadoRefrescoPantalla = rememberPullToRefreshState()  // variable para el estado del refresco de pantalla
+
+    val momentoDelDia = remember { obtenerMomentoDelDia() }  // variable que obtiene el momento del día que es según la hora del dispositivo
+
+    // animación de flotación de Kody (sube 16dp y baja en 2 segundos de manera indefinida)
+    val transicionMascota = rememberInfiniteTransition(label = "mascota")
+    val flotacionMascota by transicionMascota.animateFloat(
+        initialValue = 0f, targetValue = -16f,
+        animationSpec = infiniteRepeatable(animation = tween(durationMillis = 2000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "flotacion"
+    )
 
     // MENU LATERAL DE NAVEGACIÓN
     ModalNavigationDrawer(
@@ -123,14 +155,74 @@ fun PantallaInicio(controladorNavegacion: NavController) {
                     selectMaterias = false,
                     selectPerfil = false
                 )
+            },
+            // define el lugar donde se mostraran los Snackbar
+            snackbarHost = {
+                MensajeSnackbarHost(snackbarHostState = snackbarHostState, fuenteTipografica = badcomic, tipo = tipoSnackbar.value)
             }
         ){
             innerPadding ->
 
-            Text(
-                text = "Aquí va el inicio",
-                modifier = Modifier.padding(innerPadding)
-            )
+            // contenedor que permite hacer el gesto de arrastrar hacia abajo para refrescar
+            PullToRefreshBox(
+                state = estadoRefrescoPantalla,    // estado de refresco de la pantalla
+                isRefreshing = refrescarPantalla,  // indica si se muestra el indicador de carga
+                // función que se ejecuta cuando el usuario refresca
+                onRefresh = {
+                    refrescarPantalla = true  // se activa el indicador de carga
+
+                    // se lanza la corrutina para ejecutar la sincronización
+                    scope.launch {
+                        // se sincronizan los datos de Firebase con los locales
+                        refrescarBaseDatos(
+                            uidUsuario = usuario!!.uidUsuario,
+                            db = db,
+                            error = { mensaje ->
+                                notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = mensaje)
+                            }
+                        )
+
+                        refrescarPantalla = false  // se oculta el indicador tras finalizar la sincronización
+                    }
+                },
+                // indicador de refrescar pantalla
+                indicator = {
+                    Indicator(
+                        modifier = Modifier.align(Alignment.TopCenter), // centrado arriba
+                        isRefreshing = refrescarPantalla,
+                        containerColor = Color(0xFF9CC6FF), // color de fondo del circulo
+                        color = Color(0xFF2364C9),          // color del icono girando
+                        state = estadoRefrescoPantalla      // estado de refresco de la pantalla
+                    )
+                },
+                modifier = Modifier.fillMaxSize()          // se ocupa la pantalla completa
+                    .padding(paddingValues = innerPadding) // padding por defecto
+            ){
+
+                // contenedor principal
+                Box(
+                    modifier = Modifier.fillMaxSize()  // se ocupa el espacio disponible
+
+                ){
+                    // capa del fondo animado
+                    FondoDinamico(momento = momentoDelDia)
+
+                    // capa con la imagen de Kody flotando y el saludo al usuario
+                    Column(
+                        modifier = Modifier.fillMaxSize()   // se ocupa el espacio disponible
+                            .padding(horizontal = 24.dp)    // padding en los laterales horizontales
+                        .verticalScroll(rememberScrollState()),       // scroll vertical
+                        horizontalAlignment = Alignment.CenterHorizontally,  // centrado horizontal
+                        verticalArrangement = Arrangement.Center             // centrado vertical
+                    ){
+                        // imagen
+                        ImagenKodyFlotando(flotacionVertical = flotacionMascota)
+
+                        // saludo de bienvenida
+                        MensajeBienvenida(momento = momentoDelDia, nombreUsuario = usuario!!.nombreUsuario, fuenteTipografica = badcomic)
+                    }
+                }
+            }
         }
     }
 }
