@@ -21,6 +21,10 @@ sealed class AppScreens (val route: String) {
 
     object EuroBanderas: AppScreens(route = "EuroBanderas")
 
+    object MenuNuminario1: AppScreens(route = "MenuNuminario1")
+
+    object Numinario1: AppScreens(route = "Numinario1")
+
     object Perfil: AppScreens(route = "Perfil")
 
     object EditarPerfil: AppScreens(route = "EditarPerfil")

@@ -29,6 +29,6 @@ val juegos = listOf(
         color1 = Color(0xFFE31C1C),
         color2 = Color(0xFFD73939),
         color3 = Color(0xFFE04848),
-        ruta = AppScreens.Perfil.route
+        ruta = AppScreens.MenuNuminario1.route
     )
 )

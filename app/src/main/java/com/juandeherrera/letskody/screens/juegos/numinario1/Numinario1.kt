@@ -1,4 +1,4 @@
-package com.juandeherrera.letskody.screens.juegos.euroBanderas
+package com.juandeherrera.letskody.screens.juegos.numinario1
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -10,23 +10,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.room.Room
@@ -36,21 +33,20 @@ import com.juandeherrera.letskody.localdb.AppDB
 import com.juandeherrera.letskody.localdb.Estructura
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraNavegacionInferior
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraSuperiorSinMenuLateral
-import com.juandeherrera.letskody.metodosAuxiliares.componentes.ModalInactividadJuego
-import com.juandeherrera.letskody.metodosAuxiliares.componentes.ModalPuntuacionJuegosCronometro
+import com.juandeherrera.letskody.metodosAuxiliares.componentes.ModalPuntuacionJuegosContrarreloj
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.juegos.PantallaJugando
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.cerrarSesionUsuario
-import com.juandeherrera.letskody.metodosAuxiliares.operaciones.juegos.GestorPuntuacionEuroBanderas
+import com.juandeherrera.letskody.metodosAuxiliares.operaciones.juegos.GestorPuntuacionNuminario1
 import com.juandeherrera.letskody.navigation.AppScreens
-import com.juandeherrera.letskody.viewModels.euroBanderas.EstadoEuroBanderas
-import com.juandeherrera.letskody.viewModels.euroBanderas.EuroBanderasViewModel
-import com.juandeherrera.letskody.viewModels.euroBanderas.EuroBanderasViewModelFactory
+import com.juandeherrera.letskody.viewModels.numinario1.EstadoNuminario1
+import com.juandeherrera.letskody.viewModels.numinario1.Numinario1ViewModel
+import com.juandeherrera.letskody.viewModels.numinario1.Numinario1ViewModelFactory
 
 @SuppressLint("DefaultLocale")
 @RequiresApi(value = Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
-fun PantallaEuroBanderas(controladorNavegacion: NavController) {
+fun PantallaNuminario1(controladorNavegacion: NavController) {
     val badcomic = FontFamily(Font(R.font.badcomic))  // fuente tipográfica por defecto
 
     val context = LocalContext.current // variable que obtiene el contexto actual
@@ -77,28 +73,26 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
     var abrirToolbar by remember { mutableStateOf(value = false) } // variable para el estado (abrir/cerrar) del menu desplegable del toolbar
 
     // variable que contiene el ViewModel del juego (se recupera o se crea si no existe)
-    val viewModel: EuroBanderasViewModel = viewModel(factory = EuroBanderasViewModelFactory(db = db, context = context)) // variable que contiene el ViewModel del juego
+    val viewModel: Numinario1ViewModel = viewModel(factory = Numinario1ViewModelFactory(context = context)) // variable que contiene el ViewModel del juego
 
     // variables observables de ViewModel que hacen recomponer la vista cuando sus valores cambian
-    val estado by viewModel.estado.collectAsState()                                    // estado de juego
-    val mostrarModalInactividad by viewModel.mostrarModalInactividad.collectAsState()  // comprueba para mostrar el modal de inactividad
-    val cuentaAtras by viewModel.cuentaAtrasInactividad.collectAsState()               // cuenta atrás del modal de inactividad
-    val resultado by viewModel.resultado.collectAsState()                              // resultado final del jugador
+    val estado by viewModel.estado.collectAsState()                  // estado de juego
+    val resultado by viewModel.resultado.collectAsState()            // resultado final del jugador
+
+    var textoRespuesta by rememberSaveable { mutableStateOf(value = "") }  // variable para la respuesta del usuario (se conserva su valor a pesar de las recomposiciones)
 
     LaunchedEffect(key1 = Unit) { viewModel.iniciarJuego() }  // arranca el juego al entrar en la pantalla
 
-    // efecto de vigilancia de la pantalla (si la cuenta atrás del modal llega a cero, sales del juego)
-    LaunchedEffect(key1 = cuentaAtras, key2 = mostrarModalInactividad) {
-        if (mostrarModalInactividad && cuentaAtras <= 0) {
-            controladorNavegacion.navigate(route = AppScreens.MenuEuroBanderas.route) { popUpTo(id = 0) { inclusive = true } } // se navega al menu del juego (se limpia el historial)
-        }
+    // al generar una nueva operación se limpia el campo de texto de la respuesta del usuario
+    LaunchedEffect(key1 = (estado as? EstadoNuminario1.Jugando)?.numero1, key2 = (estado as? EstadoNuminario1.Jugando)?.numero2) {
+        textoRespuesta = ""
     }
 
     Scaffold(
         // BARRA SUPERIOR
         topBar = {
             BarraSuperiorSinMenuLateral(
-                titulo = "Euro-banderas",
+                titulo = "Numinario I",
                 fuenteTipografica = badcomic,
                 controladorNavegacion = controladorNavegacion,
                 estadoMenuDesplegable = abrirToolbar,
@@ -123,26 +117,16 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
     ){
         innerPadding ->
 
-        // contenedor principal con detección de actividad
+        // contenedor principal
         Box(
             modifier = Modifier.fillMaxSize()          // ocupa el espacio disponible
                 .background(Color(0xFFC2DAFD))         // color de fondo
                 .padding(paddingValues = innerPadding) // padding por defecto
-                // capturador de eventos de pulsación sobre la pantalla
-                .pointerInput(key1 = Unit) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            awaitPointerEvent()              // esperar cualquier toque
-                            viewModel.registrarActividad()   // notificar al ViewModel
-                        }
-                    }
-                }
         ){
             // se reacciona al estado del juego
             when (val s = estado) {
-
                 // sí se está cargando el juego que muestre el círculo de carga
-                is EstadoEuroBanderas.Cargando -> {
+                is EstadoNuminario1.Cargando -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),  // ocupa el espacio disponible
                         contentAlignment = Alignment.Center // contenido centrado
@@ -151,73 +135,50 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
                     }
                 }
 
-                // sí no hay suficientes banderas en la base de datos, se mostrará mensaje de error
-                is EstadoEuroBanderas.ErrorSinBanderas -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),  // ocupa el espacio disponible
-                        contentAlignment = Alignment.Center // contenido centrado
-                    ){
-                        // MENSAJE
-                        Text(
-                            text = "No hay suficientes banderas en la base de datos.",   // texto
-                            color = Color.Red,          // color del texto
-                            style = TextStyle(
-                                fontFamily = badcomic,  // fuente tipográfica del texto
-                                fontSize = 16.sp        // tamaño del texto
-                            )
-                        )
-                    }
-                }
-
                 // si el usuario está jugando
-                is EstadoEuroBanderas.Jugando -> {
+                is EstadoNuminario1.Jugando -> {
                     PantallaJugando(
                         estado = s,
+                        respuesta = textoRespuesta,
                         fuenteTipografica = badcomic,
-                        respuesta = { opcion -> viewModel.responder(opcion = opcion) }
+                        cambiar = { textoRespuesta = it },
+                        comprobar = { viewModel.comprobarRespuesta(respuesta = textoRespuesta) }
                     )
                 }
 
                 // si el juego ha finalizado
-                is EstadoEuroBanderas.Terminado -> {
+                is EstadoNuminario1.Terminado -> {
                     Box(modifier = Modifier.fillMaxSize()) // ocupa el espacio disponible
                 }
             }
 
-            // se muestra el modal de inactividad si el usuario lleva x tiempo sin tocar la pantalla
-            if (mostrarModalInactividad) {
-                ModalInactividadJuego(
-                    cuentaAtras = cuentaAtras,
-                    fuenteTipografica = badcomic,
-                    continuar = {
-                        viewModel.cerrarModalInactividad()   // cierra el diálogo y reinicia el cronómetro
-                    }
-                )
-            }
-
-            // se muestra el modal de resultado final cuando el usuario ha terminado las preguntas
-            if (estado is EstadoEuroBanderas.Terminado && resultado != null) {
-                ModalPuntuacionJuegosCronometro(
+            // se muestra el modal de resultado final cuando se ha terminado el tiempo
+            if (estado is EstadoNuminario1.Terminado && resultado != null) {
+                ModalPuntuacionJuegosContrarreloj(
                     resultado = resultado!!,
                     fuenteTipografica = badcomic,
-                    repetir = { viewModel.iniciarJuego() },
+                    repetir = {
+                        // se limpia el campo de texto y se inicia de nuevo el juego
+                        textoRespuesta = ""
+                        viewModel.iniciarJuego()
+                    },
                     guardarYsalir   = {
                         // se guarda la puntuación y el tiempo en la base de datos local y en Firebase
-                        GestorPuntuacionEuroBanderas.guardarPuntuacion(
+                        GestorPuntuacionNuminario1.guardarPuntuacion(
                             db = db,
                             uidUsuario = usuario!!.uidUsuario,
                             puntos = resultado!!.puntos,
-                            tiempoTotal = resultado!!.tiempoTotal
+                            fallos = resultado!!.fallos
                         )
 
                         // se navega al menu del juego (se limpia el historial)
-                        controladorNavegacion.navigate(AppScreens.MenuEuroBanderas.route) { popUpTo(id = 0) { inclusive = true } }
+                        controladorNavegacion.navigate(AppScreens.MenuNuminario1.route) { popUpTo(id = 0) { inclusive = true } }
                     }
                 )
             }
-
         }
     }
 }
+
 
 

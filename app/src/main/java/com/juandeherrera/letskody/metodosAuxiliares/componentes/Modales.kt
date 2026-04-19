@@ -48,7 +48,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.juandeherrera.letskody.clasesAuxiliares.ResultadoJuego
+import com.juandeherrera.letskody.clasesAuxiliares.ResultadoJuegoContrarreloj
+import com.juandeherrera.letskody.clasesAuxiliares.ResultadoJuegoCronometro
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.juegos.FilaResultado
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.juegos.FilaTiempoYPenalizacion
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.formatearSegundos
@@ -441,10 +442,10 @@ fun ModalInactividadJuego(cuentaAtras: Int, fuenteTipografica: FontFamily, conti
     }
 }
 
-// función auxiliar para cargar el modal con la puntuación del usuario en el juego Euro-banderas
+// función auxiliar para cargar el modal con la puntuación del usuario en los juegos de cronómetro
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ModalPuntuacionEuroBanderas(resultado: ResultadoJuego, fuenteTipografica: FontFamily, repetir: () -> Unit, guardarYsalir: () -> Unit) {
+fun ModalPuntuacionJuegosCronometro(resultado: ResultadoJuegoCronometro, fuenteTipografica: FontFamily, repetir: () -> Unit, guardarYsalir: () -> Unit) {
     // MODAL (cuadro de diálogo)
     BasicAlertDialog(
         onDismissRequest = { }  // no se puede cerrar el modal cuando se pulsa afuera de él
@@ -501,6 +502,101 @@ fun ModalPuntuacionEuroBanderas(resultado: ResultadoJuego, fuenteTipografica: Fo
                     fuenteTipografica = fuenteTipografica,
                     color = Color.Black,
                     negrita = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))  // separación vertical entre componentes
+
+                // BOTÓN DE REPETIR PARTIDA
+                Button(
+                    onClick = repetir,   // al pulsar el botón se repite la partida sin guardar la puntuación
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF348AEC),    // color de fondo del botón
+                        contentColor = Color.White             // color del texto del botón
+                    ),
+                    shape = RoundedCornerShape(size = 10.dp),  // bordes redondeados
+                    modifier = Modifier.fillMaxWidth()         // ocupa el máximo ancho posible
+                ){
+                    Text(
+                        text = "Repetir sin guardar",   // texto
+                        style = TextStyle(
+                            fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                            fontWeight = FontWeight.Bold     // texto en negrita
+                        )
+                    )
+                }
+
+                // BOTÓN DE GUARDAR PARTIDA Y SALIR
+                OutlinedButton(
+                    onClick = guardarYsalir,   // al pulsar el botón se guarda la partida y se sale del juego
+                    border = BorderStroke(width = 1.dp, color = Color(0xFF348AEC)),  // grosor y color del borde
+                    shape = RoundedCornerShape(size = 10.dp),  // bordes redondeados
+                    modifier = Modifier.fillMaxWidth()         // ocupa el máximo ancho posible
+                ){
+                    Text(
+                        text = "Guardar y salir",   // texto
+                        color = Color(0xFF348AEC),        // color del texto
+                        style = TextStyle(
+                            fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                            fontWeight = FontWeight.Bold     // texto en negrita
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+// función auxiliar para cargar el modal con la puntuación del usuario en los juegos de contrarreloj
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ModalPuntuacionJuegosContrarreloj(resultado: ResultadoJuegoContrarreloj, fuenteTipografica: FontFamily, repetir: () -> Unit, guardarYsalir: () -> Unit) {
+    // MODAL (cuadro de diálogo)
+    BasicAlertDialog(
+        onDismissRequest = { }  // no se puede cerrar el modal cuando se pulsa afuera de él
+    ){
+        // tarjeta que conformará el modal
+        ElevatedCard(
+            shape = RoundedCornerShape(size = 12.dp),                         // bordes redondeados
+            colors = CardDefaults.cardColors(containerColor = Color.White),   // color de fondo de la tarjeta
+            modifier = Modifier.fillMaxWidth()                                // ocupa el máximo ancho posible
+                .padding(all = 14.dp)                                         // padding externo
+        ){
+            // columna que contiene el contenido de la tarjeta
+            Column(
+                modifier = Modifier.padding(all = 14.dp),           // padding externo
+                horizontalAlignment = Alignment.CenterHorizontally  // centrado horizontalmente
+            ){
+                // TITULO
+                Text(
+                    text = "¡Tiempo!",    // texto
+                    color = Color(0xFF142E49),       // color del texto
+                    style = TextStyle(
+                        fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                        fontSize = 22.sp,                // tamaño del texto
+                        fontWeight = FontWeight.Bold     // texto en negrita
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))  // separación vertical entre componentes
+
+                // fila de puntuación
+                FilaResultado(
+                    etiqueta = "Puntuación",
+                    valor = "${resultado.puntos} ⭐",
+                    fuenteTipografica = fuenteTipografica,
+                    color = Color.Black,
+                    negrita = FontWeight.Normal
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))  // separación vertical entre componentes
+
+                // fila de fallos
+                FilaResultado(
+                    etiqueta = "Fallos",
+                    valor = "${resultado.fallos}",
+                    fuenteTipografica = fuenteTipografica,
+                    color = Color.Red,
+                    negrita = FontWeight.Normal
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))  // separación vertical entre componentes

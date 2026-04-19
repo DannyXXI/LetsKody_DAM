@@ -1,4 +1,4 @@
-package com.juandeherrera.letskody.screens.juegos.euroBanderas
+package com.juandeherrera.letskody.screens.juegos.numinario1
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -52,7 +52,7 @@ import com.juandeherrera.letskody.navigation.AppScreens
 @RequiresApi(value = Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
-fun PantallaMenuEuroBanderas(controladorNavegacion: NavController) {
+fun PantallaMenuNuminario1(controladorNavegacion: NavController) {
     val badcomic = FontFamily(Font(R.font.badcomic))  // fuente tipográfica por defecto
 
     val context = LocalContext.current // variable que obtiene el contexto actual
@@ -82,7 +82,7 @@ fun PantallaMenuEuroBanderas(controladorNavegacion: NavController) {
         // BARRA SUPERIOR
         topBar = {
             BarraSuperiorSinMenuLateral(
-                titulo = "Euro-banderas",
+                titulo = "Numinario I",
                 fuenteTipografica = badcomic,
                 controladorNavegacion = controladorNavegacion,
                 estadoMenuDesplegable = abrirToolbar,
@@ -131,8 +131,8 @@ fun PantallaMenuEuroBanderas(controladorNavegacion: NavController) {
                 ){
                     // TITULO
                     Text(
-                        text = "¡Banderas revueltas!", // texto
-                        color = Color(0xFF6337CC),        // color del texto
+                        text = "Unas galletas matemáticas...", // texto
+                        color = Color(0xFFD73939),        // color del texto
                         style = TextStyle(
                             fontFamily = badcomic,        // fuente tipográfica del texto
                             fontSize = 20.sp,             // tamaño del texto
@@ -142,7 +142,7 @@ fun PantallaMenuEuroBanderas(controladorNavegacion: NavController) {
                     )
 
                     Text(
-                        text = "Hoy te iba a explicar las banderas de Europa pero mi gato Pelusa las ha mezclado. ¡Necesito tu ayuda para arreglar este desastre!", // texto
+                        text = "El mago Tutifruti ha intentado duplicar galletas infinitas y ahora mi estudio esta lleno de operaciones matemáticas mágicas.", // texto
                         color = Color.Black,                // color del texto
                         style = TextStyle(
                             fontFamily = badcomic,          // fuente tipográfica del texto
@@ -153,7 +153,7 @@ fun PantallaMenuEuroBanderas(controladorNavegacion: NavController) {
                     )
 
                     Text(
-                        text = "Verás una bandera y cuatro opciones que puedan corresponder a ella. ¿Cuántas podrás acertar en el menor tiempo posible?", // texto
+                        text = "Resuelve cada operación mientras lo arregla. ¿Cuántas puntos conseguirás antes de que se acabe el tiempo?", // texto
                         color = Color.Black,                // color del texto
                         style = TextStyle(
                             fontFamily = badcomic,          // fuente tipográfica del texto
@@ -164,12 +164,12 @@ fun PantallaMenuEuroBanderas(controladorNavegacion: NavController) {
                     )
 
                     Button(
-                        onClick = { controladorNavegacion.navigate(route = AppScreens.EuroBanderas.route) }, // al pulsar te lleva al juego
+                        onClick = { controladorNavegacion.navigate(route = AppScreens.Numinario1.route) }, // al pulsar te lleva al juego
                         modifier = Modifier.fillMaxWidth() // se ocupa el maximo ancho disponible
                             .height(50.dp),                // altura del botón
                         shape = RoundedCornerShape(size = 12.dp),  // bordes redondeados
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF6337CC),  // color de fondo del botón
+                            containerColor = Color(0xFFD73939),  // color de fondo del botón
                             contentColor = Color.White           // color del texto del botón
                         )
                     ){
