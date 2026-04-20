@@ -171,8 +171,11 @@ fun PantallaNuminario1(controladorNavegacion: NavController) {
                             fallos = resultado!!.fallos
                         )
 
-                        // se navega al menu del juego (se limpia el historial)
-                        controladorNavegacion.navigate(AppScreens.MenuNuminario1.route) { popUpTo(id = 0) { inclusive = true } }
+                        // se navega al menu del juego (se limpia la pantalla del historial)
+                        controladorNavegacion.navigate(AppScreens.MenuNuminario1.route) {
+                            popUpTo(AppScreens.MenuNuminario1.route) { inclusive = true }
+                            launchSingleTop = true   // evita crear una segunda instancia
+                        }
                     }
                 )
             }

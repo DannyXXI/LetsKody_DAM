@@ -210,8 +210,11 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
                             tiempoTotal = resultado!!.tiempoTotal
                         )
 
-                        // se navega al menu del juego (se limpia el historial)
-                        controladorNavegacion.navigate(AppScreens.MenuEuroBanderas.route) { popUpTo(id = 0) { inclusive = true } }
+                        // se navega al menu del juego (se limpia la pantalla del historial)
+                        controladorNavegacion.navigate(AppScreens.MenuEuroBanderas.route) {
+                            popUpTo(AppScreens.MenuEuroBanderas.route) { inclusive = true }
+                            launchSingleTop = true   // evita crear una segunda instancia
+                        }
                     }
                 )
             }
