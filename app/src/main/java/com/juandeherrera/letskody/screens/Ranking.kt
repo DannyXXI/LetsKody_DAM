@@ -8,15 +8,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -40,13 +36,18 @@ import androidx.navigation.NavController
 import androidx.room.Room
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.juandeherrera.letskody.R
+import com.juandeherrera.letskody.clasesAuxiliares.FilaRankingJuegosContrarreloj
+import com.juandeherrera.letskody.clasesAuxiliares.FilaRankingJuegosCronometro
+import com.juandeherrera.letskody.clasesAuxiliares.FilaTablaRanking
 import com.juandeherrera.letskody.localdb.AppDB
 import com.juandeherrera.letskody.localdb.Estructura
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraNavegacionInferior
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraSuperior
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.MensajeSnackbarHost
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.MenuLateralMaterias
+import com.juandeherrera.letskody.metodosAuxiliares.componentes.TablaRanking
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.cerrarSesionUsuario
+import com.juandeherrera.letskody.metodosAuxiliares.operaciones.formatearSegundos
 import com.juandeherrera.letskody.navigation.AppScreens
 import kotlinx.coroutines.launch
 
@@ -84,6 +85,32 @@ fun PantallaRanking(controladorNavegacion: NavController) {
         else -> { /* aquí ya existe el usuario */ }
     }
 
+    /* ---- POSICIÓN EN EL RANKING EN EL JUEGO DE EURO-BANDERAS ---- */
+    val listaPuntuacionesEuroBanderas = db.puntuacionEuroBanderasDao().getListaPuntuacionesEuroBanderas()        // se obtiene la lista de completa de puntuaciones ya ordenada
+    val posicionEuroBanderas = listaPuntuacionesEuroBanderas.indexOfFirst { it.usuario == usuario!!.uidUsuario}  // se obtiene la posición de la puntuación del usuario (-1 si no está)
+
+    // se obtiene los datos de la posición del usuario en el ranking (si no está es null)
+    val filaEuroBanderas = if (posicionEuroBanderas == -1) null else {
+        FilaRankingJuegosCronometro(
+            posicion = posicionEuroBanderas + 1,
+            puntos = listaPuntuacionesEuroBanderas[posicionEuroBanderas].puntos,
+            tiempo = listaPuntuacionesEuroBanderas[posicionEuroBanderas].tiempo
+        )
+    }
+
+    /* ---- POSICIÓN EN EL RANKING EN EL JUEGO DE NUMINARIO 1 ---- */
+    val listaPuntuacionesNuminario1 = db.puntuacionNuminario1Dao().getListaPuntuacionesNuminario1Ordenada()   // se obtiene la lista de completa de puntuaciones ya ordenada
+    val posicionNuminario1 = listaPuntuacionesNuminario1.indexOfFirst { it.usuario == usuario!!.uidUsuario}   // se obtiene la posición de la puntuación del usuario (-1 si no está)
+
+    // se obtiene los datos de la posición del usuario en el ranking (si no está es null)
+    val filaNuminario1 = if (posicionNuminario1 == -1) null else {
+        FilaRankingJuegosContrarreloj(
+            posicion = posicionNuminario1 + 1,
+            puntos = listaPuntuacionesNuminario1[posicionNuminario1].puntos,
+            fallos = listaPuntuacionesNuminario1[posicionNuminario1].fallos
+        )
+    }
+
     var abrirToolbar by remember { mutableStateOf(value = false) } // variable para el estado (abrir/cerrar) del menu desplegable del toolbar
 
     val abrirMenuLateral = rememberDrawerState(initialValue = DrawerValue.Closed)  // variable para el estado (abrir/cerrar) del menu lateral de navegación
@@ -95,9 +122,9 @@ fun PantallaRanking(controladorNavegacion: NavController) {
         drawerContent = {
             MenuLateralMaterias(
                 estadoMenuLateral = abrirMenuLateral,
-                titulo = "Materias",
-                selectMaterias = true,
-                selectRanking = false,
+                titulo = "Ranking",
+                selectMaterias = false,
+                selectRanking = true,
                 scope = scope,
                 controladorNavegacion = controladorNavegacion,
                 fuenteTipografica = badcomic
@@ -108,7 +135,7 @@ fun PantallaRanking(controladorNavegacion: NavController) {
             // BARRA SUPERIOR
             topBar = {
                 BarraSuperior(
-                    titulo = "Materias",
+                    titulo = "Ranking",
                     fuenteTipografica = badcomic,
                     estadoMenuDesplegable = abrirToolbar,
                     abrirMenuLateral = {
@@ -142,31 +169,54 @@ fun PantallaRanking(controladorNavegacion: NavController) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()                   // se ocupa la pantalla completa
-                    .verticalScroll(state = rememberScrollState())  // scroll vertical
-                    .background(Color(0xFFC2DAFD))                  // color de fondo
-                    .padding(paddingValues = innerPadding),         // padding por defecto
-                horizontalAlignment = Alignment.CenterHorizontally,  // centrado horizontal
-                verticalArrangement = Arrangement.Center             // centrado vertical
+                    .verticalScroll(state = rememberScrollState())    // scroll vertical
+                    .background(Color(0xFFC2DAFD))                    // color de fondo
+                    .padding(paddingValues = innerPadding)           // padding por defecto
+                    .padding(all = 20.dp),                           // padding interior adicional
+                horizontalAlignment = Alignment.CenterHorizontally,   // centrado horizontal
+                verticalArrangement = Arrangement.spacedBy(24.dp)     // espaciado vertical entre elementos
             ){
-                // tarjeta con la información del ranking
-                ElevatedCard(
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),  // sombreado de elevación
-                    colors = CardDefaults.cardColors(containerColor = Color.White),   // color de fondo
-                    shape = RoundedCornerShape(size = 20.dp),  // bordes redondeados
-                    modifier = Modifier
-                        .fillMaxWidth()         // se ocupa el máximo ancho disponible
-                        .padding(all = 18.dp)                  // padding externo
-                ){
-                    // columna con el contenido de la tarjeta del ranking
-                    Column(
-                        modifier = Modifier.fillMaxWidth()   // se ocupa el máximo ancho disponible
-                            .padding(all = 20.dp),           // padding externo
-                        horizontalAlignment = Alignment.CenterHorizontally,  // centrado horizontal
-                        verticalArrangement = Arrangement.spacedBy(16.dp)    // espaciado vertical entre elementos
-                    ){
 
-                    }
-                }
+                // tabla del juego Euro-banderas
+                TablaRanking(
+                    titulo = "Euro-banderas",
+                    cabeceras = listOf("Posición", "Puntos", "Tiempo"),
+                    fila = filaEuroBanderas?.let {fila ->
+                        FilaTablaRanking(
+                            posicion = fila.posicion,
+                            columna1 = fila.puntos.toString(),
+                            columna2 = formatearSegundos(segundos = fila.tiempo)
+                        )
+                    },
+                    mensajeSinDatos = "Aún no has jugado a Euro-banderas.",
+                    fuenteTipografica = badcomic
+                )
+
+                // tabla del juego Numinario 1
+                TablaRanking(
+                    titulo = "Numinario I",
+                    cabeceras = listOf("Posición", "Puntos", "Fallos"),
+                    fila = filaNuminario1?.let {fila ->
+                        FilaTablaRanking(
+                            posicion = fila.posicion,
+                            columna1 = fila.puntos.toString(),
+                            columna2 = fila.fallos.toString()
+                        )
+                    },
+                    mensajeSinDatos = "Aún no has jugado a Numinario I.",
+                    fuenteTipografica = badcomic
+                )
+
+
+
+
+
+
+
+
+
+
+
             }
         }
     }
