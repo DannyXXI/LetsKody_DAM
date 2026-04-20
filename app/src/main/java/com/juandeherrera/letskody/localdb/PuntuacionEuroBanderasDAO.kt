@@ -16,7 +16,9 @@ interface PuntuacionEuroBanderasDAO {
     @Query(value = "SELECT * FROM ${Estructura.PuntuacionEuroBanderas.TABLE_NAME} WHERE ${Estructura.PuntuacionEuroBanderas.USUARIO} = :uidUsuario")
     fun getPuntuacionEuroBanderas(uidUsuario: String): PuntuacionEuroBanderasData?
 
-    // OBTENER LA POSICION (NUMERO ENTERO) SEGUN LOS PUNTOS Y SI EMPATA POR TIEMPO, EN CASO DE QUE EXISTA, SINO ES NULL
+    // OBTENER LAS PUNTUACIONES (NÚMERO ENTERO) SEGÚN LOS PUNTOS Y SI EMPATA POR TIEMPO
+    @Query(value = "SELECT * FROM ${Estructura.PuntuacionEuroBanderas.TABLE_NAME} ORDER BY ${Estructura.PuntuacionEuroBanderas.PUNTOS} DESC, ${Estructura.PuntuacionEuroBanderas.TIEMPO} ASC")
+    fun getListaPuntuacionesEuroBanderasOrdenada(): List<PuntuacionEuroBanderasData>
 
     // AGREGAR UNA NUEVA PUNTUACIÓN
     @Insert

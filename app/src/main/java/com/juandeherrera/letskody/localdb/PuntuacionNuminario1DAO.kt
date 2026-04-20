@@ -16,7 +16,9 @@ interface PuntuacionNuminario1DAO {
     @Query(value = "SELECT * FROM ${Estructura.PuntuacionNuminario1.TABLE_NAME} WHERE ${Estructura.PuntuacionNuminario1.USUARIO} = :uidUsuario")
     fun getPuntuacionNuminario1(uidUsuario: String): PuntuacionNuminario1Data?
 
-    // OBTENER LA POSICIÓN (NÚMERO ENTERO) SEGÚN LOS PUNTOS Y SI EMPATA POR TIEMPO, EN CASO DE QUE EXISTA, SI NO ES NULL
+    // OBTENER LAS PUNTUACIONES (NÚMERO ENTERO) SEGÚN LOS PUNTOS Y SI EMPATA POR TIEMPO
+    @Query(value = "SELECT * FROM ${Estructura.PuntuacionNuminario1.TABLE_NAME} ORDER BY ${Estructura.PuntuacionNuminario1.PUNTOS} DESC, ${Estructura.PuntuacionNuminario1.FALLOS} ASC")
+    fun getListaPuntuacionesNuminario1Ordenada(): List<PuntuacionNuminario1Data>
 
     // AGREGAR UNA NUEVA PUNTUACIÓN
     @Insert

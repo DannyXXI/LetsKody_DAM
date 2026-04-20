@@ -274,7 +274,8 @@ fun MenuLateralMaterias(estadoMenuLateral: DrawerState, titulo: String, selectMa
                         scope.launch { estadoMenuLateral.close() }
                     }
                     else {
-                        println("Otra acción")
+                        scope.launch { estadoMenuLateral.close() }
+                        controladorNavegacion.navigate(route = AppScreens.Materias.route)
                     }
                 }
             )
@@ -290,7 +291,8 @@ fun MenuLateralMaterias(estadoMenuLateral: DrawerState, titulo: String, selectMa
                         scope.launch { estadoMenuLateral.close() }
                     }
                     else {
-                        println("Otra acción")
+                        scope.launch { estadoMenuLateral.close() }
+                        controladorNavegacion.navigate(route = AppScreens.Ranking.route)
                     }
                 }
             )
