@@ -62,6 +62,11 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")                        // dependencia para usar la autenticación de Firebase
     implementation(libs.firebase.firestore)                                        // dependencia para usar la base de datos de Firebase
 
+    // librerías para el inicio de sesión con Google
+    implementation("androidx.credentials:credentials:1.3.0")                         // dependencia para gestionar las credenciales del usuario
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")      // dependencia que hace de puente entre las credenciales del usuario y los servicios de Google
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")  // dependencia para el inicio de sesión moderno con Google
+
     // librerías para la navegación entre pantallas
     implementation(libs.androidx.navigation.compose)  // dependencia para utilizar la navegación entre pantallas
     implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.5.0-alpha11") // dependencia para la navegación adaptativa según el tamaño de pantalla

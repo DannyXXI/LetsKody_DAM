@@ -12,7 +12,20 @@
           "package_name": "com.juandeherrera.letskody"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "471155651747-ua0mcui56413lr4ovo6b9tc916coepo5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.juandeherrera.letskody",
+            "certificate_hash": "ef911a7e73ea3c71529622a7777525ca2d774546"
+          }
+        },
+        {
+          "client_id": "471155651747-togjsf3ome69vggf8nb80ftaiidm93gd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCwN_8s63q-MVYkkUt9TW5vt5Lk3AnJNk4"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "471155651747-togjsf3ome69vggf8nb80ftaiidm93gd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
