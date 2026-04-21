@@ -2,12 +2,18 @@ package com.juandeherrera.letskody.metodosAuxiliares.operaciones
 
 import android.content.Context
 import androidx.compose.material3.SnackbarHostState
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialException
 import androidx.navigation.NavController
 import androidx.room.Room
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.juandeherrera.letskody.firebase.UsuarioFirebase
@@ -18,6 +24,9 @@ import com.juandeherrera.letskody.metodosAuxiliares.componentes.notificationSnac
 import com.juandeherrera.letskody.navigation.AppScreens
 import com.juandeherrera.letskody.notification.NotificationHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+
+private const val WEB_CLIENT_ID = "471155651747-togjsf3ome69vggf8nb80ftaiidm93gd.apps.googleusercontent.com"  // id obtenido de Firebase
 
 // función auxiliar para registrar en la base de datos local un usuario temporal previo a ser registrado en Firebase
 fun crearUsuarioTemporal(controladorNavegacion: NavController, scope: CoroutineScope, snackbarHostState: SnackbarHostState, context: Context, nombre: String, apellidos: String, telefono: String, email: String, password: String, sexo: String, fechaNacimiento: String, foto: String) {
@@ -241,7 +250,7 @@ fun cerrarSesionUsuario(db: AppDB, usuario: UsuarioData) {
 }
 
 // función auxiliar para eliminar la cuenta del usuario
-fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, controladorNavegacion: NavController, error: (String) -> Unit) {
+fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, controladorNavegacion: NavController, context: Context, scope: CoroutineScope, error: (String) -> Unit) {
 
     val auth = FirebaseAuth.getInstance() // instancia al sistema de autenticación de Firebase
 
@@ -254,101 +263,155 @@ fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, con
         return
     }
 
-    // se obtiene las credenciales del usuario necesarias para la reautenticación
-    val credencialesUsuario = EmailAuthProvider.getCredential(usuario.emailUsuario, password)
+    // se comprueba si el usuario inicio sesión con Google
+    val esUsuarioGoogle = user.providerData.any { it.providerId == "google.com" }
 
-    // se reautentica el usuario
-    user.reauthenticate(credencialesUsuario)
-        .addOnSuccessListener {
-            // si ha funcionado la reautenticación, se obtiene el documento de la puntuación del juego Euro-Banderas del usuario para eliminarlo
-            dbfire.collection("puntuaciones_EuroBanderas").whereEqualTo("usuario", user.uid).get()
-                .addOnSuccessListener { documentos ->
-                    val batchPuntuacionEuroBanderas = dbfire.batch() // se crea un batch para eliminar la puntuación en una sola operacion
+    // función interna que contiene toda la lógica de borrado
+    fun borradoDatos() {
+        // se obtiene el documento de la puntuación del juego Euro-Banderas del usuario para eliminarlo
+        dbfire.collection("puntuaciones_EuroBanderas").whereEqualTo("usuario", user.uid).get()
+            .addOnSuccessListener { documentos ->
+                val batchPuntuacionEuroBanderas = dbfire.batch() // se crea un batch para eliminar la puntuación en una sola operacion
 
-                    // se agrega la referencia (UID del documento a eliminar) al batch
-                    for (doc in documentos.documents) {
-                        val ref = dbfire.collection("puntuaciones_EuroBanderas").document(doc.id)
-                        batchPuntuacionEuroBanderas.delete(ref)
+                // se agrega la referencia (UID del documento a eliminar) al batch
+                for (doc in documentos.documents) {
+                    val ref = dbfire.collection("puntuaciones_EuroBanderas").document(doc.id)
+                    batchPuntuacionEuroBanderas.delete(ref)
+                }
+
+                batchPuntuacionEuroBanderas.commit() // se ejecuta el batch
+                    .addOnSuccessListener {
+                        // si se ha eliminado correctamente, se obtiene el documento de la puntuación del juego Numinario 1 del usuario para eliminarlo
+                        dbfire.collection("puntuaciones_Numinario1").whereEqualTo("usuario", user.uid).get()
+                            .addOnSuccessListener { documentos ->
+                                val batchPuntuacionNuminario1 = dbfire.batch() // se crea un batch para eliminar la puntuación en una sola operacion
+
+                                // se agrega la referencia (UID del documento a eliminar) al batch
+                                for (doc in documentos.documents) {
+                                    val ref = dbfire.collection("puntuaciones_Numinario1").document(doc.id)
+                                    batchPuntuacionNuminario1.delete(ref)
+                                }
+
+                                batchPuntuacionNuminario1.commit() // se ejecuta el batch
+                                    .addOnSuccessListener {
+                                        // si se ha eliminado correctamente, se borra el usuario de la base de datos de Firebase
+                                        dbfire.collection("usuarios").document(user.uid).delete()
+                                            .addOnSuccessListener {
+                                                // si ha funcionado el borrado de todos los datos relacionados con el usuario, se borra el usuario autenticado
+                                                user.delete()
+                                                    .addOnSuccessListener {
+                                                        db.usuarioDao().eliminarUsuario(email = usuario.emailUsuario)  // se elimina el usuario local
+
+                                                        db.banderasEuropaDao().eliminarTodasBanderasEuropa()           // se eliminan todas las banderas de Europa locales
+
+                                                        db.puntuacionEuroBanderasDao().eliminarTodasPuntuacionesEuroBanderas()  // se eliminan todas las puntuaciones de Euro-banderas locales
+
+                                                        db.puntuacionNuminario1Dao().eliminarTodasPuntuacionesNuminario1()      // se eliminan todas las puntuaciones de Numinario 1 locales
+
+                                                        auth.signOut()  // se cierra la sesión de Firebase
+
+                                                        controladorNavegacion.navigate(AppScreens.Login.route) { popUpTo(0) }  // se vuelve a la pantalla de login (se borra el historial de navegación)
+                                                    }
+                                                    .addOnFailureListener { ex ->
+                                                        // si falla el borrado del usuario autenticado se muestra un mensaje en la terminal y al usuario
+                                                        error("Error al eliminar el usuario autenticado.")
+                                                        println("Error al eliminar el usuario autenticado: ${ex.message}")
+                                                    }
+                                            }
+                                            .addOnFailureListener { ex ->
+                                                // si falla se muestra un mensaje en la terminal y al usuario
+                                                error("Error al eliminar el usuario de Firebase.")
+                                                println("Error al eliminar el usuario de Firebase: ${ex.message}")
+                                            }
+                                    }
+                                    .addOnFailureListener { ex ->
+                                        // si falla se muestra un mensaje en la terminal y al usuario
+                                        error("Error al eliminar la puntuación de Numinario 1 del usuario.")
+                                        println("Error al eliminar la puntuación de Numinario 1 del usuario: ${ex.message}")
+                                    }
+                            }
+                            .addOnFailureListener { ex ->
+                                // si falla se muestra un mensaje en la terminal y al usuario
+                                error("Error al obtener la puntuación de Numinario 1 del usuario.")
+                                println("Error al obtener la puntuación de Numinario 1 del usuario: ${ex.message}")
+                            }
+                    }
+                    .addOnFailureListener { ex ->
+                        // si falla se muestra un mensaje en la terminal y al usuario
+                        error("Error al eliminar la puntuación de Euro-banderas del usuario.")
+                        println("Error al eliminar la puntuación de Euro-banderas del usuario: ${ex.message}")
+                    }
+            }
+            .addOnFailureListener { ex ->
+                // si falla se muestra un mensaje en la terminal y al usuario
+                error("Error al obtener la puntuación de Euro-banderas del usuario.")
+                println("Error al obtener la puntuación de Euro-banderas del usuario: ${ex.message}")
+            }
+    }
+
+    if (esUsuarioGoogle) {
+        // ─── Usuario de Google: se reautentica con Google antes de borrar ───
+        // Firebase exige reautenticación reciente antes de eliminar una cuenta
+        // se lanza en corrutina porque el CredentialManager es una función suspendida
+        scope.launch {
+            try {
+                val credentialManager = CredentialManager.create(context)
+
+                // se construye la solicitud de reautenticación con Google
+                val googleIdOption = GetGoogleIdOption.Builder()
+                    .setServerClientId(WEB_CLIENT_ID)      // ID del cliente web de Firebase
+                    .setFilterByAuthorizedAccounts(true)   // true = solo muestra la cuenta ya vinculada
+                    .setAutoSelectEnabled(true)            // true = selecciona automáticamente si solo hay una cuenta
+                    .build()
+
+                val request = GetCredentialRequest.Builder()
+                    .addCredentialOption(googleIdOption)
+                    .build()
+
+                // se muestra el selector de cuentas de Google para reautenticar
+                val result = credentialManager.getCredential(request = request, context = context)
+
+                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(result.credential.data)
+                val googleIdToken = googleIdTokenCredential.idToken
+
+                // se construye la credencial de Firebase con el token de Google
+                val credencialFirebase = GoogleAuthProvider.getCredential(googleIdToken, null)
+
+                // se reautentica el usuario en Firebase con la credencial de Google
+                user.reauthenticate(credencialFirebase)
+                    .addOnSuccessListener {
+                        borradoDatos()  // si la reautenticación fue correcta se procede con el borrado
+                    }
+                    .addOnFailureListener { ex ->
+                        error("Error al reautenticar con Google.")
+                        println("Error al reautenticar con Google: ${ex.message}")
                     }
 
-                    batchPuntuacionEuroBanderas.commit() // se ejecuta el batch
-                        .addOnSuccessListener {
-                            // si se ha eliminado correctamente, se obtiene el documento de la puntuación del juego Numinario 1 del usuario para eliminarlo
-                            dbfire.collection("puntuaciones_Numinario1").whereEqualTo("usuario", user.uid).get()
-                                .addOnSuccessListener { documentos ->
-                                    val batchPuntuacionNuminario1 = dbfire.batch() // se crea un batch para eliminar la puntuación en una sola operacion
-
-                                    // se agrega la referencia (UID del documento a eliminar) al batch
-                                    for (doc in documentos.documents) {
-                                        val ref = dbfire.collection("puntuaciones_Numinario1").document(doc.id)
-                                        batchPuntuacionNuminario1.delete(ref)
-                                    }
-
-                                    batchPuntuacionNuminario1.commit() // se ejecuta el batch
-                                        .addOnSuccessListener {
-                                            // si se ha eliminado correctamente, se borra el usuario de la base de datos de Firebase
-                                            dbfire.collection("usuarios").document(user.uid).delete()
-                                                .addOnSuccessListener {
-                                                    // si ha funcionado el borrado de todos los datos relacionados con el usuario, se borra el usuario autenticado
-                                                    user.delete()
-                                                        .addOnSuccessListener {
-                                                            db.usuarioDao().eliminarUsuario(email = usuario.emailUsuario)  // se elimina el usuario local
-
-                                                            db.banderasEuropaDao().eliminarTodasBanderasEuropa()           // se eliminan todas las banderas de Europa locales
-
-                                                            db.puntuacionEuroBanderasDao().eliminarTodasPuntuacionesEuroBanderas()  // se eliminan todas las puntuaciones de Euro-banderas locales
-
-                                                            db.puntuacionNuminario1Dao().eliminarTodasPuntuacionesNuminario1()      // se eliminan todas las puntuaciones de Numinario 1 locales
-
-                                                            auth.signOut()  // se cierra la sesión de Firebase
-
-                                                            controladorNavegacion.navigate(AppScreens.Login.route) { popUpTo(0) }  // se vuelve a la pantalla de login (se borra el historial de navegación)
-                                                        }
-                                                        .addOnFailureListener { ex ->
-                                                            // si falla el borrado del usuario autenticado se muestra un mensaje en la terminal y al usuario
-                                                            error("Error al eliminar el usuario autenticado.")
-                                                            println("Error al eliminar el usuario autenticado: ${ex.message}")
-                                                        }
-                                                }
-                                                .addOnFailureListener { ex ->
-                                                    // si falla se muestra un mensaje en la terminal y al usuario
-                                                    error("Error al eliminar el usuario de Firebase.")
-                                                    println("Error al eliminar el usuario de Firebase: ${ex.message}")
-                                                }
-                                        }
-                                        .addOnFailureListener { ex ->
-                                            // si falla se muestra un mensaje en la terminal y al usuario
-                                            error("Error al eliminar la puntuación de Numinario 1 del usuario.")
-                                            println("Error al eliminar la puntuación de Numinario 1 del usuario: ${ex.message}")
-                                        }
-                                }
-                                .addOnFailureListener { ex ->
-                                    // si falla se muestra un mensaje en la terminal y al usuario
-                                    error("Error al obtener la puntuación de Numinario 1 del usuario.")
-                                    println("Error al obtener la puntuación de Numinario 1 del usuario: ${ex.message}")
-                                }
-                        }
-                        .addOnFailureListener { ex ->
-                            // si falla se muestra un mensaje en la terminal y al usuario
-                            error("Error al eliminar la puntuación de Euro-banderas del usuario.")
-                            println("Error al eliminar la puntuación de Euro-banderas del usuario: ${ex.message}")
-                        }
-                }
-                .addOnFailureListener { ex ->
-                    // si falla se muestra un mensaje en la terminal y al usuario
-                    error("Error al obtener la puntuación de Euro-banderas del usuario.")
-                    println("Error al obtener la puntuación de Euro-banderas del usuario: ${ex.message}")
-                }
+            } catch (ex: GetCredentialException) {
+                // si el usuario cancela o hay algún error en el selector de Google
+                println("Reautenticación con Google cancelada: ${ex.message}")
+            }
         }
-        .addOnFailureListener { ex ->
-            // si falla la reautenticación se muestra un mensaje en la terminal y al usuario
-            error("Error al reautenticar el usuario.")
-            println("Error al reautenticar el usuario: ${ex.message}")
-        }
+    }
+    else {
+        // se obtiene las credenciales del usuario necesarias para la reautenticación
+        val credencialesUsuario = EmailAuthProvider.getCredential(usuario.emailUsuario, password)
+
+        // se reautentica el usuario
+        user.reauthenticate(credencialesUsuario)
+            .addOnSuccessListener {
+                borradoDatos()
+            }
+            .addOnFailureListener { ex ->
+                // si falla la reautenticación se muestra un mensaje en la terminal y al usuario
+                error("Error al reautenticar el usuario.")
+                println("Error al reautenticar el usuario: ${ex.message}")
+            }
+    }
 }
 
 // función auxiliar para actualizar los datos del usuario en Firebase y local
-fun actualizarUsuario(usuarioActualizado: UsuarioData, passwordOriginal: String, passwordNueva: String, controladorNavegacion: NavController, db: AppDB, error: (String) -> Unit) {
+fun actualizarUsuario(usuarioActualizado: UsuarioData, passwordOriginal: String, passwordNueva: String, esUsuarioGoogle: Boolean, controladorNavegacion: NavController, db: AppDB, error: (String) -> Unit) {
 
     val auth = FirebaseAuth.getInstance() // instancia al sistema de autenticación de Firebase
 
@@ -361,76 +424,120 @@ fun actualizarUsuario(usuarioActualizado: UsuarioData, passwordOriginal: String,
         return
     }
 
-    // se obtiene las credenciales del usuario necesarias para la reautenticación
-    val credencialesUsuario = EmailAuthProvider.getCredential(usuarioActualizado.emailUsuario, passwordOriginal)
+    // se realiza la actualización del usuario en función de si es usuario de Google o no
+    if (esUsuarioGoogle) {
+        // se accede a la colección de Firebase para obtener el usuario almacenado
+        dbfire.collection("usuarios").document(usuarioActualizado.uidUsuario).get()
+            .addOnSuccessListener { doc ->
+                // si funciona se extrae el usuario de Firebase a modificar
+                val usuarioFirebase = doc.toObject(UsuarioFirebase::class.java)
 
-    // se reautentica el usuario
-    user.reauthenticate(credencialesUsuario)
-        .addOnSuccessListener {
-            // si funciona la reautenticación, se actualiza la contraseña del usuario si la contraseña nueva no esta vacía
-            if (passwordNueva.isNotBlank()) {
-                user.updatePassword(passwordNueva)
+                if (usuarioFirebase != null) {
+                    // se crea una copia del usuario de Firebase con los datos actualizados
+                    val usuarioFirebaseActualizado = usuarioFirebase.copy(
+                        nombre = usuarioActualizado.nombreUsuario,
+                        apellidos = usuarioActualizado.apellidosUsuario,
+                        telefono = usuarioActualizado.telefonoUsuario,
+                        email = usuarioActualizado.emailUsuario,
+                        sexo = usuarioActualizado.sexoUsuario,
+                        fechaNacimiento = usuarioActualizado.fnacUsuario,
+                        foto = usuarioActualizado.fotoUsuario,
+                        ultimoEnvioTicket = usuarioActualizado.ultimoEnvioTicket
+                    )
+
+                    // se actualiza el usuario en la base de datos de Firebase
+                    dbfire.collection("usuarios").document(usuarioActualizado.uidUsuario).set(usuarioFirebaseActualizado, SetOptions.merge())
+                        .addOnSuccessListener {
+                            // si funciona se actualiza el usuario local
+                            db.usuarioDao().actualizarUsuario(usuarioActualizado)
+
+                            controladorNavegacion.navigate(AppScreens.Perfil.route) // se vuelve a la pantalla de perfil inicial
+                        }
+                        .addOnFailureListener { ex ->
+                            // si falla la actualización del usuario se muestra un mensaje en la terminal y al usuario
+                            error("Error al actualizar el usuario en Firebase.")
+                            println("Error al actualizar el usuario en Firebase: ${ex.message}")
+                        }
+                }
+            }
+            .addOnFailureListener { ex ->
+                // si falla la obtención del usuario se muestra un mensaje en la terminal y al usuario
+                error("Error al obtener el usuario de Firebase.")
+                println("Error al obtener el usuario de Firebase: ${ex.message}")
+            }
+    }
+    else {
+        // se obtiene las credenciales del usuario necesarias para la reautenticación
+        val credencialesUsuario = EmailAuthProvider.getCredential(usuarioActualizado.emailUsuario, passwordOriginal)
+
+        // se reautentica el usuario
+        user.reauthenticate(credencialesUsuario)
+            .addOnSuccessListener {
+                // si funciona la reautenticación, se actualiza la contraseña del usuario si la contraseña nueva no esta vacía
+                if (passwordNueva.isNotBlank()) {
+                    user.updatePassword(passwordNueva)
+                        .addOnFailureListener { ex ->
+                            // si la actualización sale mal se muestra un mensaje al usuario y en terminal, y se sale de la función
+                            error("No se pudo actualizar la contraseña.")
+                            println("Error al actualizar la contraseña: ${ex.message}")
+                            return@addOnFailureListener
+                        }
+                }
+
+                // se accede a la colección de Firebase para obtener el usuario almacenado
+                dbfire.collection("usuarios").document(usuarioActualizado.uidUsuario).get()
+                    .addOnSuccessListener { doc ->
+                        // si funciona se extrae el usuario de Firebase a modificar
+                        val usuarioFirebase = doc.toObject(UsuarioFirebase::class.java)
+
+                        if (usuarioFirebase != null) {
+                            // se crea una copia del usuario de Firebase con los datos actualizados
+                            val usuarioFirebaseActualizado = usuarioFirebase.copy(
+                                nombre = usuarioActualizado.nombreUsuario,
+                                apellidos = usuarioActualizado.apellidosUsuario,
+                                telefono = usuarioActualizado.telefonoUsuario,
+                                email = usuarioActualizado.emailUsuario,
+                                sexo = usuarioActualizado.sexoUsuario,
+                                fechaNacimiento = usuarioActualizado.fnacUsuario,
+                                foto = usuarioActualizado.fotoUsuario,
+                                ultimoEnvioTicket = usuarioActualizado.ultimoEnvioTicket
+                            )
+
+                            // se actualiza el usuario en la base de datos de Firebase
+                            dbfire.collection("usuarios").document(usuarioActualizado.uidUsuario).set(usuarioFirebaseActualizado, SetOptions.merge())
+                                .addOnSuccessListener {
+                                    // si funciona se actualiza el usuario local
+                                    db.usuarioDao().actualizarUsuario(usuarioActualizado)
+
+                                    controladorNavegacion.navigate(AppScreens.Perfil.route) // se vuelve a la pantalla de perfil inicial
+                                }
+                                .addOnFailureListener { ex ->
+                                    // si falla la actualización del usuario se muestra un mensaje en la terminal y al usuario
+                                    error("Error al actualizar el usuario en Firebase.")
+                                    println("Error al actualizar el usuario en Firebase: ${ex.message}")
+                                }
+                        }
+                    }
                     .addOnFailureListener { ex ->
-                        // si la actualización sale mal se muestra un mensaje al usuario y en terminal, y se sale de la función
-                        error("No se pudo actualizar la contraseña.")
-                        println("Error al actualizar la contraseña: ${ex.message}")
-                        return@addOnFailureListener
+                        // si falla la obtención del usuario se muestra un mensaje en la terminal y al usuario
+                        error("Error al obtener el usuario de Firebase.")
+                        println("Error al obtener el usuario de Firebase: ${ex.message}")
                     }
             }
-
-            // se accede a la colección de Firebase para obtener el usuario almacenado
-            dbfire.collection("usuarios").document(usuarioActualizado.uidUsuario).get()
-                .addOnSuccessListener { doc ->
-                    // si funciona se extrae el usuario de Firebase a modificar
-                    val usuarioFirebase = doc.toObject(UsuarioFirebase::class.java)
-
-                    if (usuarioFirebase != null) {
-                        // se crea una copia del usuario de Firebase con los datos actualizados
-                        val usuarioFirebaseActualizado = usuarioFirebase.copy(
-                            nombre = usuarioActualizado.nombreUsuario,
-                            apellidos = usuarioActualizado.apellidosUsuario,
-                            telefono = usuarioActualizado.telefonoUsuario,
-                            email = usuarioActualizado.emailUsuario,
-                            sexo = usuarioActualizado.sexoUsuario,
-                            fechaNacimiento = usuarioActualizado.fnacUsuario,
-                            foto = usuarioActualizado.fotoUsuario,
-                            ultimoEnvioTicket = usuarioActualizado.ultimoEnvioTicket
-                        )
-
-                        // se actualiza el usuario en la base de datos de Firebase
-                        dbfire.collection("usuarios").document(usuarioActualizado.uidUsuario).set(usuarioFirebaseActualizado, SetOptions.merge())
-                            .addOnSuccessListener {
-                                // si funciona se actualiza el usuario local
-                                db.usuarioDao().actualizarUsuario(usuarioActualizado)
-
-                                controladorNavegacion.navigate(AppScreens.Perfil.route) // se vuelve a la pantalla de perfil inicial
-                            }
-                            .addOnFailureListener { ex ->
-                                // si falla la actualización del usuario se muestra un mensaje en la terminal y al usuario
-                                error("Error al actualizar el usuario en Firebase.")
-                                println("Error al actualizar el usuario en Firebase: ${ex.message}")
-                            }
+            .addOnFailureListener { ex ->
+                // si falla la reautenticación se muestra un mensaje en la terminal y al usuario
+                when (ex) {
+                    is FirebaseAuthInvalidCredentialsException -> {
+                        error("La contraseña original es incorrecta.")
+                    }
+                    is FirebaseAuthInvalidUserException -> {
+                        error("El usuario no existe o ha sido eliminado.")
+                    }
+                    else -> {
+                        error("Error de autenticación.")
                     }
                 }
-                .addOnFailureListener { ex ->
-                    // si falla la obtención del usuario se muestra un mensaje en la terminal y al usuario
-                    error("Error al obtener el usuario de Firebase.")
-                    println("Error al obtener el usuario de Firebase: ${ex.message}")
-                }
-        }
-        .addOnFailureListener { ex ->
-            // si falla la reautenticación se muestra un mensaje en la terminal y al usuario
-            when (ex) {
-                is FirebaseAuthInvalidCredentialsException -> {
-                    error("La contraseña original es incorrecta.")
-                }
-                is FirebaseAuthInvalidUserException -> {
-                    error("El usuario no existe o ha sido eliminado.")
-                }
-                else -> {
-                    error("Error de autenticación.")
-                }
+                println("Error al reautenticar el usuario: ${ex.message}")
             }
-            println("Error al reautenticar el usuario: ${ex.message}")
-        }
+    }
 }

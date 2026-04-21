@@ -86,6 +86,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.room.Room
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.juandeherrera.letskody.R
 import com.juandeherrera.letskody.clasesAuxiliares.paises
 import com.juandeherrera.letskody.localdb.AppDB
@@ -191,6 +193,13 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
 
     var passVisibleVerificacion by remember { mutableStateOf(value = false) }  // variable de estado (mostrar/ocultar) la contraseña de verificación
 
+    // se comprueba si el usuario inició sesión con Google (no tiene contraseña propia en Firebase Auth)
+    val esUsuarioGoogle = remember {
+        FirebaseAuth.getInstance().currentUser?.providerData?.any { it.providerId == "google.com" }?: false
+    }
+
+
+
     // bloque de código que se ejecuta cuando el usuario selecciona una imagen de la galería
     LaunchedEffect(key1 = uriImagenGaleria) {
 
@@ -276,6 +285,8 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
                             password = passwordVerificacion.text.toString(),
                             db = db,
                             controladorNavegacion = controladorNavegacion,
+                            context = context,
+                            scope = scope,
                             error = { mensaje ->
                                 notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = mensaje)
                             }
@@ -866,10 +877,10 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
                                     telefono.length < 9 -> {
                                         notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El teléfono debe tener 9 dígitos.")
                                     }
-                                    passwordOriginal.text.length < 8 -> {
+                                    passwordOriginal.text.length < 8 && !esUsuarioGoogle -> {
                                         notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La contraseña original necesita 8 caracteres.")
                                     }
-                                    passwordNueva.text.isNotBlank() && passwordNueva.text.length < 8 -> {
+                                    passwordNueva.text.isNotBlank() && passwordNueva.text.length < 8 && !esUsuarioGoogle -> {
                                         notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La nueva contraseña necesita 8 caracteres.")
                                     }
                                     passwordNueva.text.isNotBlank() && passwordOriginal.text.toString() == passwordNueva.text.toString() -> {
@@ -904,6 +915,7 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
                                             usuarioActualizado = usuarioActualizado,
                                             passwordOriginal = passwordOriginal.text.toString(),
                                             passwordNueva = passwordNueva.text.toString(),
+                                            esUsuarioGoogle = esUsuarioGoogle,
                                             controladorNavegacion = controladorNavegacion,
                                             db = db,
                                             error = { mensaje ->

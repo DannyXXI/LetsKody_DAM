@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextObfuscationMode
@@ -59,14 +60,18 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.room.Room
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.juandeherrera.letskody.R
+import com.juandeherrera.letskody.localdb.AppDB
+import com.juandeherrera.letskody.localdb.Estructura
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.MensajeSnackbarHost
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.ModalModificarPassword
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.notificationSnackbar
 import com.juandeherrera.letskody.metodosAuxiliares.interfaz.fondoDegradadoDiagonal
+import com.juandeherrera.letskody.metodosAuxiliares.operaciones.iniciarSesionGoogle
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.loguearUsuario
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.recuperarPasswordUsuario
 import com.juandeherrera.letskody.navigation.AppScreens
@@ -89,6 +94,9 @@ fun PantallaLogin(controladorNavegacion: NavController) {
     val permisosNotificacion = rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS) // controlador de permisos de notificaciones
 
     val context = LocalContext.current // variable que obtiene el contexto actual
+
+    // instancia a la base de datos local (en el mismo hilo)
+    val db = Room.databaseBuilder(context, klass = AppDB::class.java, name = Estructura.DB.NAME).allowMainThreadQueries().build()
 
     // variables para los datos del formulario
     var email by remember { mutableStateOf(value = "") }           // correo electrónico
@@ -360,6 +368,36 @@ fun PantallaLogin(controladorNavegacion: NavController) {
                     ){
                         Text(
                             text = "Iniciar sesión",    // texto del botón
+                            style = TextStyle(
+                                fontFamily = badcomic,  // fuente tipográfica del texto
+                                fontSize = 18.sp        // tamaño del texto
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
+
+                    // BOTÓN DE INICIO DE SESIÓN CON GOOGLE
+                    Button(
+                        onClick = {
+                            // se inicia la sesión con Google
+                            iniciarSesionGoogle(
+                                context = context,
+                                scope = scope,
+                                db = db,
+                                controladorNavegacion = controladorNavegacion,
+                                error = { mensaje ->
+                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = mensaje)
+                                }
+                            )
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF017DB2),  // color de fondo del botón
+                            contentColor = Color.White           // color del texto del botón
+                        )
+                    ){
+                        Text(
+                            text = "Iniciar sesión con Google",    // texto del botón
                             style = TextStyle(
                                 fontFamily = badcomic,  // fuente tipográfica del texto
                                 fontSize = 18.sp        // tamaño del texto

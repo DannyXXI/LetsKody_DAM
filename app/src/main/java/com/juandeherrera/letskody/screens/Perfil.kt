@@ -188,6 +188,8 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
                             password = passwordVerificacion.text.toString(),
                             db = db,
                             controladorNavegacion = controladorNavegacion,
+                            context = context,
+                            scope = scope,
                             error = { mensaje ->
                                 notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = mensaje)
                             }
