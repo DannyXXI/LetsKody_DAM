@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.room.Room
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.firebase.auth.FirebaseAuth
 import com.juandeherrera.letskody.R
 import com.juandeherrera.letskody.localdb.AppDB
 import com.juandeherrera.letskody.localdb.Estructura
@@ -116,6 +117,11 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
 
     var passVisibleVerificacion by remember { mutableStateOf(value = false) }  // variable de estado (mostrar/ocultar) la contraseña de verificación
 
+    // se comprueba si el usuario inició sesión con Google (no tiene contraseña propia en Firebase Auth)
+    val esUsuarioGoogle = remember {
+        FirebaseAuth.getInstance().currentUser?.providerData?.any { it.providerId == "google.com" }?: false
+    }
+
     // MENU LATERAL DE NAVEGACIÓN
     ModalNavigationDrawer(
         drawerState = abrirMenuLateral,  // controla el estado del menu lateral de navegación
@@ -176,6 +182,7 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
                     fuenteTipografica = badcomic,
                     password = passwordVerificacion,
                     passVisible = passVisibleVerificacion,
+                    esUsuarioGoogle = esUsuarioGoogle,
                     mostrarPassword = { passVisibleVerificacion = !passVisibleVerificacion },
                     cerrar = {
                         abrirModalEliminarCuenta.value = false

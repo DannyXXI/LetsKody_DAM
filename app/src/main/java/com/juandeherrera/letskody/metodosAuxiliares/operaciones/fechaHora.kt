@@ -51,11 +51,9 @@ fun formatearSegundos(segundos: Int): String {
 // función auxiliar para obtener el momento del día correspondiente a la hora actual
 fun obtenerMomentoDelDia() : MomentoDelDia {
     val hora = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-    return when {
-        hora in 6..13 -> MomentoDelDia.MANANA
-        hora in 14..20 -> MomentoDelDia.TARDE
+    return when (hora) {
+        in 6..13 -> MomentoDelDia.MANANA
+        in 14..20 -> MomentoDelDia.TARDE
         else -> MomentoDelDia.NOCHE
     }
-
-
 }

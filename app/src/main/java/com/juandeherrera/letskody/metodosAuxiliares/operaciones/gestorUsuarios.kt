@@ -25,6 +25,8 @@ import com.juandeherrera.letskody.navigation.AppScreens
 import com.juandeherrera.letskody.notification.NotificationHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.security.MessageDigest
+import java.util.UUID
 
 private const val WEB_CLIENT_ID = "471155651747-togjsf3ome69vggf8nb80ftaiidm93gd.apps.googleusercontent.com"  // id obtenido de Firebase
 
@@ -350,32 +352,37 @@ fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, con
     }
 
     if (esUsuarioGoogle) {
-        // ─── Usuario de Google: se reautentica con Google antes de borrar ───
-        // Firebase exige reautenticación reciente antes de eliminar una cuenta
-        // se lanza en corrutina porque el CredentialManager es una función suspendida
         scope.launch {
             try {
-                val credentialManager = CredentialManager.create(context)
+                val gestorCredenciales = CredentialManager.create(context)  // se crea el gestor de credenciales de Android
 
-                // se construye la solicitud de reautenticación con Google
-                val googleIdOption = GetGoogleIdOption.Builder()
-                    .setServerClientId(WEB_CLIENT_ID)      // ID del cliente web de Firebase
-                    .setFilterByAuthorizedAccounts(true)   // true = solo muestra la cuenta ya vinculada
-                    .setAutoSelectEnabled(true)            // true = selecciona automáticamente si solo hay una cuenta
+                // función interna para generar un nonce seguro cifrado en SHA-256
+                fun generarNonce(): String {
+                    val raw = UUID.randomUUID().toString()  // valor aleatorio
+                    val bytes = MessageDigest.getInstance("SHA-256").digest(raw.toByteArray())  // cifrado en SHA-256
+                    return bytes.joinToString("") { "%02x".format(it) }   // se devuelve convertido en cadena hexadecimal
+                }
+
+                // se configura la opción de Google con el WEB CLIENT ID
+                val opcionGoogle = GetGoogleIdOption.Builder()
+                    .setServerClientId(WEB_CLIENT_ID)      // id del cliente web de Firebase
+                    .setFilterByAuthorizedAccounts(true)   // solo se muestra la cuenta ya vinculada
+                    .setAutoSelectEnabled(false)           // se muestra el selector de cuentas al usuario
+                    .setNonce(generarNonce())              // se incluye el nonce (valor aleatorio generado para garantizar que cada petición es única)
                     .build()
 
-                val request = GetCredentialRequest.Builder()
-                    .addCredentialOption(googleIdOption)
-                    .build()
+                // se construye la solicitud de reautenticación de credenciales con la opción de Google
+                val solicitud = GetCredentialRequest.Builder().addCredentialOption(opcionGoogle).build()
 
-                // se muestra el selector de cuentas de Google para reautenticar
-                val result = credentialManager.getCredential(request = request, context = context)
+                // se muestra el selector de cuentas de Google y se espera la respuesta del usuario
+                val respuesta = gestorCredenciales.getCredential(request = solicitud, context = context)
 
-                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(result.credential.data)
-                val googleIdToken = googleIdTokenCredential.idToken
+                // se extrae los token de Google de la respuesta
+                val tokenCredencialesGoogle = GoogleIdTokenCredential.createFrom(respuesta.credential.data)
+                val tokenIdGoogle = tokenCredencialesGoogle.idToken
 
                 // se construye la credencial de Firebase con el token de Google
-                val credencialFirebase = GoogleAuthProvider.getCredential(googleIdToken, null)
+                val credencialFirebase = GoogleAuthProvider.getCredential(tokenIdGoogle, null)
 
                 // se reautentica el usuario en Firebase con la credencial de Google
                 user.reauthenticate(credencialFirebase)
@@ -383,12 +390,12 @@ fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, con
                         borradoDatos()  // si la reautenticación fue correcta se procede con el borrado
                     }
                     .addOnFailureListener { ex ->
+                        // si ocurre algún error en la reautenticación se muestra un mensaje al usuario y en la terminal
                         error("Error al reautenticar con Google.")
                         println("Error al reautenticar con Google: ${ex.message}")
                     }
-
             } catch (ex: GetCredentialException) {
-                // si el usuario cancela o hay algún error en el selector de Google
+                // si el usuario cancela o hay algún error en el selector de Google se muestra un mensaje en la terminal
                 println("Reautenticación con Google cancelada: ${ex.message}")
             }
         }
@@ -400,7 +407,7 @@ fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, con
         // se reautentica el usuario
         user.reauthenticate(credencialesUsuario)
             .addOnSuccessListener {
-                borradoDatos()
+                borradoDatos()  // si la reautenticación fue correcta se procede con el borrado
             }
             .addOnFailureListener { ex ->
                 // si falla la reautenticación se muestra un mensaje en la terminal y al usuario
@@ -424,8 +431,8 @@ fun actualizarUsuario(usuarioActualizado: UsuarioData, passwordOriginal: String,
         return
     }
 
-    // se realiza la actualización del usuario en función de si es usuario de Google o no
-    if (esUsuarioGoogle) {
+    // función interna que se encarga de realizar la actualización del usuario en Firebase y en local
+    fun actualizarDatosUsuario() {
         // se accede a la colección de Firebase para obtener el usuario almacenado
         dbfire.collection("usuarios").document(usuarioActualizado.uidUsuario).get()
             .addOnSuccessListener { doc ->
@@ -466,6 +473,12 @@ fun actualizarUsuario(usuarioActualizado: UsuarioData, passwordOriginal: String,
                 println("Error al obtener el usuario de Firebase: ${ex.message}")
             }
     }
+
+
+    // se realiza la actualización del usuario en función de si es usuario de Google o no
+    if (esUsuarioGoogle) {
+        actualizarDatosUsuario()  // se actualizan los datos del usuario
+    }
     else {
         // se obtiene las credenciales del usuario necesarias para la reautenticación
         val credencialesUsuario = EmailAuthProvider.getCredential(usuarioActualizado.emailUsuario, passwordOriginal)
@@ -484,45 +497,7 @@ fun actualizarUsuario(usuarioActualizado: UsuarioData, passwordOriginal: String,
                         }
                 }
 
-                // se accede a la colección de Firebase para obtener el usuario almacenado
-                dbfire.collection("usuarios").document(usuarioActualizado.uidUsuario).get()
-                    .addOnSuccessListener { doc ->
-                        // si funciona se extrae el usuario de Firebase a modificar
-                        val usuarioFirebase = doc.toObject(UsuarioFirebase::class.java)
-
-                        if (usuarioFirebase != null) {
-                            // se crea una copia del usuario de Firebase con los datos actualizados
-                            val usuarioFirebaseActualizado = usuarioFirebase.copy(
-                                nombre = usuarioActualizado.nombreUsuario,
-                                apellidos = usuarioActualizado.apellidosUsuario,
-                                telefono = usuarioActualizado.telefonoUsuario,
-                                email = usuarioActualizado.emailUsuario,
-                                sexo = usuarioActualizado.sexoUsuario,
-                                fechaNacimiento = usuarioActualizado.fnacUsuario,
-                                foto = usuarioActualizado.fotoUsuario,
-                                ultimoEnvioTicket = usuarioActualizado.ultimoEnvioTicket
-                            )
-
-                            // se actualiza el usuario en la base de datos de Firebase
-                            dbfire.collection("usuarios").document(usuarioActualizado.uidUsuario).set(usuarioFirebaseActualizado, SetOptions.merge())
-                                .addOnSuccessListener {
-                                    // si funciona se actualiza el usuario local
-                                    db.usuarioDao().actualizarUsuario(usuarioActualizado)
-
-                                    controladorNavegacion.navigate(AppScreens.Perfil.route) // se vuelve a la pantalla de perfil inicial
-                                }
-                                .addOnFailureListener { ex ->
-                                    // si falla la actualización del usuario se muestra un mensaje en la terminal y al usuario
-                                    error("Error al actualizar el usuario en Firebase.")
-                                    println("Error al actualizar el usuario en Firebase: ${ex.message}")
-                                }
-                        }
-                    }
-                    .addOnFailureListener { ex ->
-                        // si falla la obtención del usuario se muestra un mensaje en la terminal y al usuario
-                        error("Error al obtener el usuario de Firebase.")
-                        println("Error al obtener el usuario de Firebase: ${ex.message}")
-                    }
+                actualizarDatosUsuario()  // se actualizan los datos del usuario
             }
             .addOnFailureListener { ex ->
                 // si falla la reautenticación se muestra un mensaje en la terminal y al usuario

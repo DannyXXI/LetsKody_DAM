@@ -16,6 +16,8 @@ import com.juandeherrera.letskody.localdb.AppDB
 import com.juandeherrera.letskody.navigation.AppScreens
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.security.MessageDigest
+import java.util.UUID
 
 private const val WEB_CLIENT_ID = "471155651747-togjsf3ome69vggf8nb80ftaiidm93gd.apps.googleusercontent.com"  // id obtenido de Firebase
 
@@ -28,11 +30,19 @@ fun iniciarSesionGoogle(context: Context, scope: CoroutineScope, db: AppDB, cont
 
     val gestorCredenciales = CredentialManager.create(context)  // se crea el gestor de credenciales de Android
 
+    // función interna para generar un nonce seguro cifrado en SHA-256
+    fun generarNonce(): String {
+        val raw = UUID.randomUUID().toString()  // valor aleatorio
+        val bytes = MessageDigest.getInstance("SHA-256").digest(raw.toByteArray())  // cifrado en SHA-256
+        return bytes.joinToString("") { "%02x".format(it) }   // se devuelve convertido en cadena hexadecimal
+    }
+
     // se configura la opción de Google con el WEB CLIENT ID
     val opcionGoogle = GetGoogleIdOption.Builder()
         .setServerClientId(WEB_CLIENT_ID)      // id del cliente web de Firebase
         .setFilterByAuthorizedAccounts(false)  // se permite cuentas nuevas aparte de las autorizadas
         .setAutoSelectEnabled(false)           // se muestra siempre el selector de cuentas al usuario
+        .setNonce(generarNonce())              // se incluye el nonce (valor aleatorio generado para garantizar que cada petición es única)
         .build()
 
     // se construye la solicitud de credenciales con la opción de Google
@@ -75,7 +85,7 @@ fun iniciarSesionGoogle(context: Context, scope: CoroutineScope, db: AppDB, cont
                                 }
 
                                 // se cargan los datos necesarios desde Firebase para tenerlos en local
-                                cargarDatosYNavegar(
+                                cargarDatos(
                                     uid = usuarioFirebase.uid,
                                     datosUsuario = datosUsuario,
                                     dbfire = dbfire,
@@ -98,21 +108,21 @@ fun iniciarSesionGoogle(context: Context, scope: CoroutineScope, db: AppDB, cont
                                 val apellidos = partes.getOrElse(index = 1) { "" }  // resto del nombre (apellidos) si existen
 
                                 scope.launch {
-                                    // se descarga la foto de perfil de Google a base64 (en función si el usuario tiene imagen, sino se usa una por defecto)
+                                    // se descarga la foto de perfil de Google a base64 (en función si el usuario tiene imagen, si no se usa una por defecto)
                                     val fotoBase64 = if (fotoUrlGoogle != null) {
                                         descargarFotoGoogleBase64(context = context, url = fotoUrlGoogle)
                                     }
                                     else {
-                                        convertirImagenDefectoBase64(context = context, recursoId = R.drawable.kody_welcome)
+                                        convertirImagenDefectoBase64(context = context, recursoId = R.drawable.kody_orange)
                                     }
 
                                     // se construye el objeto de usuario de Firebase con los datos disponibles (los demás se dejan vacíos o con valor por defecto)
                                     val nuevoUsuario = UsuarioFirebase(
                                         nombre = nombre,
                                         apellidos = apellidos,
-                                        telefono = "",  // Google no proporciona el teléfono se dejará vacío
+                                        telefono = "",         // Google no proporciona el teléfono se dejará vacío
                                         email = emailGoogle,
-                                        sexo = "Otro",  // Google no proporciona el sexo por lo que se establece como Otro
+                                        sexo = "Otro",         // Google no proporciona el sexo por lo que se establece como Otro
                                         fechaNacimiento = "",  // Google no proporciona la fecha de nacimiento se dejará vacío
                                         foto = fotoBase64,
                                         ultimoEnvioTicket = 0L
@@ -122,7 +132,7 @@ fun iniciarSesionGoogle(context: Context, scope: CoroutineScope, db: AppDB, cont
                                     dbfire.collection("usuarios").document(usuarioFirebase.uid).set(nuevoUsuario)
                                         .addOnSuccessListener {
                                             // si el registro fue exitoso, se procede a cargar los datos
-                                            cargarDatosYNavegar(
+                                            cargarDatos(
                                                 uid = usuarioFirebase.uid,
                                                 datosUsuario = nuevoUsuario,
                                                 dbfire = dbfire,
@@ -160,7 +170,7 @@ fun iniciarSesionGoogle(context: Context, scope: CoroutineScope, db: AppDB, cont
 
 
 // función auxiliar para cargar los datos necesarios de Firebase a local y luego navegar al inicio (el login para usuarios de Google)
-private fun cargarDatosYNavegar(uid: String, datosUsuario: UsuarioFirebase, dbfire: FirebaseFirestore, db: AppDB, controladorNavegacion: NavController, error: (String) -> Unit) {
+private fun cargarDatos(uid: String, datosUsuario: UsuarioFirebase, dbfire: FirebaseFirestore, db: AppDB, controladorNavegacion: NavController, error: (String) -> Unit) {
     // se cargan todas las banderas de Europa guardadas en Firebase a local
     dbfire.collection("banderasEuropa").get()
         .addOnSuccessListener { listaBanderasEuropa ->
@@ -204,17 +214,20 @@ private fun cargarDatosYNavegar(uid: String, datosUsuario: UsuarioFirebase, dbfi
 
                         }
                         .addOnFailureListener { ex ->
-                            // si se falla al obtener los datos se muestra un mensaje de error por terminal
+                            // si se falla al obtener los datos se muestra un mensaje de error por terminal y al usuario
+                            error("Error al obtener las puntuaciones de Numinario 1.")
                             println("Error al obtener las puntuaciones de Numinario 1: ${ex.message}")
                         }
                 }
                 .addOnFailureListener { ex ->
-                    // si se falla al obtener los datos se muestra un mensaje de error por terminal
+                    // si se falla al obtener los datos se muestra un mensaje de error por terminal y al usuario
+                    error("Error al obtener las puntuaciones de Euro-banderas.")
                     println("Error al obtener las puntuaciones de Euro-banderas: ${ex.message}")
                 }
         }
         .addOnFailureListener { ex ->
-            // si se falla al obtener los datos se muestra un mensaje de error por terminal
+            // si se falla al obtener los datos se muestra un mensaje de error por terminal y al usuario
+            error("Error al obtener las banderas de Europa.")
             println("Error al obtener los datos de las banderas de Europa: ${ex.message}")
         }
 }

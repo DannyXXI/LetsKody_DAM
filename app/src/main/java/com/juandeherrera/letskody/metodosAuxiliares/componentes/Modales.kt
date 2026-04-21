@@ -194,7 +194,7 @@ fun ModalModificarPassword(context: Context, fuenteTipografica: FontFamily, emai
 // función auxiliar para cargar el modal para la eliminación de la cuenta del usuario
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ModalEliminarCuenta(context: Context, fuenteTipografica: FontFamily, password: TextFieldState, passVisible: Boolean, mostrarPassword: () -> Unit, cerrar: () -> Unit, enviar: () -> Unit) {
+fun ModalEliminarCuenta(context: Context, fuenteTipografica: FontFamily, password: TextFieldState, passVisible: Boolean, esUsuarioGoogle: Boolean, mostrarPassword: () -> Unit, cerrar: () -> Unit, enviar: () -> Unit) {
     // MODAL (cuadro de diálogo)
     BasicAlertDialog(
         onDismissRequest = { cerrar() }  // se cierra el modal cuando se pulsa afuera de él
@@ -224,68 +224,85 @@ fun ModalEliminarCuenta(context: Context, fuenteTipografica: FontFamily, passwor
 
                 Spacer(modifier = Modifier.height(16.dp))  // separación vertical entre componentes
 
-                // MENSAJE
-                Text(
-                    text = "¿Estás seguro de querer eliminar todos tus datos?\n\nKody necesita tu contraseña para realizar esta acción.",
-                    color = Color.Black,    // color del texto
-                    style = TextStyle(
-                        fontFamily = fuenteTipografica,  // fuente tipográfica del texto
-                        fontSize = 15.sp,                // tamaño del texto
-                        textAlign = TextAlign.Justify    // texto alineado de manera justificada
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))  // separación vertical entre componentes
-
-                // se pide la contraseña del usuario
-                OutlinedSecureTextField(
-                    state = password,  // estado que contiene el texto introducido (la contraseña)
-                    label = {
-                        Text(
-                            text = "Contraseña",   // texto
-                            color = Color.Black,   // color del texto
-                            fontFamily = fuenteTipografica  // fuente tipográfica del texto
+                // si el usuario sesión con Google no se le pedirá la contraseña (no existe en Firebase Authentication)
+                if (esUsuarioGoogle) {
+                    // MENSAJE
+                    Text(
+                        text = "¿Estás seguro de querer eliminar todos tus datos?\n\nKody necesitará que pulses el botón para confirmar la acción.",
+                        color = Color.Black,    // color del texto
+                        style = TextStyle(
+                            fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                            fontSize = 15.sp,                // tamaño del texto
+                            textAlign = TextAlign.Justify    // texto alineado de manera justificada
                         )
-                    },
-                    modifier = Modifier.width(310.dp),  // ancho del campo de texto
-                    // icono situado al final del campo de texto
-                    trailingIcon = {
-                        IconButton(
-                            onClick = { mostrarPassword() }  // al pulsar el icono cambia el estado para mostrar/ocultar la contraseña
-                        ){
-                            Icon(
-                                // se cambia el icono si la contraseña es visible o no
-                                imageVector = if (passVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-
-                                // se cambia la descripción para lectores de pantalla en función si la contraseña es visible o no
-                                contentDescription = if (passVisible) "Ocultar contraseña" else "Mostrar contraseña",
-
-                                tint = Color.Black // color del icono
-                            )
-                        }
-                    },
-                    // controla como se oculta el texto (lo hace visible completamente o solo muestra el último carácter)
-                    textObfuscationMode = if (passVisible) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color(0xFF017DB2),   // borde del campo cuando está activo
-                        unfocusedIndicatorColor = Color(0xFF017DB2), // borde del campo cuando no está activo
-                        focusedContainerColor = Color.White,         // color del fondo del campo cuando está activo
-                        unfocusedContainerColor = Color.White,       // color del fondo del campo cuando no está activo
-                        cursorColor = Color(0xFF017DB2)              // color del cursor en el campo de texto
-                    ),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,         // tipo de teclado para el campo de texto
-                        capitalization = KeyboardCapitalization.None, // no se capitaliza (no se trata las mayúsculas) el texto del usuario
-                        autoCorrectEnabled = false,                   // se inhabilita el autocorrector mientras escribe el usuario
-                        showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
-                    ),
-                    textStyle = TextStyle(
-                        color = Color.Black,              // color del texto introducido
-                        fontFamily = fuenteTipografica    // fuente tipográfica del texto introducida
                     )
-                )
 
-                Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
+                    Spacer(modifier = Modifier.height(18.dp))  // separación vertical entre componentes
+                }
+                else {
+                    // MENSAJE
+                    Text(
+                        text = "¿Estás seguro de querer eliminar todos tus datos?\n\nKody necesita tu contraseña para realizar esta acción.",
+                        color = Color.Black,    // color del texto
+                        style = TextStyle(
+                            fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                            fontSize = 15.sp,                // tamaño del texto
+                            textAlign = TextAlign.Justify    // texto alineado de manera justificada
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))  // separación vertical entre componentes
+
+                    // se pide la contraseña del usuario
+                    OutlinedSecureTextField(
+                        state = password,  // estado que contiene el texto introducido (la contraseña)
+                        label = {
+                            Text(
+                                text = "Contraseña",   // texto
+                                color = Color.Black,   // color del texto
+                                fontFamily = fuenteTipografica  // fuente tipográfica del texto
+                            )
+                        },
+                        modifier = Modifier.width(310.dp),  // ancho del campo de texto
+                        // icono situado al final del campo de texto
+                        trailingIcon = {
+                            IconButton(
+                                onClick = { mostrarPassword() }  // al pulsar el icono cambia el estado para mostrar/ocultar la contraseña
+                            ){
+                                Icon(
+                                    // se cambia el icono si la contraseña es visible o no
+                                    imageVector = if (passVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+
+                                    // se cambia la descripción para lectores de pantalla en función si la contraseña es visible o no
+                                    contentDescription = if (passVisible) "Ocultar contraseña" else "Mostrar contraseña",
+
+                                    tint = Color.Black // color del icono
+                                )
+                            }
+                        },
+                        // controla como se oculta el texto (lo hace visible completamente o solo muestra el último carácter)
+                        textObfuscationMode = if (passVisible) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color(0xFF017DB2),   // borde del campo cuando está activo
+                            unfocusedIndicatorColor = Color(0xFF017DB2), // borde del campo cuando no está activo
+                            focusedContainerColor = Color.White,         // color del fondo del campo cuando está activo
+                            unfocusedContainerColor = Color.White,       // color del fondo del campo cuando no está activo
+                            cursorColor = Color(0xFF017DB2)              // color del cursor en el campo de texto
+                        ),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,         // tipo de teclado para el campo de texto
+                            capitalization = KeyboardCapitalization.None, // no se capitaliza (no se trata las mayúsculas) el texto del usuario
+                            autoCorrectEnabled = false,                   // se inhabilita el autocorrector mientras escribe el usuario
+                            showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
+                        ),
+                        textStyle = TextStyle(
+                            color = Color.Black,              // color del texto introducido
+                            fontFamily = fuenteTipografica    // fuente tipográfica del texto introducida
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
+                }
 
                 // fila que contiene los botones
                 Row(
@@ -312,7 +329,7 @@ fun ModalEliminarCuenta(context: Context, fuenteTipografica: FontFamily, passwor
                         onClick = {
                             // validaciones básicas del campo de texto del email
                             when{
-                                password.text.length < 8 -> {
+                                password.text.length < 8  && !esUsuarioGoogle-> {
                                     Toast.makeText(context, "La contraseña debe tener 8 caracteres.", Toast.LENGTH_LONG).show()
                                 }
                                 else -> {

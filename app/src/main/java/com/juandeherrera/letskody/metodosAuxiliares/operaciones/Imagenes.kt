@@ -60,7 +60,7 @@ suspend fun descargarFotoGoogleBase64 (context: Context, url: String) : String {
 
         // se comprueba si la imagen no supera los 512 KB (se manda la imagen por defecto)
         return if (bytes.size > 512 * 1024) {
-            convertirImagenDefectoBase64(context = context, recursoId = R.drawable.kody_welcome)
+            convertirImagenDefectoBase64(context = context, recursoId = R.drawable.kody_orange)
         } else {
             // se devuelve los bytes en un string codificado en base64
             Base64.encodeToString(bytes, Base64.DEFAULT)
@@ -69,7 +69,7 @@ suspend fun descargarFotoGoogleBase64 (context: Context, url: String) : String {
     catch (ex: Exception) {
         // si falla la descarga se muestra un mensaje en la terminal y se usa la imagen por defecto
         println("Error al descargar la foto de Google: ${ex.message}")
-        return convertirImagenDefectoBase64(context = context, recursoId = R.drawable.kody_welcome)
+        return convertirImagenDefectoBase64(context = context, recursoId = R.drawable.kody_orange)
     }
 }
 

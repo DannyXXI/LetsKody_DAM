@@ -86,7 +86,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.room.Room
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.juandeherrera.letskody.R
 import com.juandeherrera.letskody.clasesAuxiliares.paises
@@ -198,8 +197,6 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
         FirebaseAuth.getInstance().currentUser?.providerData?.any { it.providerId == "google.com" }?: false
     }
 
-
-
     // bloque de código que se ejecuta cuando el usuario selecciona una imagen de la galería
     LaunchedEffect(key1 = uriImagenGaleria) {
 
@@ -273,6 +270,7 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
                     fuenteTipografica = badcomic,
                     password = passwordVerificacion,
                     passVisible = passVisibleVerificacion,
+                    esUsuarioGoogle = esUsuarioGoogle,
                     mostrarPassword = { passVisibleVerificacion = !passVisibleVerificacion },
                     cerrar = {
                         abrirModalEliminarCuenta.value = false
@@ -555,107 +553,111 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
 
                         Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
 
-                        // se pide la contraseña original del usuario
-                        OutlinedSecureTextField(
-                            state = passwordOriginal,  // estado que contiene el texto introducido (la contraseña)
-                            label = {
-                                Text(
-                                    text = "Contraseña original",   // texto
-                                    color = Color.Black,   // color del texto
-                                    fontFamily = badcomic  // fuente tipográfica
-                                )
-                            },
-                            modifier = Modifier.width(310.dp),  // ancho del campo de texto
-                            // icono que va al final del campo de texto
-                            trailingIcon = {
-                                IconButton(
-                                    onClick = { passVisibleOriginal = !passVisibleOriginal }  // al pulsar el icono cambia el estado para mostrar/ocultar la contraseña
-                                ){
-                                    Icon(
-                                        // se cambia el icono si la contraseña es visible o no
-                                        imageVector = if (passVisibleOriginal) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-
-                                        // se cambia la descripción para lectores de pantalla en función si la contraseña es visible o no
-                                        contentDescription = if (passVisibleOriginal) "Ocultar contraseña" else "Mostrar contraseña",
-
-                                        tint = Color.Black // color del icono
+                        // si el usuario no inicio sesión con Google se muestran los campos de las contraseñas
+                        if (!esUsuarioGoogle) {
+                            // se pide la contraseña original del usuario
+                            OutlinedSecureTextField(
+                                state = passwordOriginal,  // estado que contiene el texto introducido (la contraseña)
+                                label = {
+                                    Text(
+                                        text = "Contraseña original",   // texto
+                                        color = Color.Black,   // color del texto
+                                        fontFamily = badcomic  // fuente tipográfica
                                     )
-                                }
-                            },
-                            // controla como se oculta el texto (lo hace visible completamente o solo muestra el último carácter)
-                            textObfuscationMode = if (passVisibleOriginal) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
-                            colors = TextFieldDefaults.colors(
-                                focusedIndicatorColor = Color(0xFF017DB2),   // borde del campo cuando está activo
-                                unfocusedIndicatorColor = Color(0xFF017DB2), // borde del campo cuando no está activo
-                                focusedContainerColor = Color.White,         // color del fondo del campo cuando está activo
-                                unfocusedContainerColor = Color.White,       // color del fondo del campo cuando no está activo
-                                cursorColor = Color(0xFF017DB2)              // color del cursor en el campo de texto
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Password,         // tipo de teclado para el campo de texto
-                                capitalization = KeyboardCapitalization.None, // no se capitaliza (no se trata las mayúsculas) el texto del usuario
-                                autoCorrectEnabled = false,                   // se inhabilita el autocorrector mientras escribe el usuario
-                                imeAction = ImeAction.Next,                   // se habilita la acción de ir al siguiente campo de texto desde el teclado
-                                showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
-                            ),
-                            textStyle = TextStyle(
-                                color = Color.Black,         // color del texto introducido
-                                fontFamily = badcomic        // fuente tipográfica del texto introducida
-                            )
-                        )
+                                },
+                                modifier = Modifier.width(310.dp),  // ancho del campo de texto
+                                // icono que va al final del campo de texto
+                                trailingIcon = {
+                                    IconButton(
+                                        onClick = { passVisibleOriginal = !passVisibleOriginal }  // al pulsar el icono cambia el estado para mostrar/ocultar la contraseña
+                                    ){
+                                        Icon(
+                                            // se cambia el icono si la contraseña es visible o no
+                                            imageVector = if (passVisibleOriginal) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
 
-                        Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
+                                            // se cambia la descripción para lectores de pantalla en función si la contraseña es visible o no
+                                            contentDescription = if (passVisibleOriginal) "Ocultar contraseña" else "Mostrar contraseña",
 
-                        // se pide la nueva contraseña del usuario
-                        OutlinedSecureTextField(
-                            state = passwordNueva,  // estado que contiene el texto introducido (la contraseña)
-                            label = {
-                                Text(
-                                    text = "Nueva contraseña",   // texto
-                                    color = Color.Black,   // color del texto
-                                    fontFamily = badcomic  // fuente tipográfica
+                                            tint = Color.Black // color del icono
+                                        )
+                                    }
+                                },
+                                // controla como se oculta el texto (lo hace visible completamente o solo muestra el último carácter)
+                                textObfuscationMode = if (passVisibleOriginal) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
+                                colors = TextFieldDefaults.colors(
+                                    focusedIndicatorColor = Color(0xFF017DB2),   // borde del campo cuando está activo
+                                    unfocusedIndicatorColor = Color(0xFF017DB2), // borde del campo cuando no está activo
+                                    focusedContainerColor = Color.White,         // color del fondo del campo cuando está activo
+                                    unfocusedContainerColor = Color.White,       // color del fondo del campo cuando no está activo
+                                    cursorColor = Color(0xFF017DB2)              // color del cursor en el campo de texto
+                                ),
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Password,         // tipo de teclado para el campo de texto
+                                    capitalization = KeyboardCapitalization.None, // no se capitaliza (no se trata las mayúsculas) el texto del usuario
+                                    autoCorrectEnabled = false,                   // se inhabilita el autocorrector mientras escribe el usuario
+                                    imeAction = ImeAction.Next,                   // se habilita la acción de ir al siguiente campo de texto desde el teclado
+                                    showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
+                                ),
+                                textStyle = TextStyle(
+                                    color = Color.Black,         // color del texto introducido
+                                    fontFamily = badcomic        // fuente tipográfica del texto introducida
                                 )
-                            },
-                            modifier = Modifier.width(310.dp),  // ancho del campo de texto
-                            // icono que va al final del campo de texto
-                            trailingIcon = {
-                                IconButton(
-                                    onClick = { passVisibleNueva = !passVisibleNueva }  // al pulsar el icono cambia el estado para mostrar/ocultar la contraseña
-                                ){
-                                    Icon(
-                                        // se cambia el icono si la contraseña es visible o no
-                                        imageVector = if (passVisibleNueva) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-
-                                        // se cambia la descripción para lectores de pantalla en función si la contraseña es visible o no
-                                        contentDescription = if (passVisibleNueva) "Ocultar contraseña" else "Mostrar contraseña",
-
-                                        tint = Color.Black // color del icono
-                                    )
-                                }
-                            },
-                            // controla como se oculta el texto (lo hace visible completamente o solo muestra el último carácter)
-                            textObfuscationMode = if (passVisibleNueva) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
-                            colors = TextFieldDefaults.colors(
-                                focusedIndicatorColor = Color(0xFF017DB2),   // borde del campo cuando está activo
-                                unfocusedIndicatorColor = Color(0xFF017DB2), // borde del campo cuando no está activo
-                                focusedContainerColor = Color.White,         // color del fondo del campo cuando está activo
-                                unfocusedContainerColor = Color.White,       // color del fondo del campo cuando no está activo
-                                cursorColor = Color(0xFF017DB2)              // color del cursor en el campo de texto
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Password,         // tipo de teclado para el campo de texto
-                                capitalization = KeyboardCapitalization.None, // no se capitaliza (no se trata las mayúsculas) el texto del usuario
-                                autoCorrectEnabled = false,                   // se inhabilita el autocorrector mientras escribe el usuario
-                                imeAction = ImeAction.Next,                   // se habilita la acción de ir al siguiente campo de texto desde el teclado
-                                showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
-                            ),
-                            textStyle = TextStyle(
-                                color = Color.Black,         // color del texto introducido
-                                fontFamily = badcomic        // fuente tipográfica del texto introducida
                             )
-                        )
 
-                        Spacer(modifier = Modifier.height(28.dp))  // separación vertical entre componentes
+                            Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
+
+                            // se pide la nueva contraseña del usuario
+                            OutlinedSecureTextField(
+                                state = passwordNueva,  // estado que contiene el texto introducido (la contraseña)
+                                label = {
+                                    Text(
+                                        text = "Nueva contraseña",   // texto
+                                        color = Color.Black,   // color del texto
+                                        fontFamily = badcomic  // fuente tipográfica
+                                    )
+                                },
+                                modifier = Modifier.width(310.dp),  // ancho del campo de texto
+                                // icono que va al final del campo de texto
+                                trailingIcon = {
+                                    IconButton(
+                                        onClick = { passVisibleNueva = !passVisibleNueva }  // al pulsar el icono cambia el estado para mostrar/ocultar la contraseña
+                                    ){
+                                        Icon(
+                                            // se cambia el icono si la contraseña es visible o no
+                                            imageVector = if (passVisibleNueva) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+
+                                            // se cambia la descripción para lectores de pantalla en función si la contraseña es visible o no
+                                            contentDescription = if (passVisibleNueva) "Ocultar contraseña" else "Mostrar contraseña",
+
+                                            tint = Color.Black // color del icono
+                                        )
+                                    }
+                                },
+                                // controla como se oculta el texto (lo hace visible completamente o solo muestra el último carácter)
+                                textObfuscationMode = if (passVisibleNueva) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
+                                colors = TextFieldDefaults.colors(
+                                    focusedIndicatorColor = Color(0xFF017DB2),   // borde del campo cuando está activo
+                                    unfocusedIndicatorColor = Color(0xFF017DB2), // borde del campo cuando no está activo
+                                    focusedContainerColor = Color.White,         // color del fondo del campo cuando está activo
+                                    unfocusedContainerColor = Color.White,       // color del fondo del campo cuando no está activo
+                                    cursorColor = Color(0xFF017DB2)              // color del cursor en el campo de texto
+                                ),
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Password,         // tipo de teclado para el campo de texto
+                                    capitalization = KeyboardCapitalization.None, // no se capitaliza (no se trata las mayúsculas) el texto del usuario
+                                    autoCorrectEnabled = false,                   // se inhabilita el autocorrector mientras escribe el usuario
+                                    imeAction = ImeAction.Next,                   // se habilita la acción de ir al siguiente campo de texto desde el teclado
+                                    showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
+                                ),
+                                textStyle = TextStyle(
+                                    color = Color.Black,         // color del texto introducido
+                                    fontFamily = badcomic        // fuente tipográfica del texto introducida
+                                )
+                            )
+
+                            Spacer(modifier = Modifier.height(28.dp))  // separación vertical entre componentes
+
+                        }
 
                         // tarjeta que contendrá las opciones del sexo del usuario
                         OutlinedCard(
