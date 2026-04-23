@@ -334,9 +334,12 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
                                         )
                                     )
 
-                                    // email del usuario
+                                    // variable para indicar el teléfono del usuario
+                                    val telefono = if (esUsuarioGoogle && usuario!!.telefonoUsuario.isEmpty()) { "No hay teléfono disponible" } else { usuario!!.telefonoUsuario }
+
+                                    // teléfono del usuario
                                     Text(
-                                        text = usuario!!.telefonoUsuario,  // texto
+                                        text = telefono,  // texto
                                         color = Color.Black,            // color del texto
                                         style = TextStyle(
                                             fontFamily = badcomic,       // fuente tipográfica del texto
@@ -370,9 +373,17 @@ fun PantallaPerfil(controladorNavegacion: NavController) {
                                         )
                                     )
 
+                                    // variable para indicar la edad del usuario
+                                    val edad = if (esUsuarioGoogle && usuario!!.fnacUsuario.isEmpty()) {
+                                        "No hay edad disponible"
+                                    }
+                                    else {
+                                        "${calcularEdad(fechaNacimiento = usuario!!.fnacUsuario)} años"
+                                    }
+
                                     // edad del usuario
                                     Text(
-                                        text = "${calcularEdad(fechaNacimiento = usuario!!.fnacUsuario)} años",  // texto
+                                        text = edad,  // texto
                                         color = Color.Black,            // color del texto
                                         style = TextStyle(
                                             fontFamily = badcomic,       // fuente tipográfica del texto

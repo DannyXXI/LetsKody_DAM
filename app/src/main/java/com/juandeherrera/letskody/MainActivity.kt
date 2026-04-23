@@ -1,5 +1,6 @@
 package com.juandeherrera.letskody
 
+import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -15,6 +16,9 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // se bloquea la rotación de la pantalla (no recomendado por Android)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
 
         // se permite que la aplicación cree su contenido debajo de las barras del sistema
         WindowCompat.setDecorFitsSystemWindows(window, false)

@@ -1,5 +1,6 @@
 package com.juandeherrera.letskody.metodosAuxiliares.componentes.juegos
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -96,8 +98,16 @@ fun CabeceraJuego(segundosCronometro: Int, numeroPregunta: Int, preguntasTotales
 }
 
 // función auxiliar para cargar la imagen de la bandera
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun ImagenBandera(urlBandera: String) {
+    // variable para altura responsive de la imagen de la bandera
+    val alturaBandera = when {
+        LocalConfiguration.current.screenHeightDp < 700 -> 160.dp
+        LocalConfiguration.current.screenHeightDp < 900 -> 220.dp
+        else -> 380.dp
+    }
+
     // tarjeta que contiene la imagen de la bandera
     ElevatedCard(
         modifier = Modifier.fillMaxWidth()  // se ocupa el ancho disponible
@@ -111,7 +121,7 @@ fun ImagenBandera(urlBandera: String) {
             contentDescription = "Bandera",    // descripción de la imagen
             contentScale = ContentScale.Crop,  // forma de escalar la imagen a la tarjeta contenedora
             modifier = Modifier.fillMaxWidth() // se ocupa el ancho disponible
-                .height(210.dp)                // altura de la imagen
+                .height(alturaBandera)         // altura de la imagen
         )
     }
 }
