@@ -30,5 +30,13 @@ val juegos = listOf(
         color2 = Color(0xFFD73939),
         color3 = Color(0xFFE04848),
         ruta = AppScreens.MenuNuminario1.route
+    ),
+    Juego(
+        materia = "lengua",
+        nombre = "Palabrix I",
+        color1 = Color(0xFF1CC5E3),
+        color2 = Color(0xFF39D7CA),
+        color3 = Color(0xFF48DBE0),
+        ruta = AppScreens.MenuPalabrix1.route
     )
 )

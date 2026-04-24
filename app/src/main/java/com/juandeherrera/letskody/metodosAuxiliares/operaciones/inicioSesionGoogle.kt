@@ -192,26 +192,59 @@ private fun cargarDatos(uid: String, datosUsuario: UsuarioFirebase, dbfire: Fire
                             // si se ha obtenido los datos, se convierten para la base de datos local
                             val puntuacionesNuminario1Local = convertirPuntuacionesNuminario1FirebaseLocal(listaPuntuacionNuminario1 = listaPuntuacionesNuminario1)
 
-                            // si la lista de puntuaciones de Numinario 1 no está vacía, se agrega a la base de datos local
-                            if (puntuacionesNuminario1Local.isNotEmpty()) {
-                                db.puntuacionNuminario1Dao().agregarPuntuacionesNuminario1(puntuaciones = puntuacionesNuminario1Local)
-                            }
+                            // se cargan todas las palabras guardadas en Firebase a local
+                            dbfire.collection("palabrasPalabrix").get()
+                                .addOnSuccessListener { listaPalabras ->
 
-                            // si la lista de puntuaciones de Euro-banderas no está vacía, se agrega a la base de datos local
-                            if (puntuacionesEuroBanderasLocal.isNotEmpty()) {
-                                db.puntuacionEuroBanderasDao().agregarPuntuacionesEuroBanderas(puntuaciones = puntuacionesEuroBanderasLocal)
-                            }
+                                    // si se han obtenido los datos, se convierten para la base de datos local
+                                    val listaPalabrasPalabrix1Local = convertirPalabrasPalabrix1FirebaseLocal(listaPalabrasPalabrix1 = listaPalabras)
 
-                            db.banderasEuropaDao().agregarBanderas(banderas = listaBanderasEuropaLocal) // se agregan la lista de banderas de Europa
+                                    // se cargan todas las puntuaciones del juego Euro-banderas guardadas en Firebase a local
+                                    dbfire.collection("puntuaciones_Palabrix1").get()
+                                        .addOnSuccessListener { listaPuntuacionesPalabrix1 ->
 
-                            // se convierten los datos de Firebase a datos locales
-                            val usuarioLocal = convertirUsuarioFirebaseLocal(usuarioFirebase = datosUsuario, uid = uid)
+                                            // si se han obtenido los datos, se convierten para la base de datos local
+                                            val puntuacionesPalabrix1Local = convertirPuntuacionesPalabrix1FirebaseLocal(listaPuntuacionPalabrix1 = listaPuntuacionesPalabrix1)
 
-                            db.usuarioDao().nuevoUsuario(usuarioData = usuarioLocal)  // se agrega el usuario a la base de datos local
+                                            // si la lista de puntuaciones de Palabrix 1 no está vacía, se agrega a la base de datos local
+                                            if (puntuacionesPalabrix1Local.isNotEmpty()) {
+                                                db.puntuacionPalabrix1Dao().agregarPuntuacionesPalabrix1(puntuaciones = puntuacionesPalabrix1Local)
+                                            }
 
-                            // se navega a la pantalla de inicio y se limpia el historial de navegación
-                            controladorNavegacion.navigate(AppScreens.Inicio.route) { popUpTo(AppScreens.Login.route) { inclusive = true } }
+                                            // si la lista de puntuaciones de Numinario 1 no está vacía, se agrega a la base de datos local
+                                            if (puntuacionesNuminario1Local.isNotEmpty()) {
+                                                db.puntuacionNuminario1Dao().agregarPuntuacionesNuminario1(puntuaciones = puntuacionesNuminario1Local)
+                                            }
 
+                                            // si la lista de puntuaciones de Euro-banderas no está vacía, se agrega a la base de datos local
+                                            if (puntuacionesEuroBanderasLocal.isNotEmpty()) {
+                                                db.puntuacionEuroBanderasDao().agregarPuntuacionesEuroBanderas(puntuaciones = puntuacionesEuroBanderasLocal)
+                                            }
+
+                                            db.banderasEuropaDao().agregarBanderas(banderas = listaBanderasEuropaLocal)        // se agregan la lista de banderas de Europa
+
+                                            db.palabrasPalabrix1Dao().agregarPalabras(palabras = listaPalabrasPalabrix1Local)  // se agregan la lista de palabras del juego Palabrix 1
+
+                                            // se convierten los datos de Firebase a datos locales
+                                            val usuarioLocal = convertirUsuarioFirebaseLocal(usuarioFirebase = datosUsuario, uid = uid)
+
+                                            db.usuarioDao().nuevoUsuario(usuarioData = usuarioLocal)  // se agrega el usuario a la base de datos local
+
+                                            // se navega a la pantalla de inicio y se limpia el historial de navegación
+                                            controladorNavegacion.navigate(AppScreens.Inicio.route) { popUpTo(AppScreens.Login.route) { inclusive = true } }
+
+                                        }
+                                        .addOnFailureListener { ex ->
+                                            // si se falla al obtener los datos se muestra un mensaje de error por terminal y al usuario
+                                            error("Error al obtener las puntuaciones de Palabrix 1.")
+                                            println("Error al obtener las puntuaciones de Palabrix 1: ${ex.message}")
+                                        }
+                                }
+                                .addOnFailureListener { ex ->
+                                    // si se falla al obtener los datos se muestra un mensaje de error por terminal y al usuario
+                                    error("Error al obtener las palabras de Palabrix 1.")
+                                    println("Error al obtener las palabras de Palabrix 1: ${ex.message}")
+                                }
                         }
                         .addOnFailureListener { ex ->
                             // si se falla al obtener los datos se muestra un mensaje de error por terminal y al usuario
@@ -231,17 +264,3 @@ private fun cargarDatos(uid: String, datosUsuario: UsuarioFirebase, dbfire: Fire
             println("Error al obtener los datos de las banderas de Europa: ${ex.message}")
         }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

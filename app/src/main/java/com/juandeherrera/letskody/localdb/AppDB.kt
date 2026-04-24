@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
     // se establecen las tablas que conforman la base de datos
     // se indica la version, necesaria para migraciones y cambios realizados
     // se indica que la estructura de la bd se exportará a un archivo para mantener un historial de esquemas
-    entities = [UsuarioData::class, BanderasEuropaData::class, PuntuacionEuroBanderasData::class, PuntuacionNuminario1Data::class], version = 1, exportSchema = true
+    entities = [UsuarioData::class, BanderasEuropaData::class, PuntuacionEuroBanderasData::class, PuntuacionNuminario1Data::class, PalabrasPalabrix1Data::class, PuntuacionPalabrix1Data::class], version = 1, exportSchema = true
 )
 abstract class AppDB: RoomDatabase() {
     // funciones abstractas que proporcionan instancias de acceso a las operaciones definidas en los DAO
@@ -21,4 +21,8 @@ abstract class AppDB: RoomDatabase() {
     abstract fun puntuacionEuroBanderasDao(): PuntuacionEuroBanderasDAO
 
     abstract fun puntuacionNuminario1Dao(): PuntuacionNuminario1DAO
+
+    abstract fun palabrasPalabrix1Dao(): PalabrasPalabrix1DAO
+
+    abstract fun puntuacionPalabrix1Dao(): PuntuacionPalabrix1DAO
 }

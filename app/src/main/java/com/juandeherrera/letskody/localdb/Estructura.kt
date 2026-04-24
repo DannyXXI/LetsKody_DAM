@@ -65,4 +65,27 @@ class Estructura {
         const val FALLOS = "fallos"
         const val USUARIO = "usuario"
     }
+
+    // Tabla 5: Palabras del juego Palabrix 1
+    object PalabrasPalabrix1 {
+        const val TABLE_NAME = "palabraPalabrix1"  // nombre de la tabla
+
+        // nombre de los campos de la tabla
+        const val ID = "idPalabra"
+        const val UID_PALABRA = "uidPalabra"
+        const val PALABRA = "palabra"
+        const val RESPUESTA = "respuesta"
+    }
+
+    // Tabla 6: Puntuaciones del juego Palabrix 1
+    object PuntuacionPalabrix1 {
+        const val TABLE_NAME = "puntuacionPalabrix1"  // nombre de la tabla
+
+        // nombre de los campos de la tabla
+        const val UID_PUNTOS_PALABRIX1 = "uidPuntosPalabrix1"
+        const val ID = "idPuntuacion"
+        const val PUNTOS = "puntos"
+        const val TIEMPO = "tiempo"
+        const val USUARIO = "usuario"
+    }
 }

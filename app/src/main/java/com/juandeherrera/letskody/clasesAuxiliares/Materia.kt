@@ -31,5 +31,13 @@ val materias = listOf(
         color3 = Color(0xFFE04848),
         idRecursoImagen = R.drawable.kody_mates,
         ruta = "${AppScreens.MenuJuegosMaterias.route}/matemáticas"
+    ),
+    Materia(
+        nombre = "Lengua",
+        color1 = Color(0xFF1CC5E3),
+        color2 = Color(0xFF39D7CA),
+        color3 = Color(0xFF48DBE0),
+        idRecursoImagen = R.drawable.kody_lengua,
+        ruta = "${AppScreens.MenuJuegosMaterias.route}/lengua"
     )
 )

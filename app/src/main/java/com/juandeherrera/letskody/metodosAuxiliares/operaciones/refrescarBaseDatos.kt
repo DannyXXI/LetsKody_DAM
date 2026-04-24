@@ -53,6 +53,26 @@ suspend fun refrescarBaseDatos(uidUsuario: String, db: AppDB, error: (String) ->
             db.puntuacionNuminario1Dao().eliminarTodasPuntuacionesNuminario1()      // se eliminan todas las puntuaciones anteriores
 
             db.puntuacionNuminario1Dao().agregarPuntuacionesNuminario1(puntuaciones = listaPuntuacionesNuminario1)  // se agregan la nueva lista de puntuaciones
+
+            /* ----------PALABRAS DEL JUEGO PALABRIX 1---------- */
+            val palabrasPalabrixDoc = dbfire.collection("palabrasPalabrix").get().await()  // se obtiene la lista de documentos con todas las palabras de Firebase
+
+            // se convierte la lista de palabras de Palabrix 1 de Firebase a una lista de palabras de Palabrix 1 locales
+            val listaPalabras = convertirPalabrasPalabrix1FirebaseLocal(listaPalabrasPalabrix1 = palabrasPalabrixDoc)
+
+            db.palabrasPalabrix1Dao().eliminarTodasPalabras()                    // se eliminan todas las palabras del juego Palabrix 1 anteriores
+
+            db.palabrasPalabrix1Dao().agregarPalabras(palabras = listaPalabras)  // se agregan la lista de palabras del juego Palabrix 1
+
+            /* ----------PUNTUACIÓN DEL JUEGO PALABRIX 1---------- */
+            val puntuacionesPalabrix1Doc = dbfire.collection("puntuaciones_Palabrix1").get().await()  // se obtiene la lista de documentos con todas las puntuaciones de Firebase
+
+            // se convierte la lista de puntuaciones de Palabrix 1 de firebase a una lista de puntuaciones de Palabrix 1 locales
+            val listaPuntuacionesPalabrix1 = convertirPuntuacionesPalabrix1FirebaseLocal(listaPuntuacionPalabrix1 = puntuacionesPalabrix1Doc)
+
+            db.puntuacionPalabrix1Dao().eliminarTodasPuntuacionesPalabrix1()        // se eliminan todas las puntuaciones anteriores
+
+            db.puntuacionPalabrix1Dao().agregarPuntuacionesPalabrix1(puntuaciones = listaPuntuacionesPalabrix1)  // se agregan la nueva lista de puntuaciones
         }
         catch (ex: Exception) {
             // si hay algún error en la sincronización se muestra un mensaje al usuario y en la terminal

@@ -25,6 +25,10 @@ sealed class AppScreens (val route: String) {
 
     object Numinario1: AppScreens(route = "Numinario1")
 
+    object MenuPalabrix1: AppScreens(route = "MenuPalabrix1")
+
+    object Palabrix1: AppScreens(route = "Palabrix1")
+
     object Ranking: AppScreens(route = "Ranking")
 
     object Perfil: AppScreens(route = "Perfil")

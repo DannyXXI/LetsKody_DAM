@@ -2,12 +2,16 @@ package com.juandeherrera.letskody.metodosAuxiliares.operaciones
 
 import com.google.firebase.firestore.QuerySnapshot
 import com.juandeherrera.letskody.firebase.BanderasEuropaFirebase
+import com.juandeherrera.letskody.firebase.PalabrasPalabrix1Firebase
 import com.juandeherrera.letskody.firebase.PuntuacionEuroBanderasFirebase
 import com.juandeherrera.letskody.firebase.PuntuacionNuminario1Firebase
+import com.juandeherrera.letskody.firebase.PuntuacionPalabrix1Firebase
 import com.juandeherrera.letskody.firebase.UsuarioFirebase
 import com.juandeherrera.letskody.localdb.BanderasEuropaData
+import com.juandeherrera.letskody.localdb.PalabrasPalabrix1Data
 import com.juandeherrera.letskody.localdb.PuntuacionEuroBanderasData
 import com.juandeherrera.letskody.localdb.PuntuacionNuminario1Data
+import com.juandeherrera.letskody.localdb.PuntuacionPalabrix1Data
 import com.juandeherrera.letskody.localdb.UsuarioData
 
 // función auxiliar para transformar el usuario de Firebase en un usuario local
@@ -77,6 +81,39 @@ fun convertirPuntuacionesNuminario1FirebaseLocal(listaPuntuacionNuminario1: Quer
             puntos = puntuacionNuminario1.puntos ?: 0,       // puntos obtenidos
             fallos = puntuacionNuminario1.fallos ?: 0,       // fallos que ha tenido el usuario
             usuario = puntuacionNuminario1.usuario ?: "",    // UID del usuario que ha realizado la puntuación
+        )
+    }
+}
+
+// función auxiliar para transformar una lista de palabras de Palabrix 1 de Firebase en una lista de palabras de Palabrix 1 locales
+fun convertirPalabrasPalabrix1FirebaseLocal(listaPalabrasPalabrix1: QuerySnapshot) : List<PalabrasPalabrix1Data> {
+    return listaPalabrasPalabrix1.documents.map { doc ->
+
+        val palabraPalabrix1 = doc.toObject(PalabrasPalabrix1Firebase::class.java)!!  // se obtiene una palabra de Palabrix 1
+
+        // constructor para palabras del juego Palabrix 1
+        PalabrasPalabrix1Data(
+            idPalabra = 0,                                // id incremental del registro
+            uidPalabra = doc.id,                          // UID de Firebase de la palabra
+            palabra = palabraPalabrix1.palabra ?: "",     // palabra
+            respuesta = palabraPalabrix1.respuesta ?: ""  // respuesta correcta
+        )
+    }
+}
+
+// función auxiliar para transformar una lista de puntuaciones de Palabrix 1 de Firebase en puntuaciones de Palabrix 1 locales
+fun convertirPuntuacionesPalabrix1FirebaseLocal(listaPuntuacionPalabrix1: QuerySnapshot) : List<PuntuacionPalabrix1Data> {
+    return listaPuntuacionPalabrix1.documents.map { doc ->
+
+        val puntuacionPalabrix1 = doc.toObject(PuntuacionPalabrix1Firebase::class.java)!!  // se obtiene una puntuación de Palabrix 1
+
+        // constructor para puntuaciones de Palabrix 1 locales
+        PuntuacionPalabrix1Data(
+            idPuntuacion = 0,                              // ID incremental del registro
+            uidPuntosPalabrix1 = doc.id,                   // UID de Firebase de la puntuación
+            puntos = puntuacionPalabrix1.puntos ?: 0,      // puntos obtenidos
+            tiempo = puntuacionPalabrix1.tiempo ?: 0,      // tiempo (segundos) que ha tardado el usuario
+            usuario = puntuacionPalabrix1.usuario ?: "",   // UID del usuario que ha realizado la puntuación
         )
     }
 }

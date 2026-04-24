@@ -73,6 +73,7 @@ fun PantallaMenuJuegosMaterias(controladorNavegacion: NavController, materia: St
                 titulo = when(materia){
                     "geografía" -> "Geografía"
                     "matemáticas" -> "Matemáticas"
+                    "lengua" -> "Lengua"
                     else -> "ERROR"
                 },
                 fuenteTipografica = badcomic,

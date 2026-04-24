@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextObfuscationMode
@@ -30,6 +32,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -374,10 +377,10 @@ fun PantallaLogin(controladorNavegacion: NavController) {
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))  // separación vertical entre componentes
+                    Spacer(modifier = Modifier.height(10.dp))  // separación vertical entre componentes
 
                     // BOTÓN DE INICIO DE SESIÓN CON GOOGLE
-                    Button(
+                    OutlinedButton(
                         onClick = {
                             // se inicia la sesión con Google
                             iniciarSesionGoogle(
@@ -390,13 +393,20 @@ fun PantallaLogin(controladorNavegacion: NavController) {
                                 }
                             )
                         },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF017DB2),  // color de fondo del botón
-                            contentColor = Color.White           // color del texto del botón
-                        )
+                        border = BorderStroke(width = 1.dp, color = Color(0xFF017DB2))  // grosor y color del borde del botón
                     ){
+                        Icon(
+                            painter = painterResource(id = R.drawable.logo_google),  // recurso de la imagen
+                            contentDescription = "Google",        // descripción de la imagen
+                            modifier = Modifier.size(20.dp),      // tamaño del icono
+                            tint = Color.Unspecified              // se mantiene los colores de la imagen
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))  // separación horizontal entre componentes
+
                         Text(
-                            text = "Iniciar sesión con Google",    // texto del botón
+                            text = "Iniciar sesión con Google",    // texto
+                            color = Color(0xFF017DB2),             // color del texto
                             style = TextStyle(
                                 fontFamily = badcomic,  // fuente tipográfica del texto
                                 fontSize = 18.sp        // tamaño del texto

@@ -30,6 +30,7 @@ import com.juandeherrera.letskody.screens.juegos.euroBanderas.PantallaEuroBander
 import com.juandeherrera.letskody.screens.juegos.euroBanderas.PantallaMenuEuroBanderas
 import com.juandeherrera.letskody.screens.juegos.numinario1.PantallaMenuNuminario1
 import com.juandeherrera.letskody.screens.juegos.numinario1.PantallaNuminario1
+import com.juandeherrera.letskody.screens.juegos.palabrix1.PantallaMenuPalabrix1
 
 @RequiresApi(value = Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
 @Composable
@@ -116,6 +117,11 @@ fun AppNavigation() {
             composable(route = AppScreens.Numinario1.route) {
                 BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
                 PantallaNuminario1(controladorNavegacion = controladorNavegacion)
+            }
+
+            composable(route = AppScreens.MenuPalabrix1.route) {
+                BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
+                PantallaMenuPalabrix1(controladorNavegacion = controladorNavegacion)
             }
 
             composable(route = AppScreens.Ranking.route) {
