@@ -79,7 +79,7 @@ object GestorPuntuacionNuminario1 {
                 )
 
                 // se inserta el documento en Firebase
-                dbfire.collection(COLECCION_FIREBASE).document(uidUsuario).set(datos)
+                dbfire.collection(COLECCION_FIREBASE).add(datos)
                     .addOnFailureListener { ex ->
                         println("Error al crear la puntuación de Numinario 1 del usuario en Firebase: ${ex.message}")
                     }

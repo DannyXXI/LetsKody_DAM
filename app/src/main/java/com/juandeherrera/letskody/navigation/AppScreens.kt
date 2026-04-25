@@ -31,6 +31,10 @@ sealed class AppScreens (val route: String) {
 
     object Ranking: AppScreens(route = "Ranking")
 
+    object MenuMiscelanea: AppScreens(route = "MenuMiscelanea")
+
+    object EstiraRebota: AppScreens(route = "EstiraRebota")
+
     object Perfil: AppScreens(route = "Perfil")
 
     object EditarPerfil: AppScreens(route = "EditarPerfil")

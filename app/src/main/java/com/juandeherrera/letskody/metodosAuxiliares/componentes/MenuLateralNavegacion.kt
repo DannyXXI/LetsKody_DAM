@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.composables.icons.lucide.BriefcaseBusiness
+import com.composables.icons.lucide.Gamepad
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Medal
 import com.juandeherrera.letskody.navigation.AppScreens
@@ -236,7 +237,7 @@ fun MenuLateralPerfil(estadoMenuLateral: DrawerState, titulo: String, selectPerf
 
 // función auxiliar para cargar el menu lateral del inicio
 @Composable
-fun MenuLateralMaterias(estadoMenuLateral: DrawerState, titulo: String, selectMaterias: Boolean, selectRanking: Boolean, scope: CoroutineScope, controladorNavegacion: NavController, fuenteTipografica: FontFamily) {
+fun MenuLateralMaterias(estadoMenuLateral: DrawerState, titulo: String, selectMaterias: Boolean, selectRanking: Boolean, selectMiscelanea: Boolean, scope: CoroutineScope, controladorNavegacion: NavController, fuenteTipografica: FontFamily) {
     // contenedor visual del menu lateral
     ModalDrawerSheet(
         modifier = Modifier.width(280.dp),        // ancho del menú lateral
@@ -293,6 +294,23 @@ fun MenuLateralMaterias(estadoMenuLateral: DrawerState, titulo: String, selectMa
                     else {
                         scope.launch { estadoMenuLateral.close() }
                         controladorNavegacion.navigate(route = AppScreens.Ranking.route)
+                    }
+                }
+            )
+
+            // elemento 2: ir a la pantalla del ranking
+            ElementoMenuLateral(
+                fuenteTipografica = fuenteTipografica,
+                icono = Lucide.Gamepad,
+                texto = "Miscelánea",
+                seleccionado = selectMiscelanea,
+                accion = {
+                    if (selectMiscelanea) {
+                        scope.launch { estadoMenuLateral.close() }
+                    }
+                    else {
+                        scope.launch { estadoMenuLateral.close() }
+                        controladorNavegacion.navigate(route = AppScreens.MenuMiscelanea.route)
                     }
                 }
             )

@@ -154,7 +154,7 @@ fun PantallaMenuPalabrix1(controladorNavegacion: NavController) {
                     )
 
                     Text(
-                        text = "Tu misión será descubrir el tipo de cada palabra antes que el diccionario se vuelva loco. ¿Cuántas podrás acertar en el menor tiempo posible?", // texto
+                        text = "Tu misión será descubrir su tipo antes de que el diccionario se vuelva loco. ¿Cuántas podrás acertar en el menor tiempo posible?", // texto
                         color = Color.Black,                // color del texto
                         style = TextStyle(
                             fontFamily = badcomic,          // fuente tipográfica del texto

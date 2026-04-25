@@ -125,6 +125,7 @@ fun PantallaRanking(controladorNavegacion: NavController) {
                 titulo = "Ranking",
                 selectMaterias = false,
                 selectRanking = true,
+                selectMiscelanea = false,
                 scope = scope,
                 controladorNavegacion = controladorNavegacion,
                 fuenteTipografica = badcomic

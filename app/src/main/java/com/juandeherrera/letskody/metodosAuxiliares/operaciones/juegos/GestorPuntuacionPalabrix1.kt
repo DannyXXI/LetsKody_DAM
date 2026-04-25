@@ -4,14 +4,14 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.juandeherrera.letskody.clasesAuxiliares.AccionPuntuacion
 import com.juandeherrera.letskody.firebase.PuntuacionEuroBanderasFirebase
+import com.juandeherrera.letskody.firebase.PuntuacionPalabrix1Firebase
 import com.juandeherrera.letskody.localdb.AppDB
-import com.juandeherrera.letskody.localdb.PuntuacionEuroBanderasData
+import com.juandeherrera.letskody.localdb.PuntuacionPalabrix1Data
 import java.util.UUID
 
-// se encarga de guardar o actualizar la puntuación del usuario al terminar una partida en la base de datos
-object GestorPuntuacionEuroBanderas {
+object GestorPuntuacionPalabrix1 {
 
-    private const val COLECCION_FIREBASE = "puntuaciones_EuroBanderas"  // nombre de la colección en Firebase
+    private const val COLECCION_FIREBASE = "puntuaciones_Palabrix1"  // nombre de la colección en Firebase
 
     // función principal encargada de guardar o actualizar la puntuación en local y lanza en paralelo la misma operacion en Firebase
     fun guardarPuntuacion(db: AppDB, uidUsuario: String, puntos: Int, tiempoTotal: Int) {
@@ -26,13 +26,13 @@ object GestorPuntuacionEuroBanderas {
     // función encargada de la gestión de la puntuación en la base de datos local
     private fun guardarEnLocal (db: AppDB, uidUsuario: String, puntos: Int, tiempoTotal: Int) : AccionPuntuacion {
 
-        val existente = db.puntuacionEuroBanderasDao().getPuntuacionEuroBanderas(uidUsuario = uidUsuario)  // se obtiene el registro de puntuación existente
+        val existente = db.puntuacionPalabrix1Dao().getPuntuacionPalabrix1(uidUsuario = uidUsuario)  // se obtiene el registro de puntuación existente
 
         if (existente == null) {
             // si no hay ningún registro previo, se inserta
-            db.puntuacionEuroBanderasDao().nuevaPuntuacionEuroBanderas(
-                PuntuacionEuroBanderasData(
-                    uidPuntosEuroBanderas = UUID.randomUUID().toString(),
+            db.puntuacionPalabrix1Dao().nuevaPuntuacionPalabrix1(
+                PuntuacionPalabrix1Data(
+                    uidPuntosPalabrix1 = UUID.randomUUID().toString(),
                     puntos = puntos,
                     tiempo = tiempoTotal,
                     usuario = uidUsuario
@@ -48,7 +48,7 @@ object GestorPuntuacionEuroBanderas {
 
             if (mejorPuntuacion || mejorTiempo) {
                 // si ha habido alguna mejora en la puntuacion o tiempo, se actualiza
-                db.puntuacionEuroBanderasDao().actualizarPuntuacionesEuroBanderas(
+                db.puntuacionPalabrix1Dao().actualizarPuntuacionesPalabrix1(
                     existente.copy(
                         puntos = if (mejorPuntuacion) puntos else existente.puntos,
                         tiempo = if (mejorTiempo) tiempoTotal else existente.tiempo
@@ -72,7 +72,7 @@ object GestorPuntuacionEuroBanderas {
             // si no hay ningún registro previo, se inserta
             AccionPuntuacion.INSERTADA -> {
                 // se crea el documento con todos los campos
-                val datos = PuntuacionEuroBanderasFirebase(
+                val datos = PuntuacionPalabrix1Firebase(
                     puntos = puntos,
                     tiempo = tiempoTotal,
                     usuario = uidUsuario
@@ -81,7 +81,7 @@ object GestorPuntuacionEuroBanderas {
                 // se inserta el documento en Firebase
                 dbfire.collection(COLECCION_FIREBASE).add(datos)
                     .addOnFailureListener { ex ->
-                        println("Error al crear la puntuación de Euro-banderas del usuario en Firebase: ${ex.message}")
+                        println("Error al crear la puntuación de Palabrix 1 del usuario en Firebase: ${ex.message}")
                     }
             }
             // si existe y hay alguna mejora, se actualizarán los campos mejorados
@@ -90,7 +90,7 @@ object GestorPuntuacionEuroBanderas {
                 dbfire.collection(COLECCION_FIREBASE).document(uidUsuario).get()
                     .addOnSuccessListener { document ->
                         // si funciona se extrae la puntuación de Firebase a modificar
-                        val puntuacionFirebase = document.toObject(PuntuacionEuroBanderasFirebase::class.java)
+                        val puntuacionFirebase = document.toObject(PuntuacionPalabrix1Firebase::class.java)
 
                         if (puntuacionFirebase != null) {
 
@@ -107,12 +107,12 @@ object GestorPuntuacionEuroBanderas {
                             // se actualiza la puntuación en la base de datos de Firebase
                             dbfire.collection(COLECCION_FIREBASE).document(document.id).set(puntuacionFirebaseActualizado, SetOptions.merge())
                                 .addOnFailureListener { ex ->
-                                    println("Error al actualizar la puntuación de Euro-banderas del usuario en Firebase: ${ex.message}")
+                                    println("Error al actualizar la puntuación de Palabrix 1 del usuario en Firebase: ${ex.message}")
                                 }
                         }
                     }
                     .addOnFailureListener { ex ->
-                        println("Error al obtener la puntuación del usuario en Euro-banderas en Firebase: ${ex.message}")
+                        println("Error al obtener la puntuación del usuario en Palabrix 1 en Firebase: ${ex.message}")
                     }
             }
             // si existe, pero no hay ninguna mejora, no se hace nada

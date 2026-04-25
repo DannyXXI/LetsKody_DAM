@@ -35,13 +35,4 @@ interface PalabrasPalabrix1DAO {
     // ELIMINAR TODAS LAS PALABRAS DE LA BASE DE DATOS LOCAL
     @Query(value = "DELETE FROM ${Estructura.PalabrasPalabrix1.TABLE_NAME}")
     fun eliminarTodasPalabras(): Int
-
-
-
-
-
-
-
-
-
 }

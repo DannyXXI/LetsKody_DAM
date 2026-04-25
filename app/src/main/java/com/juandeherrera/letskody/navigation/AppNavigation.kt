@@ -21,6 +21,7 @@ import com.juandeherrera.letskody.screens.PantallaInicio
 import com.juandeherrera.letskody.screens.PantallaLogin
 import com.juandeherrera.letskody.screens.PantallaMaterias
 import com.juandeherrera.letskody.screens.PantallaMenuJuegosMaterias
+import com.juandeherrera.letskody.screens.PantallaMenuMiscelanea
 import com.juandeherrera.letskody.screens.PantallaPerfil
 import com.juandeherrera.letskody.screens.PantallaRanking
 import com.juandeherrera.letskody.screens.PantallaServicioTecnico
@@ -31,6 +32,7 @@ import com.juandeherrera.letskody.screens.juegos.euroBanderas.PantallaMenuEuroBa
 import com.juandeherrera.letskody.screens.juegos.numinario1.PantallaMenuNuminario1
 import com.juandeherrera.letskody.screens.juegos.numinario1.PantallaNuminario1
 import com.juandeherrera.letskody.screens.juegos.palabrix1.PantallaMenuPalabrix1
+import com.juandeherrera.letskody.screens.miscelanea.PantallaEstiraRebota
 
 @RequiresApi(value = Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
 @Composable
@@ -127,6 +129,16 @@ fun AppNavigation() {
             composable(route = AppScreens.Ranking.route) {
                 BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
                 PantallaRanking(controladorNavegacion = controladorNavegacion)
+            }
+
+            composable(route = AppScreens.MenuMiscelanea.route) {
+                BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
+                PantallaMenuMiscelanea(controladorNavegacion = controladorNavegacion)
+            }
+
+            composable(route = AppScreens.EstiraRebota.route) {
+                BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
+                PantallaEstiraRebota(controladorNavegacion = controladorNavegacion)
             }
 
             composable(route = AppScreens.Perfil.route) {
