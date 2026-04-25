@@ -32,6 +32,7 @@ import com.juandeherrera.letskody.screens.juegos.euroBanderas.PantallaMenuEuroBa
 import com.juandeherrera.letskody.screens.juegos.numinario1.PantallaMenuNuminario1
 import com.juandeherrera.letskody.screens.juegos.numinario1.PantallaNuminario1
 import com.juandeherrera.letskody.screens.juegos.palabrix1.PantallaMenuPalabrix1
+import com.juandeherrera.letskody.screens.juegos.palabrix1.PantallaPalabrix1
 import com.juandeherrera.letskody.screens.miscelanea.PantallaEstiraRebota
 
 @RequiresApi(value = Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
@@ -124,6 +125,11 @@ fun AppNavigation() {
             composable(route = AppScreens.MenuPalabrix1.route) {
                 BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
                 PantallaMenuPalabrix1(controladorNavegacion = controladorNavegacion)
+            }
+
+            composable(route = AppScreens.Palabrix1.route) {
+                BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
+                PantallaPalabrix1(controladorNavegacion = controladorNavegacion)
             }
 
             composable(route = AppScreens.Ranking.route) {

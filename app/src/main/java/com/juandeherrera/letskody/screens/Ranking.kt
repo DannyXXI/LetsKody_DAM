@@ -111,6 +111,19 @@ fun PantallaRanking(controladorNavegacion: NavController) {
         )
     }
 
+    /* ---- POSICIÓN EN EL RANKING EN EL JUEGO DE PALABRIX 1 ---- */
+    val listaPuntuacionesPalabrix1 = db.puntuacionPalabrix1Dao().getListaPuntuacionesPalabrix1Ordenada()     // se obtiene la lista de completa de puntuaciones ya ordenada
+    val posicionPalabrix1 = listaPuntuacionesPalabrix1.indexOfFirst { it.usuario == usuario!!.uidUsuario}    // se obtiene la posición de la puntuación del usuario (-1 si no está)
+
+    // se obtiene los datos de la posición del usuario en el ranking (si no está es null)
+    val filaPalabrix1 = if (posicionPalabrix1 == -1) null else {
+        FilaRankingJuegosCronometro(
+            posicion = posicionPalabrix1 + 1,
+            puntos = listaPuntuacionesPalabrix1[posicionPalabrix1].puntos,
+            tiempo = listaPuntuacionesPalabrix1[posicionPalabrix1].tiempo
+        )
+    }
+
     var abrirToolbar by remember { mutableStateOf(value = false) } // variable para el estado (abrir/cerrar) del menu desplegable del toolbar
 
     val abrirMenuLateral = rememberDrawerState(initialValue = DrawerValue.Closed)  // variable para el estado (abrir/cerrar) del menu lateral de navegación
@@ -208,15 +221,20 @@ fun PantallaRanking(controladorNavegacion: NavController) {
                     fuenteTipografica = badcomic
                 )
 
-
-
-
-
-
-
-
-
-
+                // tabla del juego Palabrix 1
+                TablaRanking(
+                    titulo = "Palabrix I",
+                    cabeceras = listOf("Posición", "Puntos", "Tiempo"),
+                    fila = filaPalabrix1?.let {fila ->
+                        FilaTablaRanking(
+                            posicion = fila.posicion,
+                            columna1 = fila.puntos.toString(),
+                            columna2 = formatearSegundos(segundos = fila.tiempo)
+                        )
+                    },
+                    mensajeSinDatos = "Aún no has jugado a Palabrix I.",
+                    fuenteTipografica = badcomic
+                )
 
             }
         }

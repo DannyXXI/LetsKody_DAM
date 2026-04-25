@@ -433,7 +433,7 @@ fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, con
                 val opcionGoogle = GetGoogleIdOption.Builder()
                     .setServerClientId(WEB_CLIENT_ID)      // id del cliente web de Firebase
                     .setFilterByAuthorizedAccounts(true)   // solo se muestra la cuenta ya vinculada
-                    .setAutoSelectEnabled(false)           // se muestra el selector de cuentas al usuario
+                    .setAutoSelectEnabled(true)            // se muestra el selector de cuentas al usuario (si hubiera más de una cuenta)
                     .setNonce(generarNonce())              // se incluye el nonce (valor aleatorio generado para garantizar que cada petición es única)
                     .build()
 

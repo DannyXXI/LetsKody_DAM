@@ -1,4 +1,4 @@
-package com.juandeherrera.letskody.screens.juegos.euroBanderas
+package com.juandeherrera.letskody.screens.juegos.palabrix1
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -38,19 +38,19 @@ import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraNavegacionI
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraSuperiorSinMenuLateral
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.ModalInactividadJuego
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.ModalPuntuacionJuegosCronometro
-import com.juandeherrera.letskody.metodosAuxiliares.componentes.juegos.PantallaJugandoEuroBanderas
+import com.juandeherrera.letskody.metodosAuxiliares.componentes.juegos.PantallaJugandoPalabrix1
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.cerrarSesionUsuario
-import com.juandeherrera.letskody.metodosAuxiliares.operaciones.juegos.GestorPuntuacionEuroBanderas
+import com.juandeherrera.letskody.metodosAuxiliares.operaciones.juegos.GestorPuntuacionPalabrix1
 import com.juandeherrera.letskody.navigation.AppScreens
-import com.juandeherrera.letskody.viewModels.euroBanderas.EstadoEuroBanderas
-import com.juandeherrera.letskody.viewModels.euroBanderas.EuroBanderasViewModel
-import com.juandeherrera.letskody.viewModels.euroBanderas.EuroBanderasViewModelFactory
+import com.juandeherrera.letskody.viewModels.palabrix1.EstadoPalabrix1
+import com.juandeherrera.letskody.viewModels.palabrix1.Palabrix1ViewModel
+import com.juandeherrera.letskody.viewModels.palabrix1.Palabrix1ViewModelFactory
 
 @SuppressLint("DefaultLocale")
 @RequiresApi(value = Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
-fun PantallaEuroBanderas(controladorNavegacion: NavController) {
+fun PantallaPalabrix1(controladorNavegacion: NavController) {
     val badcomic = FontFamily(Font(R.font.badcomic))  // fuente tipográfica por defecto
 
     val context = LocalContext.current // variable que obtiene el contexto actual
@@ -77,7 +77,7 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
     var abrirToolbar by remember { mutableStateOf(value = false) } // variable para el estado (abrir/cerrar) del menu desplegable del toolbar
 
     // variable que contiene el ViewModel del juego (se recupera o se crea si no existe)
-    val viewModel: EuroBanderasViewModel = viewModel(factory = EuroBanderasViewModelFactory(db = db, context = context)) // variable que contiene el ViewModel del juego
+    val viewModel: Palabrix1ViewModel = viewModel(factory = Palabrix1ViewModelFactory(db = db, context = context)) // variable que contiene el ViewModel del juego
 
     // variables observables de ViewModel que hacen recomponer la vista cuando sus valores cambian
     val estado by viewModel.estado.collectAsState()                                    // estado de juego
@@ -98,7 +98,7 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
         // BARRA SUPERIOR
         topBar = {
             BarraSuperiorSinMenuLateral(
-                titulo = "Euro-banderas",
+                titulo = "Palabrix I",
                 fuenteTipografica = badcomic,
                 controladorNavegacion = controladorNavegacion,
                 estadoMenuDesplegable = abrirToolbar,
@@ -142,7 +142,7 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
             when (val s = estado) {
 
                 // sí se está cargando el juego que muestre el círculo de carga
-                is EstadoEuroBanderas.Cargando -> {
+                is EstadoPalabrix1.Cargando -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),  // ocupa el espacio disponible
                         contentAlignment = Alignment.Center // contenido centrado
@@ -151,15 +151,15 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
                     }
                 }
 
-                // sí no hay suficientes banderas en la base de datos, se mostrará mensaje de error
-                is EstadoEuroBanderas.ErrorSinBanderas -> {
+                // sí no hay suficientes palabras en la base de datos, se mostrará mensaje de error
+                is EstadoPalabrix1.ErrorSinPalabras -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),  // ocupa el espacio disponible
                         contentAlignment = Alignment.Center // contenido centrado
                     ){
                         // MENSAJE
                         Text(
-                            text = "No hay suficientes banderas en la base de datos.",   // texto
+                            text = "No hay suficientes palabras en la base de datos.",   // texto
                             color = Color.Red,          // color del texto
                             style = TextStyle(
                                 fontFamily = badcomic,  // fuente tipográfica del texto
@@ -170,8 +170,8 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
                 }
 
                 // si el usuario está jugando
-                is EstadoEuroBanderas.Jugando -> {
-                    PantallaJugandoEuroBanderas(
+                is EstadoPalabrix1.Jugando -> {
+                    PantallaJugandoPalabrix1(
                         estado = s,
                         fuenteTipografica = badcomic,
                         respuesta = { opcion -> viewModel.responder(opcion = opcion) }
@@ -179,7 +179,7 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
                 }
 
                 // si el juego ha finalizado
-                is EstadoEuroBanderas.Terminado -> {
+                is EstadoPalabrix1.Terminado -> {
                     Box(modifier = Modifier.fillMaxSize()) // ocupa el espacio disponible
                 }
             }
@@ -196,14 +196,14 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
             }
 
             // se muestra el modal de resultado final cuando el usuario ha terminado las preguntas
-            if (estado is EstadoEuroBanderas.Terminado && resultado != null) {
+            if (estado is EstadoPalabrix1.Terminado && resultado != null) {
                 ModalPuntuacionJuegosCronometro(
                     resultado = resultado!!,
                     fuenteTipografica = badcomic,
                     repetir = { viewModel.iniciarJuego() },
                     guardarYsalir   = {
                         // se guarda la puntuación y el tiempo en la base de datos local y en Firebase
-                        GestorPuntuacionEuroBanderas.guardarPuntuacion(
+                        GestorPuntuacionPalabrix1.guardarPuntuacion(
                             db = db,
                             uidUsuario = usuario!!.uidUsuario,
                             puntos = resultado!!.puntos,
@@ -211,8 +211,8 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
                         )
 
                         // se navega al menu del juego (se limpia la pantalla del historial)
-                        controladorNavegacion.navigate(AppScreens.MenuEuroBanderas.route) {
-                            popUpTo(AppScreens.MenuEuroBanderas.route) { inclusive = true }
+                        controladorNavegacion.navigate(AppScreens.MenuPalabrix1.route) {
+                            popUpTo(AppScreens.MenuPalabrix1.route) { inclusive = true }
                             launchSingleTop = true   // evita crear una segunda instancia
                         }
                     }

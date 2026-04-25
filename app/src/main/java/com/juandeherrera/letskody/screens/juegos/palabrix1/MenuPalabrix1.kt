@@ -165,7 +165,7 @@ fun PantallaMenuPalabrix1(controladorNavegacion: NavController) {
                     )
 
                     Button(
-                        onClick = { controladorNavegacion.navigate(route = AppScreens.Numinario1.route) }, // al pulsar te lleva al juego
+                        onClick = { controladorNavegacion.navigate(route = AppScreens.Palabrix1.route) }, // al pulsar te lleva al juego
                         modifier = Modifier.fillMaxWidth() // se ocupa el maximo ancho disponible
                             .height(50.dp),                // altura del botón
                         shape = RoundedCornerShape(size = 12.dp),  // bordes redondeados

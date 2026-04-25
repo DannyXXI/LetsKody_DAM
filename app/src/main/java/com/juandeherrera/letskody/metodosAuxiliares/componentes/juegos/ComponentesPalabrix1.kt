@@ -3,7 +3,9 @@ package com.juandeherrera.letskody.metodosAuxiliares.componentes.juegos
 import android.annotation.SuppressLint
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,21 +25,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import com.juandeherrera.letskody.R
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.formatearSegundos
-import com.juandeherrera.letskody.viewModels.euroBanderas.EstadoEuroBanderas
-
+import com.juandeherrera.letskody.viewModels.palabrix1.EstadoPalabrix1
 
 // función auxiliar para cargar la parte superior de la pantalla del juego (cronometro y puntuación)
 @Composable
-fun CabeceraJuegoEuroBanderas(segundosCronometro: Int, numeroPregunta: Int, preguntasTotales: Int, puntosActuales: Int, fuenteTipografica: FontFamily) {
+fun CabeceraJuegoPalabrix1(segundosCronometro: Int, numeroPregunta: Int, preguntasTotales: Int, puntosActuales: Int, fuenteTipografica: FontFamily) {
     // columna con la parte superior del juego
     Column(
         modifier = Modifier.fillMaxWidth() // se ocupa el ancho disponible
@@ -97,38 +98,54 @@ fun CabeceraJuegoEuroBanderas(segundosCronometro: Int, numeroPregunta: Int, preg
     }
 }
 
-// función auxiliar para cargar la imagen de la bandera
+// función auxiliar para cargar la palabra a clasificar
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
-fun ImagenBandera(urlBandera: String) {
-    // variable para altura responsive de la imagen de la bandera
-    val alturaBandera = when {
-        LocalConfiguration.current.screenHeightDp < 700 -> 160.dp
-        LocalConfiguration.current.screenHeightDp < 900 -> 220.dp
-        else -> 380.dp
-    }
-
-    // tarjeta que contiene la imagen de la bandera
+fun TarjetaPalabraPalabrix1(palabra: String, fuenteTipografica: FontFamily) {
+    // tarjeta que contiene la palabra a clasificar
     ElevatedCard(
         modifier = Modifier.fillMaxWidth()  // se ocupa el ancho disponible
-            .padding(horizontal = 24.dp),   // padding en los laterales horizontales
+            .padding(horizontal = 24.dp)    // padding en los laterales horizontales
+            .height(200.dp),                // altura de la tarjeta
         shape = RoundedCornerShape(size = 12.dp),  // bordes redondeados
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)  // sombreado de elevación
     ){
-        // imagen de la bandera
-        AsyncImage(
-            model = urlBandera,  // URL de la imagen de la bandera
-            contentDescription = "Bandera",    // descripción de la imagen
-            contentScale = ContentScale.Crop,  // forma de escalar la imagen a la tarjeta contenedora
-            modifier = Modifier.fillMaxWidth() // se ocupa el ancho disponible
-                .height(alturaBandera)         // altura de la imagen
-        )
+        // contenedor interno de la tarjeta
+        Box(
+            modifier = Modifier.fillMaxSize()  // ocupa el espacio disponible
+        ){
+            // imagen de fondo
+            Image(
+                painter = painterResource(id = R.drawable.papel),  // ruta al recurso (imagen)
+                contentDescription = "Papel",                      // descripción de la imagen
+                contentScale = ContentScale.Crop,                  // forma de escalar la imagen a la tarjeta contenedora
+                modifier = Modifier.matchParentSize()              // la imagen tiene el mismo tamaño que el elemento padre (tarjeta)
+            )
+
+            // contenedor con la palabra
+            Box(
+                modifier = Modifier.fillMaxSize(),   // ocupa el espacio disponible
+                contentAlignment = Alignment.Center  // contenido alineado en el centro
+            ){
+                // PALABRA
+                Text(
+                    text = palabra,   // texto
+                    color = Color.Black,       // color del texto
+                    style = TextStyle(
+                        fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                        fontSize = 36.sp,                // tamaño del texto
+                        fontWeight = FontWeight.Bold,    // texto en negrita
+                        textAlign = TextAlign.Center     // texto centrado
+                    )
+                )
+            }
+        }
     }
 }
 
 // función auxiliar para cargar cada uno de los cuatro botones con las opciones de respuesta
 @Composable
-fun BotonOpcionEuroBanderas (texto: String, opcionSeleccionada: String?, opcionCorrecta: String, fuenteTipografica: FontFamily, pulsar: () -> Unit) {
+fun BotonOpcionPalabrix1 (texto: String, opcionSeleccionada: String?, opcionCorrecta: String, fuenteTipografica: FontFamily, pulsar: () -> Unit) {
 
     val opcionRespondida = opcionSeleccionada != null // se comprueba si la opcion ha sido seleccionada
 
@@ -179,14 +196,16 @@ fun BotonOpcionEuroBanderas (texto: String, opcionSeleccionada: String?, opcionC
 
 // función auxiliar que agrupa la pantalla del juego mientras el usuario está jugándolo
 @Composable
-fun PantallaJugandoEuroBanderas(estado: EstadoEuroBanderas.Jugando, fuenteTipografica: FontFamily, respuesta: (String) -> Unit) {
+fun PantallaJugandoPalabrix1(estado: EstadoPalabrix1.Jugando, fuenteTipografica: FontFamily, respuesta: (String) -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize(),  // ocupa el espacio disponible
         horizontalAlignment = Alignment.CenterHorizontally,  // centrado horizontal
         verticalArrangement = Arrangement.spacedBy(20.dp)    // espaciado vertical
     ){
+        val opciones = listOf("Sustantivo", "Adjetivo", "Adverbio", "Verbo")  // opciones fijas
+
         // cronómetro y puntuación
-        CabeceraJuegoEuroBanderas(
+        CabeceraJuegoPalabrix1(
             segundosCronometro = estado.tiempoCronometro,
             numeroPregunta = estado.numeroPregunta,
             preguntasTotales = 12,
@@ -194,7 +213,8 @@ fun PantallaJugandoEuroBanderas(estado: EstadoEuroBanderas.Jugando, fuenteTipogr
             fuenteTipografica = fuenteTipografica
         )
 
-        ImagenBandera(urlBandera = estado.preguntaActual.urlBandera) // imagen de la bandera
+        // tarjeta con la palabra a clasificar
+        TarjetaPalabraPalabrix1(palabra = estado.preguntaActual.palabra, fuenteTipografica = fuenteTipografica)
 
         Spacer(modifier = Modifier.height(8.dp))  // separación vertical entre componentes
 
@@ -204,8 +224,8 @@ fun PantallaJugandoEuroBanderas(estado: EstadoEuroBanderas.Jugando, fuenteTipogr
             verticalArrangement = Arrangement.spacedBy(10.dp)  // espaciado vertical
         ){
             // se recorre la lista de opciones para cargarlas en cada botón
-            estado.opciones.forEach { opcion ->
-                BotonOpcionEuroBanderas(
+            opciones.forEach { opcion ->
+                BotonOpcionPalabrix1(
                     texto = opcion,
                     opcionSeleccionada = estado.respuestaSeleccionada,  // nulo si no ha respondido todavía
                     opcionCorrecta = estado.opcionCorrecta,

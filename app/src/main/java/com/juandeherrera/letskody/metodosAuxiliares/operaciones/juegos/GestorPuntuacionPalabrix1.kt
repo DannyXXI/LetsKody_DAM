@@ -3,7 +3,6 @@ package com.juandeherrera.letskody.metodosAuxiliares.operaciones.juegos
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.juandeherrera.letskody.clasesAuxiliares.AccionPuntuacion
-import com.juandeherrera.letskody.firebase.PuntuacionEuroBanderasFirebase
 import com.juandeherrera.letskody.firebase.PuntuacionPalabrix1Firebase
 import com.juandeherrera.letskody.localdb.AppDB
 import com.juandeherrera.letskody.localdb.PuntuacionPalabrix1Data
