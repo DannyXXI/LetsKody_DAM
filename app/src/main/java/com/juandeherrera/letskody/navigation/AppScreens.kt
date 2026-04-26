@@ -35,6 +35,10 @@ sealed class AppScreens (val route: String) {
 
     object EstiraRebota: AppScreens(route = "EstiraRebota")
 
+    object Piano: AppScreens(route = "Piano")
+
+    object DrawArena: AppScreens(route = "DrawArena")
+
     object Perfil: AppScreens(route = "Perfil")
 
     object EditarPerfil: AppScreens(route = "EditarPerfil")

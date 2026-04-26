@@ -33,7 +33,9 @@ import com.juandeherrera.letskody.screens.juegos.numinario1.PantallaMenuNuminari
 import com.juandeherrera.letskody.screens.juegos.numinario1.PantallaNuminario1
 import com.juandeherrera.letskody.screens.juegos.palabrix1.PantallaMenuPalabrix1
 import com.juandeherrera.letskody.screens.juegos.palabrix1.PantallaPalabrix1
+import com.juandeherrera.letskody.screens.miscelanea.PantallaDrawArena
 import com.juandeherrera.letskody.screens.miscelanea.PantallaEstiraRebota
+import com.juandeherrera.letskody.screens.miscelanea.PantallaPiano
 
 @RequiresApi(value = Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
 @Composable
@@ -145,6 +147,16 @@ fun AppNavigation() {
             composable(route = AppScreens.EstiraRebota.route) {
                 BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
                 PantallaEstiraRebota(controladorNavegacion = controladorNavegacion)
+            }
+
+            composable(route = AppScreens.Piano.route) {
+                BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
+                PantallaPiano(controladorNavegacion = controladorNavegacion)
+            }
+
+            composable(route = AppScreens.DrawArena.route) {
+                BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
+                PantallaDrawArena(controladorNavegacion = controladorNavegacion)
             }
 
             composable(route = AppScreens.Perfil.route) {
