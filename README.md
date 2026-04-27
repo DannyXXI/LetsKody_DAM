@@ -136,7 +136,54 @@ Juegos diseñados para el entretenimiento del usuario:
 
 - 📱 **Room Database**:
     - Caché local.
-    - Mejora del rendimiento y gestión offline.
+    - Mejora del rendimiento.
+
+## 📁 Estructura del proyecto
+
+```
+.
+└── app/
+    │
+    ├── src/
+    │   │
+    │   └── main/
+    │       │
+    │       ├── java/com/juandeherrera/letskody/
+    │       │   │
+    │       │   ├── clasesAuxiliares/  # Modelos de datos 
+    │       │   │
+    │       │   ├── firebase/          # Gestión de datos de las colecciones de Firebase
+    │       │   │   
+    │       │   ├── localdb/           # Gestión de la base de datos local                   
+    │       │   │
+    │       │   ├── metodosAuxiliares/
+    │       │   │   │
+    │       │   │   ├── componentes/   # Componentes de la UI
+    │       │   │   │
+    │       │   │   ├── interfaz/      # Estilos visuales para la UI
+    │       │   │   │
+    │       │   │   └── operaciones/   # Lógica funcional del sistema
+    │       │   │
+    │       │   ├── navigation/        # Navegación entre pantallas
+    │       │   │
+    │       │   ├── notification/      # Sistema de notificaciones
+    │       │   │
+    │       │   ├── screens/           # Pantallas de la aplicación
+    │       │   │    
+    │       │   ├── ui/                # Configuración visual global de la aplicación
+    │       │   │    
+    │       │   ├── viewModels/        # Gestión de los juegos de las materias
+    │       │   │
+    │       │   └── MainActivity.kt    # Punto de entrada principal de la aplicación  
+    │       │
+    │       ├── res/                   # Recursos de la aplicación
+    │       │
+    │       └── AndroidManifest.xml    # Configuración global de la aplicación Android
+    │
+    ├── google-services.json   # Configuración de Firebase
+    │
+    └── build.gradle.kts       # Opciones de compilación, dependencias y ajustes para la app
+```
 
 ## 📄 Licencia
 
