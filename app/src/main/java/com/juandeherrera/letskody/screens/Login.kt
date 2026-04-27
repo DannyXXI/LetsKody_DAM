@@ -398,7 +398,7 @@ fun PantallaLogin(controladorNavegacion: NavController) {
                         Icon(
                             painter = painterResource(id = R.drawable.logo_google),  // recurso de la imagen
                             contentDescription = "Google",        // descripción de la imagen
-                            modifier = Modifier.size(20.dp),      // tamaño del icono
+                            modifier = Modifier.size(18.dp),      // tamaño del icono
                             tint = Color.Unspecified              // se mantiene los colores de la imagen
                         )
 
@@ -409,7 +409,7 @@ fun PantallaLogin(controladorNavegacion: NavController) {
                             color = Color(0xFF017DB2),             // color del texto
                             style = TextStyle(
                                 fontFamily = badcomic,  // fuente tipográfica del texto
-                                fontSize = 18.sp        // tamaño del texto
+                                fontSize = 16.sp        // tamaño del texto
                             )
                         )
                     }

@@ -3,6 +3,7 @@ package com.juandeherrera.letskody.metodosAuxiliares.operaciones.miscelanea
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import android.os.Process
 import com.juandeherrera.letskody.clasesAuxiliares.TECLAS_PIANO
 import com.juandeherrera.letskody.clasesAuxiliares.TeclaPiano
 import java.util.concurrent.Executors
@@ -52,9 +53,9 @@ private fun sintetizarBuffer(frecuencia: Double, duracionMs: Int): ShortArray {
 
     val ampTotal = armonicos.sumOf { it.second }  // se suma las amplitudes para que el sonido no sature
 
-    val B = 0.00012 * (frecuencia / 110.0)  // coeficiente de inharmonicidad B (los armónicos de un piano no son exactos)
+    val b = 0.00012 * (frecuencia / 110.0)  // coeficiente de inharmonicidad B (los armónicos de un piano no son exactos)
 
-    fun freqArmonico(n: Double) = frecuencia * n * sqrt(1.0 + B * n * n)  // frecuencia real de cada armónico
+    fun freqArmonico(n: Double) = frecuencia * n * sqrt(1.0 + b * n * n)  // frecuencia real de cada armónico
 
     // Parámetros ADSR (forma de la nota)
     val attSamples   = (SAMPLE_RATE * 0.005).toInt()   // ataque (subida rápida del sonido)
@@ -109,213 +110,121 @@ private fun sintetizarBuffer(frecuencia: Double, duracionMs: Int): ShortArray {
     return buf  // se devuelve el buffer listo con el audio listo para reproducir
 }
 
-/**
- * Presintetiza los buffers de todas las teclas en un hilo de baja prioridad.
- *
- * Debe llamarse una sola vez al montar el composable (LaunchedEffect(Unit)).
- * Retorna inmediatamente sin bloquear el hilo UI; la síntesis ocurre en
- * background. En dispositivos de gama media tarda ~500-800 ms en completarse.
- *
- * Tras esta función, [cacheBuffers] contendrá los 37 buffers y cualquier
- * pulsación posterior tendrá latencia mínima.
- */
-fun prewarmAudio() {
+// función auxiliar para presintetizar los buffers de todas las teclas en un hilo de baja prioridad
+fun prepararAudio() {
+    // se crea un hilo manualmente
     Thread {
-        // Mínima prioridad: no competimos con el hilo UI ni con el audio.
-        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND)
+        // se le dice al sistema que priorice la UI y el audio
+        Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
+
+        // se recorre cada tecla del piano
         TECLAS_PIANO.forEach { tecla ->
-            synchronized(cacheBuffers) {
-                // Solo sintetizamos si el buffer no existe aún en la caché.
-                // El synchronized garantiza que dos hilos no sinteticen la
-                // misma frecuencia a la vez (aunque en la práctica solo hay
-                // un hilo de prewarm).
+            // se bloque al acceso al cache de los buffers sintetizados
+            synchronized(lock = cacheBuffers) {
+                // se sintetiza lo que no exista en la caché de los buffers
                 if (!cacheBuffers.containsKey(tecla.frecuencia)) {
-                    cacheBuffers[tecla.frecuencia] =
-                        sintetizarBuffer(tecla.frecuencia, DURACION_NOTA)
+                    cacheBuffers[tecla.frecuencia] = sintetizarBuffer(frecuencia = tecla.frecuencia, duracionMs = DURACION_NOTA)  // se genera el sonido
                 }
             }
         }
-    }.start()
+    }.start()  // se inicia el hilo
 }
 
-/**
- * Reproduce una nota de piano a la frecuencia indicada.
- *
- * Funcionamiento interno:
- * 1. Obtiene el buffer PCM de la caché en O(1) (si prewarmAudio() ya corrió).
- * 2. Comprueba el semáforo atómico; descarta la nota si hay demasiadas activas.
- * 3. Encola la reproducción en el [audioExecutor] sin bloquear el hilo UI.
- * 4. El hilo del executor crea un AudioTrack MODE_STATIC, lo reproduce
- *    y lo libera al terminar, decrementando el semáforo.
- *
- * Esta función retorna inmediatamente (~0 ms); nunca bloquea al llamador.
- *
- * @param frecuencia Frecuencia en Hz de la nota a reproducir.
- * @param duracionMs Duración en milisegundos (por defecto [DURACION_NOTA_MS]).
- */
+// función auxiliar para reproducir una nota de piano a una frecuencia determinada
 fun reproducirNota(frecuencia: Double, duracionMs: Int = DURACION_NOTA) {
-
-    // ── Paso 1: obtener buffer de la caché ───────────────────────────────
-    // Si prewarmAudio() terminó, esta operación es un HashMap.get() = O(1).
-    // Si el buffer no estuviera en caché (p.ej. la tecla se pulsa antes de
-    // que termine el precalentamiento), lo sintetizamos aquí. Habrá latencia
-    // en esa primera pulsación concreta, pero solo esa vez.
-    val buffer = synchronized(cacheBuffers) {
-        cacheBuffers.getOrPut(frecuencia) {
-            sintetizarBuffer(frecuencia, duracionMs)
-        }
+    // se obtiene el buffer
+    val buffer = synchronized(lock = cacheBuffers) {
+        cacheBuffers.getOrPut(key = frecuencia) { sintetizarBuffer(frecuencia, duracionMs) }
     }
 
-    // ── Paso 2: semáforo de polyphony ────────────────────────────────────
-    // Leemos el valor actual y, si hay hueco, intentamos incrementarlo
-    // atómicamente con compareAndSet. Si otro hilo llegó antes y ya llenó
-    // el contador, compareAndSet falla y descartamos esta nota.
-    val actual = notasActivas.get()
-    if (actual >= MAX_NOTAS_SIMULTANEAS) return
-    if (!notasActivas.compareAndSet(actual, actual + 1)) return
+    val actual = notasActivas.get()  // se lee cuantas notas están sonando ahora mismo
 
-    // ── Paso 3: encolar reproducción en el executor ──────────────────────
-    // La lambda se ejecuta en un hilo del pool, nunca en el hilo UI.
-    // El hilo UI queda libre inmediatamente después de este submit().
+    if (actual >= MAX_NOTAS_SIMULTANEAS)  // si se supera el límite, se descarta la nota
+
+    if (!notasActivas.compareAndSet(actual, actual + 1)) return   // solo se incrementa si nadie cambio el valor antes
+
+    // se ejecuta el hilo del audio
     audioExecutor.execute {
         try {
-            android.os.Process.setThreadPriority(
-                android.os.Process.THREAD_PRIORITY_URGENT_AUDIO
-            )
+            // se da prioridad al audio
+            Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
 
-            // Tamaño mínimo de buffer exigido por el hardware de audio.
-            // Usamos el mayor entre ese mínimo y el tamaño real de los datos PCM
-            // × 2 (porque son bytes, no shorts: cada short ocupa 2 bytes).
-            val minBufSize = AudioTrack.getMinBufferSize(
-                SAMPLE_RATE,
-                AudioFormat.CHANNEL_OUT_MONO,
-                AudioFormat.ENCODING_PCM_16BIT
-            )
-            val bufSize = maxOf(buffer.size * 2, minBufSize)
+            // tamaño mínimo del buffer que exige el hardware
+            val minBufSize = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
 
-            // Creamos el AudioTrack en MODE_STATIC.
-            // Cada nota obtiene su propio AudioTrack: sin reutilización,
-            // sin gestión de estados, sin riesgo de IllegalStateException.
+            val bufSize = maxOf(buffer.size * 2, minBufSize)  // tamaño del buffer
+
+            // se crea el audio (AudioTrack)
             val track = AudioTrack.Builder()
                 .setAudioAttributes(
                     AudioAttributes.Builder()
+                        // se le comunica al sistema que es música
                         .setUsage(AudioAttributes.USAGE_MEDIA)
                         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                         .build()
                 )
                 .setAudioFormat(
                     AudioFormat.Builder()
-                        .setSampleRate(SAMPLE_RATE)
-                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                        .setSampleRate(SAMPLE_RATE)                   // frecuencia de muestreo
+                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)  // PCM de 16 bit
+                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO) // mono
                         .build()
                 )
                 .setBufferSizeInBytes(bufSize)
-                .setTransferMode(AudioTrack.MODE_STATIC)
-                .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
+                .setTransferMode(AudioTrack.MODE_STATIC)                     // se carga el audio de golpe
+                .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY) // se minimiza la latencia
                 .build()
 
-            // Cargamos todos los datos PCM en el buffer del hardware.
-            // En MODE_STATIC, write() es no bloqueante: copia los datos y retorna.
-            track.write(buffer, 0, buffer.size)
-            // play() arranca la reproducción desde el inicio del buffer.
-            // Retorna inmediatamente; el hardware reproduce en paralelo.
-            track.play()
+            track.write(buffer, 0, buffer.size)  // se carga el audio en el hardware
 
-            // Esperamos a que el hardware termine de reproducir el buffer.
-            // duracionMs es el tiempo real de audio; +150 ms de margen para que
-            // el driver consuma los últimos frames sin corte audible.
-            Thread.sleep(duracionMs.toLong() + 150)
+            track.play()  // se reproduce el audio
 
-            // Liberamos los recursos de audio del sistema operativo.
-            // stop() detiene la reproducción; release() libera el objeto.
-            // Importante: en MODE_STATIC siempre se puede llamar stop()
-            // desde estado PLAYING sin excepción.
-            track.stop()
-            track.release()
+            Thread.sleep(duracionMs.toLong() + 150)  // se espera lo que dure la nota + 150 milisegundos
 
-        } catch (_: Exception) {
-            // Capturamos cualquier excepción de audio (estado inválido,
-            // recursos insuficientes del sistema, etc.) para no crashear la app.
-            // El finally siempre decrementa el semáforo aunque haya error.
-        } finally {
-            // Decrementamos el semáforo: el slot queda libre para la siguiente nota.
-            // Este finally se ejecuta SIEMPRE, incluso si hubo excepción,
-            // garantizando que el contador nunca se queda "bloqueado" en el máximo.
-            notasActivas.decrementAndGet()
+            track.stop()      // se detiene el audio
+
+            track.release()   // se libera el recurso de la memoria
+
+        }
+        catch (ex: Exception) {
+            // se captura cualquier excepción con el audio y se muestra por terminal
+            println("Error al reproducir el audio: ${ex.message}")
+        }
+        finally {
+            notasActivas.decrementAndGet()  // se libera el slot de polifonía para la siguiente nota
         }
     }
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-//  HIT-TEST: QUÉ TECLA HAY BAJO UN DEDO
-//
-//  El piano está rotado 180° visualmente, pero Compose entrega las coordenadas
-//  de toque en el sistema local del Box sin rotar (Y crece hacia abajo,
-//  0 en el borde superior del componente). Por eso el cálculo es directo
-//  y coincide con el orden de teclasBlancas (de arriba = Fa5 a abajo = Fa2
-//  en pantalla, pero el orden lógico de la lista no cambia).
-//
-//  PRIORIDAD DE DETECCIÓN:
-//  1. Teclas negras: se comprueban primero porque visualmente están encima.
-//     Solo se evalúan si el dedo está en la zona horizontal de las negras
-//     (x < anchaNegraPx), optimización que evita iterar todas las negras
-//     cuando el dedo está claramente en la zona de blancas.
-//  2. Teclas blancas: fallback por división entera de Y entre alturaBlancaPx.
-// ═════════════════════════════════════════════════════════════════════════════
+// función auxiliar que devuelve la tecla del piano que se está en cierta posición (x, y) en pixeles
+fun teclaEnPosicion(x: Float, y: Float, totalAlturaPx: Float, totalAnchoPx: Float, teclasBlancas: List<TeclaPiano>, teclasNegras: List<TeclaPiano>, indicePrevioBlanca: Map<String, Int>): TeclaPiano? { // Fuera del área del piano: ignoramos el evento.
 
-/**
- * Devuelve la [TeclaPiano] que se encuentra bajo la posición (x, y) en píxeles,
- * o null si el dedo está fuera del área del piano.
- *
- * @param x                  Coordenada X del dedo en píxeles (0 = izquierda).
- * @param y                  Coordenada Y del dedo en píxeles (0 = arriba).
- * @param totalAlturaPx      Altura total del piano en píxeles.
- * @param totalAnchoPx       Ancho total del piano en píxeles.
- * @param teclasBlancas      Lista de teclas blancas en orden de arriba a abajo.
- * @param teclasNegras       Lista de teclas negras en orden de arriba a abajo.
- * @param indicePrevioBlanca Mapa nombre_negra → índice de la blanca previa.
- */
-fun teclaEnPosicion(
-    x: Float,
-    y: Float,
-    totalAlturaPx: Float,
-    totalAnchoPx: Float,
-    teclasBlancas: List<TeclaPiano>,
-    teclasNegras: List<TeclaPiano>,
-    indicePrevioBlanca: Map<String, Int>
-): TeclaPiano? {
-    // Fuera del área del piano: ignoramos el evento.
-    if (y < 0f || y > totalAlturaPx) return null
+    // si el dedo está fuera del área del piano, se ignora el evento
+    if (y !in 0f..totalAlturaPx) return null
 
-    // Altura de cada tecla blanca en píxeles (todas iguales entre sí).
-    val alturaBlancaPx = totalAlturaPx / teclasBlancas.size
-    // Las teclas negras son el 62 % de la altura de las blancas.
-    val altaNegraPx    = alturaBlancaPx * 0.62f
-    // Las teclas negras ocupan el 58 % del ancho total (lado izquierdo del piano).
-    val anchaNegraPx   = totalAnchoPx  * 0.58f
+    val alturaBlancaPx = totalAlturaPx / teclasBlancas.size  // altura de las teclas blancas
 
-    // ── Comprobación de teclas negras (prioridad alta) ───────────────────
-    // Solo tiene sentido si el dedo está en la zona horizontal de las negras.
+    val altaNegraPx = alturaBlancaPx * 0.62f  // altura de las teclas negras (62% de la altura de las blancas)
+
+    val anchaNegraPx = totalAnchoPx  * 0.58f // ancho de las negras (58% del ancho total)
+
+    // se comprueba si el dedo está en la zona horizontal de las negras
     if (x < anchaNegraPx) {
+        // se recorren todas las teclas negras
         for (negra in teclasNegras) {
+            // se busca la blanca anterior a la negra, si no existe se salta
             val idxPrev = indicePrevioBlanca[negra.nombre] ?: continue
 
-            // La negra se centra en la unión entre la blanca [idxPrev] y la siguiente.
-            // Su borde superior (yTop) y borde inferior (yBot) en el eje Y.
-            val yTop = alturaBlancaPx * idxPrev + alturaBlancaPx - altaNegraPx / 2
-            val yBot = yTop + altaNegraPx
+            val yTop = alturaBlancaPx * idxPrev + alturaBlancaPx - altaNegraPx / 2  // posición vertical de la negra
 
-            if (y in yTop..yBot) return negra   // ← dedo sobre esta negra
+            val yBot = yTop + altaNegraPx  // parte inferior de la negra
+
+            if (y in yTop..yBot) return negra // si el dedo está dentro del rango vertical se confirma que se toca la negra
         }
     }
 
-    // ── Comprobación de teclas blancas (fallback) ────────────────────────
-    // Si no hay ninguna negra bajo el dedo, la blanca se determina por división
-    // entera: qué "celda" de altura alturaBlancaPx contiene la coordenada Y.
+    // se obtiene el índice de la blanca
     val idxBlanca = (y / alturaBlancaPx).toInt().coerceIn(0, teclasBlancas.size - 1)
-    return teclasBlancas[idxBlanca]
+
+    return teclasBlancas[idxBlanca] // se confirma que se tocó la blanca
 }
-
-
-

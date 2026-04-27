@@ -34,7 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.juandeherrera.letskody.clasesAuxiliares.TECLAS_PIANO
-import com.juandeherrera.letskody.metodosAuxiliares.operaciones.miscelanea.prewarmAudio
+import com.juandeherrera.letskody.metodosAuxiliares.operaciones.miscelanea.prepararAudio
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.miscelanea.reproducirNota
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.miscelanea.teclaEnPosicion
 import kotlin.collections.component1
@@ -52,7 +52,7 @@ fun PianoInteractivo(
     // Cuando el usuario toca la primera tecla (normalmente >1 s después),
     // los 37 buffers ya estarán sintetizados y la latencia será mínima.
     LaunchedEffect(Unit) {
-        prewarmAudio()
+        prepararAudio()
     }
 
     // ── Estado de teclas iluminadas ───────────────────────────────────────
