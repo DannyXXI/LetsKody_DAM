@@ -12,6 +12,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -91,6 +92,12 @@ fun PantallaEuroBanderas(controladorNavegacion: NavController) {
     LaunchedEffect(key1 = cuentaAtras, key2 = mostrarModalInactividad) {
         if (mostrarModalInactividad && cuentaAtras <= 0) {
             controladorNavegacion.navigate(route = AppScreens.MenuEuroBanderas.route) { popUpTo(id = 0) { inclusive = true } } // se navega al menu del juego (se limpia el historial)
+        }
+    }
+
+    DisposableEffect(key1 = Unit) {
+        onDispose {
+            viewModel.limpiar()  // detecta cuando el usuario abandona la pantalla y detiene los recursos del juego
         }
     }
 

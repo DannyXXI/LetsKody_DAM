@@ -82,7 +82,7 @@ fun PantallaSinConexion() {
 
                     // MENSAJE DE AVISO
                     Text(
-                        text = "¡Oh no! Hemos perdido la conexión de Internet y Kody la necesita estar actualizado para poder seguir jugando contigo.",   // texto
+                        text = "¡Oh no! Hemos perdido la conexión a Internet y Kody necesita estar actualizado para poder seguir jugando contigo.",   // texto
                         color = Color.Black,               // color del texto
                         style = TextStyle(
                             fontFamily = badcomic,         // fuente tipográfica

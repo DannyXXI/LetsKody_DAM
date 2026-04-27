@@ -182,10 +182,15 @@ class Numinario1ViewModel(private val context: Context) : ViewModel() {
         _estado.value = EstadoNuminario1.Terminado // se cambia el estado a juego terminado
     }
 
+    // función para limpiar todos los recursos del juego cuando el usuario salga de la pantalla
+    fun limpiar() {
+        jobCronometro?.cancel()
+        detenerMusica()
+    }
+
     // función de limpieza al destruir el ViewModel (cancelar todas las corrutinas para evitar problemas de memoria)
     override fun onCleared() {
         super.onCleared()
-        jobCronometro?.cancel()
-        detenerMusica()
+        limpiar()
     }
 }

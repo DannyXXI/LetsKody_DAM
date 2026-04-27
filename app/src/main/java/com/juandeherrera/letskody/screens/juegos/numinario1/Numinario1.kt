@@ -11,6 +11,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -86,6 +87,12 @@ fun PantallaNuminario1(controladorNavegacion: NavController) {
     // al generar una nueva operación se limpia el campo de texto de la respuesta del usuario
     LaunchedEffect(key1 = (estado as? EstadoNuminario1.Jugando)?.numero1, key2 = (estado as? EstadoNuminario1.Jugando)?.numero2) {
         textoRespuesta = ""
+    }
+
+    DisposableEffect(key1 = Unit) {
+        onDispose {
+            viewModel.limpiar()  // detecta cuando el usuario abandona la pantalla y detiene los recursos del juego
+        }
     }
 
     Scaffold(

@@ -287,12 +287,17 @@ class EuroBanderasViewModel (private val db: AppDB, private val context: Context
         _estado.value = EstadoEuroBanderas.Terminado // se cambia el estado a juego terminado
     }
 
-    // función de limpieza al destruir el ViewModel (cancelar todas las corrutinas para evitar problemas de memoria)
-    override fun onCleared() {
-        super.onCleared()
+    // función para limpiar todos los recursos del juego cuando el usuario salga de la pantalla
+    fun limpiar() {
         jobCronometro?.cancel()
         jobInactividad?.cancel()
         jobCuentaAtras?.cancel()
         detenerMusica()
+    }
+
+    // función de limpieza al destruir el ViewModel (cancelar todas las corrutinas para evitar problemas de memoria)
+    override fun onCleared() {
+        super.onCleared()
+        limpiar()
     }
 }
