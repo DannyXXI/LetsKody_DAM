@@ -16,10 +16,6 @@ interface PuntuacionEuroBanderasDAO {
     @Query(value = "SELECT * FROM ${Estructura.PuntuacionEuroBanderas.TABLE_NAME} WHERE ${Estructura.PuntuacionEuroBanderas.USUARIO} = :uidUsuario")
     fun getPuntuacionEuroBanderas(uidUsuario: String): PuntuacionEuroBanderasData?
 
-    // OBTENER LAS PUNTUACIONES (NÚMERO ENTERO) SEGÚN LOS PUNTOS Y SI EMPATA POR TIEMPO
-    @Query(value = "SELECT * FROM ${Estructura.PuntuacionEuroBanderas.TABLE_NAME} ORDER BY ${Estructura.PuntuacionEuroBanderas.PUNTOS} DESC, ${Estructura.PuntuacionEuroBanderas.TIEMPO} ASC")
-    fun getListaPuntuacionesEuroBanderasOrdenada(): List<PuntuacionEuroBanderasData>
-
     // AGREGAR UNA NUEVA PUNTUACIÓN
     @Insert
     fun nuevaPuntuacionEuroBanderas(puntuacionEuroBanderasData: PuntuacionEuroBanderasData)
@@ -31,10 +27,6 @@ interface PuntuacionEuroBanderasDAO {
     // ACTUALIZAR UNA PUNTUACIÓN
     @Update
     fun actualizarPuntuacionesEuroBanderas(puntuacionEuroBanderasData: PuntuacionEuroBanderasData)
-
-    // ELIMINAR UNA PUNTUACIÓN
-    @Query(value = "DELETE FROM ${Estructura.PuntuacionEuroBanderas.TABLE_NAME} WHERE ${Estructura.PuntuacionEuroBanderas.USUARIO} = :uidUsuario")
-    fun eliminarPuntuacionEuroBanderas(uidUsuario: String): Int
 
     // ELIMINAR TODAS LAS PUNTUACIONES DE LA BASE DE DATOS LOCAL
     @Query(value = "DELETE FROM ${Estructura.PuntuacionEuroBanderas.TABLE_NAME}")

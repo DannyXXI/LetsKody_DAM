@@ -8,10 +8,6 @@ import androidx.room.Update
 // OPERACIONES QUE SE REALIZARAN EN LA TABLA DE PUNTUACIONES DEL JUEGO DE PALABRIX 1
 @Dao
 interface PuntuacionPalabrix1DAO {
-    // OBTENER TODAS LAS PUNTUACIONES
-    @Query(value = "SELECT * FROM ${Estructura.PuntuacionPalabrix1.TABLE_NAME}")
-    fun getListaPuntuacionesPalabrix1(): List<PuntuacionPalabrix1Data>
-
     // OBTENER UNA DETERMINADA PUNTUACIÓN
     @Query(value = "SELECT * FROM ${Estructura.PuntuacionPalabrix1.TABLE_NAME} WHERE ${Estructura.PuntuacionPalabrix1.USUARIO} = :uidUsuario")
     fun getPuntuacionPalabrix1(uidUsuario: String): PuntuacionPalabrix1Data?
@@ -31,10 +27,6 @@ interface PuntuacionPalabrix1DAO {
     // ACTUALIZAR UNA PUNTUACIÓN
     @Update
     fun actualizarPuntuacionesPalabrix1(puntuacionPalabrix1Data: PuntuacionPalabrix1Data)
-
-    // ELIMINAR UNA PUNTUACIÓN
-    @Query(value = "DELETE FROM ${Estructura.PuntuacionPalabrix1.TABLE_NAME} WHERE ${Estructura.PuntuacionPalabrix1.USUARIO} = :uidUsuario")
-    fun eliminarPuntuacionPalabrix1(uidUsuario: String): Int
 
     // ELIMINAR TODAS LAS PUNTUACIONES DE LA BASE DE DATOS LOCAL
     @Query(value = "DELETE FROM ${Estructura.PuntuacionPalabrix1.TABLE_NAME}")

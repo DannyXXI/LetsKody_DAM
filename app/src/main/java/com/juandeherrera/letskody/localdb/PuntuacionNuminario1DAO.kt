@@ -8,10 +8,6 @@ import androidx.room.Update
 // OPERACIONES QUE SE REALIZARAN EN LA TABLA DE PUNTUACIONES DEL JUEGO DE NUMINARIO 1
 @Dao
 interface PuntuacionNuminario1DAO {
-    // OBTENER TODAS LAS PUNTUACIONES
-    @Query(value = "SELECT * FROM ${Estructura.PuntuacionNuminario1.TABLE_NAME}")
-    fun getListaPuntuacionesNuminario1(): List<PuntuacionNuminario1Data>
-
     // OBTENER UNA DETERMINADA PUNTUACIÓN
     @Query(value = "SELECT * FROM ${Estructura.PuntuacionNuminario1.TABLE_NAME} WHERE ${Estructura.PuntuacionNuminario1.USUARIO} = :uidUsuario")
     fun getPuntuacionNuminario1(uidUsuario: String): PuntuacionNuminario1Data?
@@ -31,10 +27,6 @@ interface PuntuacionNuminario1DAO {
     // ACTUALIZAR UNA PUNTUACIÓN
     @Update
     fun actualizarPuntuacionesNuminario1(puntuacionNuminario1Data: PuntuacionNuminario1Data)
-
-    // ELIMINAR UNA PUNTUACIÓN
-    @Query(value = "DELETE FROM ${Estructura.PuntuacionNuminario1.TABLE_NAME} WHERE ${Estructura.PuntuacionNuminario1.USUARIO} = :uidUsuario")
-    fun eliminarPuntuacionNuminario1(uidUsuario: String): Int
 
     // ELIMINAR TODAS LAS PUNTUACIONES DE LA BASE DE DATOS LOCAL
     @Query(value = "DELETE FROM ${Estructura.PuntuacionNuminario1.TABLE_NAME}")

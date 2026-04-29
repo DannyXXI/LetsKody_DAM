@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -40,32 +41,22 @@ import com.juandeherrera.letskody.metodosAuxiliares.operaciones.miscelanea.tecla
 import kotlin.collections.component1
 import kotlin.collections.component2
 
+// función auxiliar para cargar el piano interactivo en la pantalla
 @Composable
-fun PianoInteractivo(
-    modifier: Modifier = Modifier,
-    fuenteTipografica: FontFamily = FontFamily.Default
-) {
-    // ── Precalentamiento de la caché de audio ─────────────────────────────
-    // LaunchedEffect(Unit) se ejecuta una sola vez al montar el composable.
-    // prewarmAudio() lanza su propio hilo de baja prioridad y retorna
-    // inmediatamente: el hilo de composición no se bloquea en ningún momento.
-    // Cuando el usuario toca la primera tecla (normalmente >1 s después),
-    // los 37 buffers ya estarán sintetizados y la latencia será mínima.
-    LaunchedEffect(Unit) {
-        prepararAudio()
+fun PianoInteractivo(fuenteTipografica: FontFamily) {
+    // bloque que se ejecuta una sola vez al cargar la pantalla
+    LaunchedEffect(key1 = Unit) {
+        prepararAudio() // se prepara el audio de todas las teclas del piano un hilo de baja prioridad
     }
 
-    // ── Estado de teclas iluminadas ───────────────────────────────────────
-    val teclasPulsadas = remember { mutableStateOf(setOf<String>()) }
+    // variable de estado que guarda las teclas que hayan sido pulsadas
+    val teclasPulsadas = remember { mutableStateOf(value = setOf<String>()) }
 
-    // ── Separación en listas para iterar independientemente ──────────────
+    // variables para agrupar las teclas blancas y las teclas negras
     val teclasBlancas = TECLAS_PIANO.filter { !it.esNegra }
     val teclasNegras  = TECLAS_PIANO.filter {  it.esNegra }
 
-    // ── Mapa nombre_negra → índice_blanca_previa ──────────────────────────
-    // Construido una sola vez en la composición inicial (no en cada frame).
-    // Usado tanto para el posicionamiento visual de las negras como para
-    // el hit-test en teclaEnPosicion().
+    // variable para el mapa de posición de las teclas negras
     val indicePrevioBlanca: Map<String, Int> = buildMap {
         var contBlancas = -1
         TECLAS_PIANO.forEach { tecla ->
@@ -74,277 +65,254 @@ fun PianoInteractivo(
         }
     }
 
-    // ── Tracking de dedos activos ─────────────────────────────────────────
-    // Mapa inmutable: cada cambio crea una nueva instancia.
-    // Clave: PointerId.value (Long único por dedo en contacto).
-    // Valor: nombre de la última tecla tocada por ese dedo.
-    val teclaActivaPorPuntero = remember { mutableStateOf(mapOf<Long, String>()) }
+    // variable para el tracking de teclas
+    val teclaActivaPorPuntero = remember { mutableStateOf(value = mapOf<Long, String>()) }
 
-    // ── Dimensiones reales del piano en píxeles ───────────────────────────
-    // onGloballyPositioned las actualiza cada vez que el layout cambia
-    // (rotación de pantalla, cambio de tamaño, etc.).
-    var anchoPx by remember { mutableFloatStateOf(0f) }
-    var altoPx  by remember { mutableFloatStateOf(0f) }
+    // dimensiones reales del piano (pixeles)
+    var anchoPx by remember { mutableFloatStateOf(value = 0f) }
+    var altoPx  by remember { mutableFloatStateOf(value = 0f) }
 
+    // contenedor principal
     BoxWithConstraints(
-        modifier = modifier
-            .fillMaxSize()
-            // Rotación 180°: Fa2 queda abajo y Fa5 arriba (piano vertical estándar).
-            // Las coordenadas de toque siguen siendo las del Box sin rotar,
-            // por lo que el hit-test no necesita ninguna corrección.
-            .rotate(180f)
-            .background(Color(0xFF1A1A2E), RoundedCornerShape(12.dp))
-            .padding(4.dp)
-    ) {
+        modifier = Modifier.fillMaxSize()  // se ocupa el espacio disponible
+            .rotate(degrees = 180f)        // se rota 180º
+            .background(Color(0xFF17172D), shape = RoundedCornerShape(size = 12.dp))  // fondo con bordes redondeados
+            .padding(all = 4.dp)  // padding interno
+    ){
+        // dimensiones máximas del contenedor
         val totalAncho = maxWidth
-        val totalAlto  = maxHeight
+        val totalAlto = maxHeight
 
         // Dimensiones de cada tecla en unidades Dp (para los Modifier de layout).
-        val alturaBlanca = totalAlto  / teclasBlancas.size
-        val altaNegra    = alturaBlanca * 0.62f   // 62 % de la altura de la blanca
-        val anchaNegra   = totalAncho  * 0.58f    // 58 % del ancho total
+
+        // dimensiones de cada tecla
+        val alturaBlanca = totalAlto  / teclasBlancas.size  // altura de tecla blanca
+        val altaNegra = alturaBlanca * 0.62f    // altura de tecla negra (62% de tecla blanca)
+        val anchaNegra = totalAncho  * 0.58f    // ancho de tecla negra (58% del ancho total)
 
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                // Capturamos el tamaño real en píxeles para pasárselo al hit-test.
-                .onGloballyPositioned { coords ->
-                    anchoPx = coords.size.width.toFloat()
-                    altoPx  = coords.size.height.toFloat()
+            modifier = Modifier.fillMaxSize() // se ocupa el espacio disponible
+                // se actualiza el tamaño real del piano
+                .onGloballyPositioned { coordenadas ->
+                    anchoPx = coordenadas.size.width.toFloat()
+                    altoPx  = coordenadas.size.height.toFloat()
                 }
-                // ── CAPA DE GLISSANDO ─────────────────────────────────────
-                // Este pointerInput recibe TODOS los eventos de TODOS los dedos
-                // sobre el Box entero. Solo actúa en Move y Release; los Down
-                // los manejan las teclas hijas para evitar duplicar el sonido.
+                // detector de los gestos del usuario (capa de glissando)
                 .pointerInput(Unit) {
+                    // se reinicia el detector tras cada secuencia
                     awaitPointerEventScope {
+                        // bucle infinitos de eventos
                         while (true) {
-                            val evento = awaitPointerEvent()
+                            val evento = awaitPointerEvent()  // se obtiene el evento táctil
 
-                            if (evento.type == PointerEventType.Move ||
-                                evento.type == PointerEventType.Release
-                            ) {
+                            // sole se permite eventos de movimiento de dedo o levantar el dedo
+                            if (evento.type == PointerEventType.Move || evento.type == PointerEventType.Release) {
+
+                                // se recorre el número de dedos
                                 evento.changes.forEach { cambio ->
                                     val id = cambio.id.value
 
-                                    // ── Dedo levantado ────────────────────────────
+                                    // si se levanta el dedo
                                     if (!cambio.pressed) {
-                                        val nombreAnterior = teclaActivaPorPuntero.value[id]
-                                        if (nombreAnterior != null) {
-                                            // Eliminamos el dedo del mapa de tracking.
-                                            teclaActivaPorPuntero.value =
-                                                teclaActivaPorPuntero.value - id
+                                        val nombreAnterior = teclaActivaPorPuntero.value[id]  // se obtiene el nombre de la tecla anterior
 
-                                            // Apagamos la tecla SOLO si ningún OTRO dedo
-                                            // sigue sobre ella (soporte multitouch correcto).
-                                            val sigueActiva = teclaActivaPorPuntero.value
-                                                .values.contains(nombreAnterior)
+                                        if (nombreAnterior != null) {
+                                            teclaActivaPorPuntero.value -= id  // se elimina el dedo del mapa de tracking
+
+                                            // se apaga la tecla si no hay otro dedo sobre ella
+                                            val sigueActiva = teclaActivaPorPuntero.value.values.contains(nombreAnterior)
                                             if (!sigueActiva) {
-                                                teclasPulsadas.value =
-                                                    teclasPulsadas.value - nombreAnterior
+                                                teclasPulsadas.value -= nombreAnterior
                                             }
                                         }
                                         return@forEach
                                     }
 
-                                    // ── Dedo en movimiento (glissando) ────────────
-                                    val pos = cambio.position
-                                    // Determinamos qué tecla hay bajo la posición actual del dedo.
+                                    val pos = cambio.position // posición del dedo
+
+                                    // se determina la tecla que está en la posición actual del dedo
                                     val tecla = teclaEnPosicion(
-                                        x                  = pos.x,
-                                        y                  = pos.y,
-                                        totalAlturaPx      = altoPx,
-                                        totalAnchoPx       = anchoPx,
-                                        teclasBlancas      = teclasBlancas,
-                                        teclasNegras       = teclasNegras,
+                                        x = pos.x,
+                                        y = pos.y,
+                                        totalAlturaPx = altoPx,
+                                        totalAnchoPx = anchoPx,
+                                        teclasBlancas = teclasBlancas,
+                                        teclasNegras = teclasNegras,
                                         indicePrevioBlanca = indicePrevioBlanca
-                                    ) ?: return@forEach  // dedo fuera del área del piano
+                                    ) ?: return@forEach
 
-                                    val nombreAnterior = teclaActivaPorPuntero.value[id]
+                                    val nombreAnterior = teclaActivaPorPuntero.value[id]  // se obtiene el nombre de la tecla anterior
 
-                                    // Solo actuamos si el dedo ha cambiado de tecla.
-                                    // Esto evita disparar el sonido repetidamente mientras
-                                    // el dedo permanece quieto sobre la misma tecla.
+                                    // se comprueba si el dedo cambió de tecla para evitar disparar el sonido continuamente mientras permanece en la misma tecla
                                     if (tecla.nombre != nombreAnterior) {
 
-                                        // Apagamos la tecla anterior si ningún otro
-                                        // dedo la sigue manteniendo presionada.
+                                        // se apaga la tecla anterior si no hay otro dedo que la mantenga presionada
                                         if (nombreAnterior != null) {
-                                            val sigueActiva = teclaActivaPorPuntero.value
-                                                .entries
-                                                .any { (k, v) -> k != id && v == nombreAnterior }
+                                            val sigueActiva = teclaActivaPorPuntero.value.entries.any { (k, v) -> k != id && v == nombreAnterior }
                                             if (!sigueActiva) {
-                                                teclasPulsadas.value =
-                                                    teclasPulsadas.value - nombreAnterior
+                                                teclasPulsadas.value -= nombreAnterior
                                             }
                                         }
 
-                                        // Encendemos la nueva tecla, actualizamos el tracking
-                                        // y disparamos el sonido. reproducirNota() no bloquea
-                                        // el hilo UI: usa el audioExecutor internamente.
-                                        teclaActivaPorPuntero.value =
-                                            teclaActivaPorPuntero.value + (id to tecla.nombre)
-                                        teclasPulsadas.value =
-                                            teclasPulsadas.value + tecla.nombre
-                                        reproducirNota(tecla.frecuencia)
-                                        cambio.consume()
+                                        teclaActivaPorPuntero.value += (id to tecla.nombre) // se enciende la nueva tecla
+
+                                        teclasPulsadas.value += tecla.nombre                // se actualiza el tracking
+
+                                        reproducirNota(frecuencia = tecla.frecuencia)       // se dispara el sonido
+
+                                        cambio.consume() // se consume el evento
                                     }
                                 }
                             }
                         }
                     }
                 }
-        ) {
-
-            // ── TECLAS BLANCAS ────────────────────────────────────────────
-            // Se dibujan primero (fondo del Box) para que las negras queden
-            // visualmente encima gracias al orden de composición de Compose.
+        ){
+            // se dibujan las teclas blancas
             teclasBlancas.forEachIndexed { idx, tecla ->
-                // Desplazamiento vertical de esta tecla desde el borde superior.
-                val yOffset = alturaBlanca * idx
-                // Azul claro cuando está pulsada; blanco cuando está libre.
-                val pulsada = teclasPulsadas.value.contains(tecla.nombre)
+                val yOffset = alturaBlanca * idx  // desplazamiento vertical de esta tecla desde el borde superior
 
+                val pulsada = teclasPulsadas.value.contains(tecla.nombre)  // se comprueba que la tecla esta pulsada
+
+                // contenedor de la tecla
                 Box(
-                    modifier = Modifier
-                        .offset(y = yOffset)
-                        .fillMaxWidth()
-                        .height(alturaBlanca - 2.dp)  // 2 dp de separación entre teclas
-                        .clip(RoundedCornerShape(topEnd = 5.dp, bottomEnd = 5.dp))
-                        .background(if (pulsada) Color(0xFFADD8E6) else Color.White)
-                        .border(
-                            width = 1.dp,
-                            color = Color(0xFFCCCCCC),
-                            shape = RoundedCornerShape(topEnd = 5.dp, bottomEnd = 5.dp)
-                        )
-                        // ── CAPA DE PULSACIÓN DIRECTA (blancas) ──────────
-                        // La clave del pointerInput es el nombre de la tecla:
-                        // Compose crea un listener distinto por cada tecla blanca.
-                        // Solo gestiona Down y Release directos (no el arrastre).
-                        .pointerInput(tecla.nombre) {
+                    modifier = Modifier.offset(y = yOffset) // posicionamiento vertical
+                        .fillMaxWidth()   // se ocupa el espacio disponible
+                        .height(alturaBlanca - 2.dp)  // separación de 2.dp entre teclas
+                        .clip(shape = RoundedCornerShape(topEnd = 5.dp, bottomEnd = 5.dp)) // bordes redondeados al final
+                        .background(if (pulsada) Color(0xFFADD8E6) else Color.White) // color de fondo
+                        .border(width = 1.dp, color = Color(0xFFCCCCCC), shape = RoundedCornerShape(topEnd = 5.dp, bottomEnd = 5.dp)) // color de borde, grosor y redondeo
+                        // detector de los gestos del usuario (capa de pulsación directa)
+                        .pointerInput(key1 = tecla.nombre) {
+                            // se reinicia el detector tras cada secuencia
                             awaitPointerEventScope {
-                                // Set local de IDs de dedos sobre ESTA tecla concreta.
-                                val punterosActivos = mutableSetOf<Long>()
+                                val punterosActivos = mutableSetOf<Long>()  // set local con los ids de dedos sobre esta tecla concreta
+
+                                // bucle infinito de eventos
                                 while (true) {
-                                    val evento = awaitPointerEvent()
+                                    val evento = awaitPointerEvent()  // evento táctil
+
+                                    // se recorre el número de dedos
                                     evento.changes.forEach { cambio ->
                                         when {
-                                            // Dedo nuevo presionado sobre esta tecla.
-                                            cambio.pressed &&
-                                                    !punterosActivos.contains(cambio.id.value) -> {
-                                                punterosActivos.add(cambio.id.value)
-                                                // Registramos en el mapa global para que la
-                                                // capa de glissando sepa el punto de partida.
-                                                teclaActivaPorPuntero.value =
-                                                    teclaActivaPorPuntero.value +
-                                                            (cambio.id.value to tecla.nombre)
-                                                teclasPulsadas.value =
-                                                    teclasPulsadas.value + tecla.nombre
-                                                // Sin scope.launch: reproducirNota gestiona
-                                                // su propio hilo a través del audioExecutor.
-                                                reproducirNota(tecla.frecuencia)
-                                                cambio.consume()
+                                            // dedo nuevo presionado sobre esta tecla
+                                            cambio.pressed && !punterosActivos.contains(element = cambio.id.value) -> {
+                                                punterosActivos.add(element = cambio.id.value)  // se registra en el mapa global
+
+                                                teclaActivaPorPuntero.value += (cambio.id.value to tecla.nombre)  // se enciende la nueva
+
+                                                teclasPulsadas.value += tecla.nombre           // se actualiza el tracking
+
+                                                reproducirNota(frecuencia = tecla.frecuencia)  // se dispara el sonido
+
+                                                cambio.consume()  // se consume el evento
                                             }
-                                            // Dedo levantado de esta tecla.
-                                            !cambio.pressed &&
-                                                    punterosActivos.contains(cambio.id.value) -> {
-                                                punterosActivos.remove(cambio.id.value)
-                                                // Apagamos el visual solo si no queda
-                                                // ningún otro dedo sobre esta tecla.
+
+                                            // dedo levantado de esta tecla
+                                            !cambio.pressed && punterosActivos.contains(element = cambio.id.value) -> {
+                                                punterosActivos.remove(element = cambio.id.value)  // se elimina el dedo del mapa global
+
+                                                // se desactiva el efecto visual si no hay otro dedo sobre esa tecla
                                                 if (punterosActivos.isEmpty()) {
-                                                    teclasPulsadas.value =
-                                                        teclasPulsadas.value - tecla.nombre
+                                                    teclasPulsadas.value -= tecla.nombre
                                                 }
-                                                cambio.consume()
+
+                                                cambio.consume()  // se consume el evento
                                             }
                                         }
                                     }
                                 }
                             }
                         },
-                    contentAlignment = Alignment.CenterEnd
-                ) {
-                    // Etiqueta de la nota. Rotada -90° para que se lea horizontalmente
-                    // (el Box padre está rotado 180°, así que -90° resulta legible).
+                    contentAlignment = Alignment.CenterEnd  // contenido centrado en la parte inferior
+                ){
+                    // ETIQUETA DE LA NOTA BLANCA
                     Text(
-                        text       = tecla.nombre,
-                        fontSize   = 8.sp,
-                        color      = Color(0xFF444444),
-                        fontWeight = FontWeight.Medium,
-                        fontFamily = fuenteTipografica,
-                        textAlign  = TextAlign.Center,
-                        modifier   = Modifier
-                            .padding(end = 6.dp)
-                            .rotate(-90f)
+                        text = tecla.nombre,                     // texto
+                        color = Color.Black,                     // color del texto
+                        style = TextStyle(
+                            fontFamily = fuenteTipografica,      // fuente tipográfica
+                            fontSize = 8.sp,                     // tamaño de fuente
+                            fontWeight = FontWeight.Medium,      // texto en negrita media
+                            textAlign = TextAlign.Center         // texto alineado en el centro
+                        ),
+                        modifier = Modifier.padding(end = 6.dp)  // padding en el lateral derecho
+                            .rotate(degrees = -90f)              // rotación del texto
                     )
                 }
             }
 
-            // ── TECLAS NEGRAS ─────────────────────────────────────────────
-            // Se dibujan después de las blancas → quedan encima visualmente.
+            // se dibujan después las teclas negras
             teclasNegras.forEach { tecla ->
-                val idxPrev = indicePrevioBlanca[tecla.nombre] ?: return@forEach
-                // Azul oscuro cuando está pulsada; negro cuando está libre.
-                val pulsada = teclasPulsadas.value.contains(tecla.nombre)
+                val idxPrev = indicePrevioBlanca[tecla.nombre] ?: return@forEach     // se obtiene el índice de la tecla blanca previa
 
-                // La negra se centra verticalmente en la unión entre la blanca
-                // [idxPrev] y la siguiente, igual que en un piano acústico real.
-                val yOffset = alturaBlanca * idxPrev + alturaBlanca - altaNegra / 2
+                val pulsada = teclasPulsadas.value.contains(tecla.nombre)            // se comprueba cuando la tecla esté pulsada
 
+                val yOffset = alturaBlanca * idxPrev + alturaBlanca - altaNegra / 2  // desplazamiento vertical de esta tecla desde el borde superior
+
+                // contenedor de la tecla
                 Box(
-                    modifier = Modifier
-                        .offset(y = yOffset)
-                        .width(anchaNegra)
-                        .height(altaNegra)
-                        .shadow(4.dp, RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp))
-                        .clip(RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp))
-                        .background(if (pulsada) Color(0xFF3A3A6E) else Color(0xFF111122))
-                        // ── CAPA DE PULSACIÓN DIRECTA (negras) ───────────
-                        // Mismo mecanismo que en las blancas.
-                        .pointerInput(tecla.nombre) {
+                    modifier = Modifier.offset(y = yOffset)  // posicionamiento vertical
+                        .width(anchaNegra)  // ancho
+                        .height(altaNegra)  // alto
+                        .shadow(elevation = 4.dp, shape = RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp))  // sombreado
+                        .clip(shape = RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp)) // bordes redondeados en la parte inferior
+                        .background(color = if (pulsada) Color.Black else Color(0xFF111122))  // color de fondo
+                        // detector de los gestos del usuario (capa de pulsación directa)
+                        .pointerInput(key1 = tecla.nombre) {
+                            // se reinicia el detector tras cada secuencia
                             awaitPointerEventScope {
-                                val punterosActivos = mutableSetOf<Long>()
+                                val punterosActivos = mutableSetOf<Long>()  // set local con los ids de dedos sobre esta tecla concreta
+
+                                // bucle infinito de eventos
                                 while (true) {
-                                    val evento = awaitPointerEvent()
+                                    val evento = awaitPointerEvent()  // evento táctil
+
+                                    // se recorre el número de dedos
                                     evento.changes.forEach { cambio ->
                                         when {
-                                            cambio.pressed &&
-                                                    !punterosActivos.contains(cambio.id.value) -> {
-                                                punterosActivos.add(cambio.id.value)
-                                                teclaActivaPorPuntero.value =
-                                                    teclaActivaPorPuntero.value +
-                                                            (cambio.id.value to tecla.nombre)
-                                                teclasPulsadas.value =
-                                                    teclasPulsadas.value + tecla.nombre
-                                                reproducirNota(tecla.frecuencia)
-                                                cambio.consume()
+                                            // dedo nuevo presionado sobre esta tecla
+                                            cambio.pressed && !punterosActivos.contains(element = cambio.id.value) -> {
+                                                punterosActivos.add(element = cambio.id.value)  // se registra en el mapa global
+
+                                                teclaActivaPorPuntero.value += (cambio.id.value to tecla.nombre)  // se enciende la nueva
+
+                                                teclasPulsadas.value += tecla.nombre           // se actualiza el tracking
+
+                                                reproducirNota(frecuencia = tecla.frecuencia)  // se dispara el sonido
+
+                                                cambio.consume()  // se consume el evento
                                             }
-                                            !cambio.pressed &&
-                                                    punterosActivos.contains(cambio.id.value) -> {
-                                                punterosActivos.remove(cambio.id.value)
+
+                                            // dedo levantado de esta tecla
+                                            !cambio.pressed && punterosActivos.contains(element = cambio.id.value) -> {
+                                                punterosActivos.remove(element = cambio.id.value)  // se elimina el dedo del mapa global
+
+                                                // se desactiva el efecto visual si no hay otro dedo sobre esa tecla
                                                 if (punterosActivos.isEmpty()) {
-                                                    teclasPulsadas.value =
-                                                        teclasPulsadas.value - tecla.nombre
+                                                    teclasPulsadas.value -= tecla.nombre
                                                 }
-                                                cambio.consume()
+
+                                                cambio.consume()  // se consume el evento
                                             }
                                         }
                                     }
                                 }
                             }
                         },
-                    contentAlignment = Alignment.CenterEnd
-                ) {
-                    // Etiqueta más pequeña en negras (menos espacio disponible).
+                    contentAlignment = Alignment.CenterEnd  // contenido centrado en parte inferior
+                ){
+                    // ETIQUETA DE LA NOTA NEGRA
                     Text(
-                        text       = tecla.nombre,
-                        fontSize   = 6.sp,
-                        color      = Color(0xFFAAAAAA),
-                        fontFamily = fuenteTipografica,
-                        textAlign  = TextAlign.Center,
-                        modifier   = Modifier
-                            .padding(end = 3.dp)
-                            .rotate(-90f)
+                        text = tecla.nombre,                     // texto
+                        color = Color.White,                     // color del texto
+                        style = TextStyle(
+                            fontFamily = fuenteTipografica,      // fuente tipográfica
+                            fontSize = 6.sp,                     // tamaño de fuente
+                            textAlign = TextAlign.Center         // texto alineado en el centro
+                        ),
+                        modifier = Modifier.padding(end = 3.dp)  // padding en el lateral derecho
+                            .rotate(degrees = -90f)              // rotación del texto
                     )
                 }
             }

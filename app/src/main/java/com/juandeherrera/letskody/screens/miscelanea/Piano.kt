@@ -104,16 +104,11 @@ fun PantallaPiano(controladorNavegacion: NavController) {
             modifier = Modifier.fillMaxSize()                    // se ocupa la pantalla completa
                 .background(Color(0xFFC2DAFD))                   // color de fondo
                 .padding(paddingValues = innerPadding)           // padding por defecto
-                .padding(horizontal = 10.dp),                    // padding horizontal adicional
+                .padding(all = 10.dp),                           // padding interno adicional
             horizontalAlignment = Alignment.CenterHorizontally,  // centrado horizontal
             verticalArrangement = Arrangement.Center             // centrado vertical
         ){
-
-// llamada en la pantalla correspondiente
-            PianoInteractivo(
-                modifier = Modifier.fillMaxWidth(),
-                fuenteTipografica = badcomic
-            )
+            PianoInteractivo(fuenteTipografica = badcomic)
         }
     }
 }

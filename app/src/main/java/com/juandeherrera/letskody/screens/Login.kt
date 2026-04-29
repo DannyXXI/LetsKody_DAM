@@ -7,7 +7,6 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -72,6 +71,7 @@ import com.juandeherrera.letskody.localdb.Estructura
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.MensajeSnackbarHost
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.ModalModificarPassword
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.notificationSnackbar
+import com.juandeherrera.letskody.metodosAuxiliares.interfaz.FondoDegradadoConIconos
 import com.juandeherrera.letskody.metodosAuxiliares.interfaz.fondoDegradadoDiagonal
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.iniciarSesionGoogle
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.loguearUsuario
@@ -84,8 +84,6 @@ import com.juandeherrera.letskody.navigation.AppScreens
 @Composable
 fun PantallaLogin(controladorNavegacion: NavController) {
     val badcomic = FontFamily(Font(R.font.badcomic))  // fuente tipográfica por defecto
-
-    val degradadoDiagonal = fondoDegradadoDiagonal(color1 = Color(0xFF0D47A1), color2 = Color(0xFF1976D2), color3 = Color(0xFF42A5F5))  // variable para obtener el degradado
 
     val scope = rememberCoroutineScope() // variable que crea un ámbito de corrutinas que se mantienen en la recomposición de la interfaz
 
@@ -157,290 +155,343 @@ fun PantallaLogin(controladorNavegacion: NavController) {
             )
         }
 
-        Column(
-            modifier = Modifier.fillMaxSize()               // ocupa el máximo espacio disponible
-                .background(brush = degradadoDiagonal)      // fondo con degradado animado
-                .padding(paddingValues = innerPadding),     // se usa el padding por defecto
-            horizontalAlignment = Alignment.CenterHorizontally,   // centrado horizontal
-            verticalArrangement = Arrangement.Center              // centrado vertical
+        FondoDegradadoConIconos(
+            color1 = Color(0xFF0D47A1),
+            color2 = Color(0xFF1976D2),
+            color3 = Color(0xFF42A5F5),
+            icono = painterResource(id = R.drawable.ic_stat_kody),
+            colorIcono = Color.White,
+            duracion = 4000
         ){
-            // tarjeta elevada donde se mostrara el formulario de login
-            ElevatedCard(
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp), // sombreado de la tarjeta
-                colors = CardDefaults.cardColors(containerColor = Color.White),  // color de fondo de la tarjeta
-                modifier = Modifier.fillMaxWidth()        // ocupa el maximo ancho posible
-                    .padding(start = 30.dp, end = 30.dp)  // padding en los laterales
-            ){
-                // columna que contiene el formulario
-                Column(
-                    modifier = Modifier.fillMaxWidth() // ocupa el ancho maximo posible
-                        .padding(16.dp),          // padding interior
-                    horizontalAlignment = Alignment.CenterHorizontally,   // centrado horizontal
-                    verticalArrangement = Arrangement.Center              // centrado vertical
-                ){
-                    // IMAGEN DEL TÍTULO DE LA APLICACIÓN
-                    Image(
-                        painter = painterResource(id = R.drawable.titulo),   // ruta al recurso (imagen)
-                        contentDescription = "Lets Kody",                    // texto descriptivo de la imagen (TalkBack)
-                        contentScale = ContentScale.Fit                      // forma de escalar la imagen
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))  // separación vertical entre componentes
-
-                    // TITULO
-                    Text(
-                        text = "Bienvenid@",         // texto
-                        color = Color(0xFF017DB2),   // color del texto
-                        style = TextStyle(
-                            fontFamily = badcomic,   // fuente tipográfica del texto
-                            fontSize = 45.sp         // tamaño del texto
+            Column(
+                modifier = Modifier.fillMaxSize()               // ocupa el máximo espacio disponible
+                    .padding(paddingValues = innerPadding),     // se usa el padding por defecto
+                horizontalAlignment = Alignment.CenterHorizontally,   // centrado horizontal
+                verticalArrangement = Arrangement.Center              // centrado vertical
+            ) {
+                // tarjeta elevada donde se mostrara el formulario de login
+                ElevatedCard(
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp), // sombreado de la tarjeta
+                    colors = CardDefaults.cardColors(containerColor = Color.White),  // color de fondo de la tarjeta
+                    modifier = Modifier.fillMaxWidth()        // ocupa el maximo ancho posible
+                        .padding(start = 30.dp, end = 30.dp)  // padding en los laterales
+                ) {
+                    // columna que contiene el formulario
+                    Column(
+                        modifier = Modifier.fillMaxWidth() // ocupa el ancho maximo posible
+                            .padding(16.dp),          // padding interior
+                        horizontalAlignment = Alignment.CenterHorizontally,   // centrado horizontal
+                        verticalArrangement = Arrangement.Center              // centrado vertical
+                    ) {
+                        // IMAGEN DEL TÍTULO DE LA APLICACIÓN
+                        Image(
+                            painter = painterResource(id = R.drawable.titulo),   // ruta al recurso (imagen)
+                            contentDescription = "Lets Kody",                    // texto descriptivo de la imagen (TalkBack)
+                            contentScale = ContentScale.Fit                      // forma de escalar la imagen
                         )
-                    )
 
-                    Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
+                        Spacer(modifier = Modifier.height(10.dp))  // separación vertical entre componentes
 
-                    // se pide el email del usuario
-                    OutlinedTextField(
-                        value = email,  // valor del campo de texto
-                        onValueChange = { if (it.length < 40){ email = it } },  // se limita la longitud a 40 caracteres
-                        label = {
-                            Text(
-                                text = "Email del usuario",  // texto
-                                color = Color.Black,         // color del texto
-                                fontFamily = badcomic        // fuente tipográfica del texto
+                        // TITULO
+                        Text(
+                            text = "Bienvenid@",         // texto
+                            color = Color(0xFF017DB2),   // color del texto
+                            style = TextStyle(
+                                fontFamily = badcomic,   // fuente tipográfica del texto
+                                fontSize = 44.sp         // tamaño del texto
                             )
-                        },
-                        modifier = Modifier.width(310.dp),  // ancho del campo de texto
-                        colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = Color(0xFF017DB2),   // borde del campo cuando está activo
-                            unfocusedIndicatorColor = Color(0xFF017DB2), // borde del campo cuando no está activo
-                            focusedContainerColor = Color.White,         // color del fondo del campo cuando está activo
-                            unfocusedContainerColor = Color.White,       // color del fondo del campo cuando no está activo
-                            cursorColor = Color(0xFF017DB2)              // color del cursor en el campo de texto
-                        ),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Email,            // tipo de teclado para el campo de texto
-                            capitalization = KeyboardCapitalization.None, // no se capitaliza (no se trata las mayúsculas) el texto del usuario
-                            autoCorrectEnabled = true,                    // se habilita el autocorrector mientras escribe el usuario
-                            imeAction = ImeAction.Next,                   // se habilita la acción de ir al siguiente campo de texto desde el teclado
-                            showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
-                        ),
-                        textStyle = TextStyle(
-                            color = Color.Black,      // color del texto introducido
-                            fontFamily = badcomic     // fuente tipográfica del texto introducida
                         )
-                    )
 
-                    Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
+                        Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
 
-                    // se pide la contraseña del usuario
-                    OutlinedSecureTextField(
-                        state = password,  // estado que contiene el texto introducido (la contraseña)
-                        label = {
-                            Text(
-                                text = "Contraseña",   // texto
-                                color = Color.Black,   // color del texto
-                                fontFamily = badcomic  // fuente tipográfica del texto
-                            )
-                        },
-                        modifier = Modifier.width(310.dp),  // ancho del campo de texto
-                        // icono situado al final del campo de texto
-                        trailingIcon = {
-                            IconButton(
-                                onClick = { passVisible = !passVisible }  // al pulsar el icono cambia el estado para mostrar/ocultar la contraseña
-                            ){
-                                Icon(
-                                    // se cambia el icono si la contraseña es visible o no
-                                    imageVector = if (passVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-
-                                    // se cambia la descripción para lectores de pantalla en función si la contraseña es visible o no
-                                    contentDescription = if (passVisible) "Ocultar contraseña" else "Mostrar contraseña",
-
-                                    tint = Color.Black // color del icono
+                        // se pide el email del usuario
+                        OutlinedTextField(
+                            value = email,  // valor del campo de texto
+                            onValueChange = {
+                                if (it.length < 40) {
+                                    email = it
+                                }
+                            },  // se limita la longitud a 40 caracteres
+                            label = {
+                                Text(
+                                    text = "Email del usuario",  // texto
+                                    color = Color.Black,         // color del texto
+                                    fontFamily = badcomic        // fuente tipográfica del texto
                                 )
-                            }
-                        },
-                        // controla como se oculta el texto (lo hace visible completamente o solo muestra el último carácter)
-                        textObfuscationMode = if (passVisible) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
-                        colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = Color(0xFF017DB2),   // borde del campo cuando está activo
-                            unfocusedIndicatorColor = Color(0xFF017DB2), // borde del campo cuando no está activo
-                            focusedContainerColor = Color.White,         // color del fondo del campo cuando está activo
-                            unfocusedContainerColor = Color.White,       // color del fondo del campo cuando no está activo
-                            cursorColor = Color(0xFF017DB2)              // color del cursor en el campo de texto
-                        ),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password,         // tipo de teclado para el campo de texto
-                            capitalization = KeyboardCapitalization.None, // no se capitaliza (no se trata las mayúsculas) el texto del usuario
-                            autoCorrectEnabled = false,                   // se inhabilita el autocorrector mientras escribe el usuario
-                            imeAction = ImeAction.Send,                   // se habilita la acción de iniciar sesión desde el teclado (enviar formulario)
-                            showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
-                        ),
-                        onKeyboardAction = {
-                            // validaciones de los campos del formulario
-                            when{
-                                email.isBlank() -> {
-                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El email no puede estar vacío.")
-                                }
-                                !email.matches(regex = emailPattern) -> {
-                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El email no tiene un formato válido.")
-                                }
-                                password.text.length < 8 -> {
-                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La contraseña debe tener 8 caracteres.")
-                                }
-                                else -> {
-                                    // inicia sesión el usuario
-                                    loguearUsuario(
-                                        controladorNavegacion = controladorNavegacion,
-                                        context = context,
-                                        scope = scope,
-                                        snackbarHostState = snackbarHostState,
-                                        email = email,
-                                        password = password.text.toString()
+                            },
+                            modifier = Modifier.width(310.dp),  // ancho del campo de texto
+                            colors = TextFieldDefaults.colors(
+                                focusedIndicatorColor = Color(0xFF017DB2),   // borde del campo cuando está activo
+                                unfocusedIndicatorColor = Color(0xFF017DB2), // borde del campo cuando no está activo
+                                focusedContainerColor = Color.White,         // color del fondo del campo cuando está activo
+                                unfocusedContainerColor = Color.White,       // color del fondo del campo cuando no está activo
+                                cursorColor = Color(0xFF017DB2)              // color del cursor en el campo de texto
+                            ),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email,            // tipo de teclado para el campo de texto
+                                capitalization = KeyboardCapitalization.None, // no se capitaliza (no se trata las mayúsculas) el texto del usuario
+                                autoCorrectEnabled = true,                    // se habilita el autocorrector mientras escribe el usuario
+                                imeAction = ImeAction.Next,                   // se habilita la acción de ir al siguiente campo de texto desde el teclado
+                                showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
+                            ),
+                            textStyle = TextStyle(
+                                color = Color.Black,      // color del texto introducido
+                                fontFamily = badcomic     // fuente tipográfica del texto introducida
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
+
+                        // se pide la contraseña del usuario
+                        OutlinedSecureTextField(
+                            state = password,  // estado que contiene el texto introducido (la contraseña)
+                            label = {
+                                Text(
+                                    text = "Contraseña",   // texto
+                                    color = Color.Black,   // color del texto
+                                    fontFamily = badcomic  // fuente tipográfica del texto
+                                )
+                            },
+                            modifier = Modifier.width(310.dp),  // ancho del campo de texto
+                            // icono situado al final del campo de texto
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        passVisible = !passVisible
+                                    }  // al pulsar el icono cambia el estado para mostrar/ocultar la contraseña
+                                ) {
+                                    Icon(
+                                        // se cambia el icono si la contraseña es visible o no
+                                        imageVector = if (passVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+
+                                        // se cambia la descripción para lectores de pantalla en función si la contraseña es visible o no
+                                        contentDescription = if (passVisible) "Ocultar contraseña" else "Mostrar contraseña",
+
+                                        tint = Color.Black // color del icono
                                     )
                                 }
-                            }
-                        },
-                        textStyle = TextStyle(
-                            color = Color.Black,        // color del texto introducido
-                            fontFamily = badcomic       // fuente tipográfica del texto introducida
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
-
-                    // fila para la opción de recuperación de contraseña
-                    Row {
-                        // texto normal
-                        Text(
-                            text = "¿Olvidaste la contraseña? ",  // texto
-                            color = Color.Black,                  // color del texto
-                            style = TextStyle(
-                                fontFamily = badcomic,  // fuente tipográfica del texto
-                                fontSize = 16.sp        // tamaño del texto
-                            )
-                        )
-
-                        // texto seleccionable que muestra el modal para la recuperación de la contraseña
-                        Text(
-                            text = "Pulsa aquí",        // texto
-                            color = Color(0xFF017DB2),  // color del texto
-                            style = TextStyle(
-                                fontFamily = badcomic,         // fuente tipográfica del texto
-                                fontSize = 16.sp,              // tamaño del texto
-                                fontWeight = FontWeight.Bold   // texto en negrita
+                            },
+                            // controla como se oculta el texto (lo hace visible completamente o solo muestra el último carácter)
+                            textObfuscationMode = if (passVisible) TextObfuscationMode.Visible else TextObfuscationMode.RevealLastTyped,
+                            colors = TextFieldDefaults.colors(
+                                focusedIndicatorColor = Color(0xFF017DB2),   // borde del campo cuando está activo
+                                unfocusedIndicatorColor = Color(0xFF017DB2), // borde del campo cuando no está activo
+                                focusedContainerColor = Color.White,         // color del fondo del campo cuando está activo
+                                unfocusedContainerColor = Color.White,       // color del fondo del campo cuando no está activo
+                                cursorColor = Color(0xFF017DB2)              // color del cursor en el campo de texto
                             ),
-                            modifier = Modifier.clickable { abrirModalPassword.value = true } // al pulsar se muestra el modal de recuperación de contraseña
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
-
-                    // BOTÓN DE INICIO DE SESIÓN
-                    Button(
-                        onClick = {
-                            // validaciones de los campos del formulario
-                            when{
-                                email.isBlank() -> {
-                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El email no puede estar vacío.")
-                                }
-                                !email.matches(regex = emailPattern) -> {
-                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El email no tiene un formato válido.")
-                                }
-                                password.text.length < 8 -> {
-                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La contraseña debe tener 8 caracteres.")
-                                }
-                                else -> {
-                                    // inicia sesión el usuario
-                                    loguearUsuario(
-                                        controladorNavegacion = controladorNavegacion,
-                                        context = context,
-                                        scope = scope,
-                                        snackbarHostState = snackbarHostState,
-                                        email = email,
-                                        password = password.text.toString()
-                                    )
-                                }
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF017DB2),  // color de fondo del botón
-                            contentColor = Color.White           // color del texto del botón
-                        )
-                    ){
-                        Text(
-                            text = "Iniciar sesión",    // texto del botón
-                            style = TextStyle(
-                                fontFamily = badcomic,  // fuente tipográfica del texto
-                                fontSize = 18.sp        // tamaño del texto
-                            )
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))  // separación vertical entre componentes
-
-                    // BOTÓN DE INICIO DE SESIÓN CON GOOGLE
-                    OutlinedButton(
-                        onClick = {
-                            // se inicia la sesión con Google
-                            iniciarSesionGoogle(
-                                context = context,
-                                scope = scope,
-                                db = db,
-                                controladorNavegacion = controladorNavegacion,
-                                error = { mensaje ->
-                                    notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = mensaje)
-                                }
-                            )
-                        },
-                        border = BorderStroke(width = 1.dp, color = Color(0xFF017DB2))  // grosor y color del borde del botón
-                    ){
-                        Icon(
-                            painter = painterResource(id = R.drawable.logo_google),  // recurso de la imagen
-                            contentDescription = "Google",        // descripción de la imagen
-                            modifier = Modifier.size(18.dp),      // tamaño del icono
-                            tint = Color.Unspecified              // se mantiene los colores de la imagen
-                        )
-
-                        Spacer(modifier = Modifier.width(8.dp))  // separación horizontal entre componentes
-
-                        Text(
-                            text = "Iniciar sesión con Google",    // texto
-                            color = Color(0xFF017DB2),             // color del texto
-                            style = TextStyle(
-                                fontFamily = badcomic,  // fuente tipográfica del texto
-                                fontSize = 16.sp        // tamaño del texto
-                            )
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
-
-                    // fila para el registro de un nuevo usuario
-                    Row {
-                        // texto normal
-                        Text(
-                            text = "¿No tienes cuenta? ",  // texto
-                            color = Color.Black,           // color del texto
-                            style = TextStyle(
-                                fontFamily = badcomic,     // fuente tipográfica del texto
-                                fontSize = 16.sp           // tamaño del texto
-                            )
-                        )
-
-                        // texto seleccionable que te navega al formulario de registro
-                        Text(
-                            text = "Regístrate",        // texto
-                            color = Color(0xFF017DB2),  // color del texto
-                            style = TextStyle(
-                                fontFamily = badcomic,           // fuente tipográfica del texto
-                                fontSize = 16.sp,                // tamaño del texto
-                                fontWeight = FontWeight.Bold     // texto en negrita
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password,         // tipo de teclado para el campo de texto
+                                capitalization = KeyboardCapitalization.None, // no se capitaliza (no se trata las mayúsculas) el texto del usuario
+                                autoCorrectEnabled = false,                   // se inhabilita el autocorrector mientras escribe el usuario
+                                imeAction = ImeAction.Send,                   // se habilita la acción de iniciar sesión desde el teclado (enviar formulario)
+                                showKeyboardOnFocus = true                    // se muestra el teclado cuando el campo recibe el foco
                             ),
-                            modifier = Modifier.clickable {
-                                controladorNavegacion.navigate(AppScreens.CrearUsuario.route) // al pulsar se navega al formulario de crear usuario
-                            }
+                            onKeyboardAction = {
+                                // validaciones de los campos del formulario
+                                when {
+                                    email.isBlank() -> {
+                                        notificationSnackbar(
+                                            scope = scope,
+                                            snackbarHostState = snackbarHostState,
+                                            mensaje = "El email no puede estar vacío."
+                                        )
+                                    }
+
+                                    !email.matches(regex = emailPattern) -> {
+                                        notificationSnackbar(
+                                            scope = scope,
+                                            snackbarHostState = snackbarHostState,
+                                            mensaje = "El email no tiene un formato válido."
+                                        )
+                                    }
+
+                                    password.text.length < 8 -> {
+                                        notificationSnackbar(
+                                            scope = scope,
+                                            snackbarHostState = snackbarHostState,
+                                            mensaje = "La contraseña debe tener 8 caracteres."
+                                        )
+                                    }
+
+                                    else -> {
+                                        // inicia sesión el usuario
+                                        loguearUsuario(
+                                            controladorNavegacion = controladorNavegacion,
+                                            context = context,
+                                            scope = scope,
+                                            snackbarHostState = snackbarHostState,
+                                            email = email,
+                                            password = password.text.toString()
+                                        )
+                                    }
+                                }
+                            },
+                            textStyle = TextStyle(
+                                color = Color.Black,        // color del texto introducido
+                                fontFamily = badcomic       // fuente tipográfica del texto introducida
+                            )
                         )
+
+                        Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
+
+                        // fila para la opción de recuperación de contraseña
+                        Row {
+                            // texto normal
+                            Text(
+                                text = "¿Olvidaste la contraseña? ",  // texto
+                                color = Color.Black,                  // color del texto
+                                style = TextStyle(
+                                    fontFamily = badcomic,  // fuente tipográfica del texto
+                                    fontSize = 16.sp        // tamaño del texto
+                                )
+                            )
+
+                            // texto seleccionable que muestra el modal para la recuperación de la contraseña
+                            Text(
+                                text = "Pulsa aquí",        // texto
+                                color = Color(0xFF017DB2),  // color del texto
+                                style = TextStyle(
+                                    fontFamily = badcomic,         // fuente tipográfica del texto
+                                    fontSize = 16.sp,              // tamaño del texto
+                                    fontWeight = FontWeight.Bold   // texto en negrita
+                                ),
+                                modifier = Modifier.clickable {
+                                    abrirModalPassword.value = true
+                                } // al pulsar se muestra el modal de recuperación de contraseña
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
+
+                        // BOTÓN DE INICIO DE SESIÓN
+                        Button(
+                            onClick = {
+                                // validaciones de los campos del formulario
+                                when {
+                                    email.isBlank() -> {
+                                        notificationSnackbar(
+                                            scope = scope,
+                                            snackbarHostState = snackbarHostState,
+                                            mensaje = "El email no puede estar vacío."
+                                        )
+                                    }
+
+                                    !email.matches(regex = emailPattern) -> {
+                                        notificationSnackbar(
+                                            scope = scope,
+                                            snackbarHostState = snackbarHostState,
+                                            mensaje = "El email no tiene un formato válido."
+                                        )
+                                    }
+
+                                    password.text.length < 8 -> {
+                                        notificationSnackbar(
+                                            scope = scope,
+                                            snackbarHostState = snackbarHostState,
+                                            mensaje = "La contraseña debe tener 8 caracteres."
+                                        )
+                                    }
+
+                                    else -> {
+                                        // inicia sesión el usuario
+                                        loguearUsuario(
+                                            controladorNavegacion = controladorNavegacion,
+                                            context = context,
+                                            scope = scope,
+                                            snackbarHostState = snackbarHostState,
+                                            email = email,
+                                            password = password.text.toString()
+                                        )
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF017DB2),  // color de fondo del botón
+                                contentColor = Color.White           // color del texto del botón
+                            )
+                        ) {
+                            Text(
+                                text = "Iniciar sesión",    // texto del botón
+                                style = TextStyle(
+                                    fontFamily = badcomic,  // fuente tipográfica del texto
+                                    fontSize = 18.sp        // tamaño del texto
+                                )
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))  // separación vertical entre componentes
+
+                        // BOTÓN DE INICIO DE SESIÓN CON GOOGLE
+                        OutlinedButton(
+                            onClick = {
+                                // se inicia la sesión con Google
+                                iniciarSesionGoogle(
+                                    context = context,
+                                    scope = scope,
+                                    db = db,
+                                    controladorNavegacion = controladorNavegacion,
+                                    error = { mensaje ->
+                                        notificationSnackbar(
+                                            scope = scope,
+                                            snackbarHostState = snackbarHostState,
+                                            mensaje = mensaje
+                                        )
+                                    }
+                                )
+                            },
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = Color(0xFF017DB2)
+                            )  // grosor y color del borde del botón
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.logo_google),  // recurso de la imagen
+                                contentDescription = "Google",        // descripción de la imagen
+                                modifier = Modifier.size(18.dp),      // tamaño del icono
+                                tint = Color.Unspecified              // se mantiene los colores de la imagen
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp))  // separación horizontal entre componentes
+
+                            Text(
+                                text = "Iniciar sesión con Google",    // texto
+                                color = Color(0xFF017DB2),             // color del texto
+                                style = TextStyle(
+                                    fontFamily = badcomic,  // fuente tipográfica del texto
+                                    fontSize = 16.sp        // tamaño del texto
+                                )
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
+
+                        // fila para el registro de un nuevo usuario
+                        Row {
+                            // texto normal
+                            Text(
+                                text = "¿No tienes cuenta? ",  // texto
+                                color = Color.Black,           // color del texto
+                                style = TextStyle(
+                                    fontFamily = badcomic,     // fuente tipográfica del texto
+                                    fontSize = 16.sp           // tamaño del texto
+                                )
+                            )
+
+                            // texto seleccionable que te navega al formulario de registro
+                            Text(
+                                text = "Regístrate",        // texto
+                                color = Color(0xFF017DB2),  // color del texto
+                                style = TextStyle(
+                                    fontFamily = badcomic,           // fuente tipográfica del texto
+                                    fontSize = 16.sp,                // tamaño del texto
+                                    fontWeight = FontWeight.Bold     // texto en negrita
+                                ),
+                                modifier = Modifier.clickable {
+                                    controladorNavegacion.navigate(AppScreens.CrearUsuario.route) // al pulsar se navega al formulario de crear usuario
+                                }
+                            )
+                        }
                     }
                 }
             }

@@ -207,7 +207,7 @@ fun PantallaServicioTecnico(controladorNavegacion: NavController) {
                             color = Color(0xFF2363C8),        // color del texto
                             style = TextStyle(
                                 fontFamily = badcomic,        // fuente tipográfica del texto
-                                fontSize = 24.sp,             // tamaño del texto
+                                fontSize = 20.sp,             // tamaño del texto
                                 fontWeight = FontWeight.Bold, // texto en negrita
                                 textAlign = TextAlign.Center  // texto alineado centralmente
                             )
