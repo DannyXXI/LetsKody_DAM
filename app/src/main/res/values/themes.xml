@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- tema principal de la aplicación para Android 11 o inferior -->
     <style name="Theme.LetsKody" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>

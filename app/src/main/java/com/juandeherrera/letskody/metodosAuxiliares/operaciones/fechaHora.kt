@@ -1,0 +1,59 @@
+package com.juandeherrera.letskody.metodosAuxiliares.operaciones
+
+import android.annotation.SuppressLint
+import com.juandeherrera.letskody.clasesAuxiliares.MomentoDelDia
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
+
+// función auxiliar para obtener la edad del usuario
+fun calcularEdad(fechaNacimiento: String): Int {
+    try{
+        val partes = fechaNacimiento.split("/")  // se divide la fecha de nacimiento en una lista
+
+        // se guarda cada parte de la fecha de nacimiento como un entero
+        val dia = partes[0].toInt()
+        val mes = partes[1].toInt()
+        val anio = partes[2].toInt()
+
+        val fechaHoy = LocalDate.now()  // se obtiene la fecha actual
+
+        var edad = fechaHoy.year - anio // se obtiene la edad
+
+        // se comprueba si el usuario cumplió años este año (si no, se le resta uno)
+        if ( fechaHoy.monthValue < mes || (fechaHoy.monthValue == mes && fechaHoy.dayOfMonth < dia) ) { edad-- }
+
+        return edad  // se devuelve la edad del usuario
+    }
+    catch (ex: Exception){
+        // si ocurre algún error, se muestra el mensaje por terminal y se devuelve -1
+        println("Error al calcular la edad del usuario: ${ex.message}")
+        return -1
+    }
+}
+
+// función auxiliar para obtener la fecha completa (fecha y hora) actual
+fun obtenerFechaCompletaActual(): String {
+    val fechaActual = LocalDateTime.now()
+    val formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+    return fechaActual.format(formato)
+}
+
+// función auxiliar para formatear una cantidad de segundos en MM:SS
+@SuppressLint("DefaultLocale")
+fun formatearSegundos(segundos: Int): String {
+    val m = segundos / 60
+    val s = segundos % 60
+    return String.format("%02d:%02d", m, s)
+}
+
+// función auxiliar para obtener el momento del día correspondiente a la hora actual
+fun obtenerMomentoDelDia() : MomentoDelDia {
+    val hora = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    return when (hora) {
+        in 6..13 -> MomentoDelDia.MANANA
+        in 14..20 -> MomentoDelDia.TARDE
+        else -> MomentoDelDia.NOCHE
+    }
+}

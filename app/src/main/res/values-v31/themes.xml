@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- tema principal de la aplicación para Android 12 o superior (API 31+) -->
+    <style name="Theme.LetsKody" parent="android:Theme.Material.Light.NoActionBar">
+
+        <!-- color de fondo del splash de inicio -->
+        <item name="android:windowSplashScreenBackground">@color/kody_background</item>
+    </style>
+</resources>

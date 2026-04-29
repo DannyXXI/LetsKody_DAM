@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp") version "2.3.4"   // plugin ksp (agregar primero y sincronizar)
+    alias(libs.plugins.google.gms.google.services)  // plugin para usar Firebase
 }
 
 android {
@@ -38,6 +40,41 @@ android {
 }
 
 dependencies {
+    // librerías para Material3
+    implementation("androidx.compose.material3:material3:1.4.0") // dependencia de actualización
+
+    // librerías para iconos
+    implementation("androidx.compose.material:material-icons-extended:1.5.0-alpha11") // dependencia para iconos de formularios
+    implementation("com.composables:icons-lucide:1.1.0")                              // dependencia para la librería de iconos Lucide
+
+    // librerías para usar la base de datos local (Room - SQLite)
+    implementation("androidx.room:room-runtime:2.8.4") // dependencia principal para poder usar Room
+    ksp("androidx.room:room-compiler:2.8.4")           // dependencia que permite usar el procesador de anotaciones de Room (KSP)
+    implementation("androidx.room:room-ktx:2.8.4")     // dependencia que agrega extensiones de Kotlin para Room
+    implementation("io.coil-kt:coil-compose:2.7.0")    // dependencia para usar imágenes desde Internet (AsyncImage)
+
+    // librerías para el uso de notificaciones
+    implementation(platform("androidx.compose:compose-bom:2025.12.00")) // dependencia para usar notificaciones en el Snackbar
+    implementation("com.google.accompanist:accompanist-permissions:0.31.1-alpha") // dependencia para usar notificaciones con icono
+
+    // librerías para usar Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.6.0"))  // dependencia para usar el boom de Firebase
+    implementation("com.google.firebase:firebase-auth-ktx")                        // dependencia para usar la autenticación de Firebase
+    implementation(libs.firebase.firestore)                                        // dependencia para usar la base de datos de Firebase
+
+    // librerías para el inicio de sesión con Google
+    implementation("androidx.credentials:credentials:1.3.0")                         // dependencia para gestionar las credenciales del usuario
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")      // dependencia que hace de puente entre las credenciales del usuario y los servicios de Google
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")  // dependencia para el inicio de sesión moderno con Google
+
+    // librerías para la navegación entre pantallas
+    implementation(libs.androidx.navigation.compose)  // dependencia para utilizar la navegación entre pantallas
+    implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.5.0-alpha11") // dependencia para la navegación adaptativa según el tamaño de pantalla
+    implementation("androidx.compose.material3:material3-window-size-class:1.4.0")                 // dependencia para usar herramientas para clasificar el tamaño de la pantalla
+
+    // librerías para corrutinas
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")  // dependencia que conecta los servicios de Google Play con las corrutinas de kotlin
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
