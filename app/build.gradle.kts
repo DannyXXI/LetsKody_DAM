@@ -19,6 +19,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // se expone la clave de Gemini al proyecto
+        val key = properties["GEMINI_API_KEY"]?.toString() ?: ""
+        buildConfigField(type = "String", name = "GEMINI_API_KEY", value = "\"$key\"")
     }
 
     buildTypes {
@@ -74,6 +78,9 @@ dependencies {
 
     // librerías para corrutinas
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")  // dependencia que conecta los servicios de Google Play con las corrutinas de kotlin
+
+    // librerías para Gemini 2.0 Flash
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")  // dependencia para usar la IA generativa de Gemini
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
