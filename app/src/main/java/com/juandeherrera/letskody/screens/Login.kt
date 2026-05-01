@@ -72,7 +72,6 @@ import com.juandeherrera.letskody.metodosAuxiliares.componentes.MensajeSnackbarH
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.ModalModificarPassword
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.notificationSnackbar
 import com.juandeherrera.letskody.metodosAuxiliares.interfaz.FondoDegradadoConIconos
-import com.juandeherrera.letskody.metodosAuxiliares.interfaz.fondoDegradadoDiagonal
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.iniciarSesionGoogle
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.loguearUsuario
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.recuperarPasswordUsuario

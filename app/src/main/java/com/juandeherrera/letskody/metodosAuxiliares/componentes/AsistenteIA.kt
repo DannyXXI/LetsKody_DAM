@@ -75,7 +75,7 @@ private fun MensajeBienvenida (fuenteTipografica: FontFamily) {
 
         // mensaje de bienvenida
         Text(
-            text = "¡Hola! Soy tu asistente virtual.\nTe ayudare con cualquier duda que tengas sobre Let's Kody.",   // texto
+            text = "¡Hola! Soy tu asistente virtual.\nTe ayudare con cualquier duda que tengas.",   // texto
             color = Color.Black,                 // color del texto
             style = TextStyle(
                 fontFamily = fuenteTipografica,  // fuente tipográfica del texto
