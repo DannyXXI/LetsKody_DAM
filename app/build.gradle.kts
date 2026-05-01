@@ -21,7 +21,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // se expone la clave de Gemini al proyecto
-        val key = properties["GEMINI_API_KEY"]?.toString() ?: ""
+        val key = project.findProperty("GEMINI_API_KEY") as String? ?: ""
         buildConfigField(type = "String", name = "GEMINI_API_KEY", value = "\"$key\"")
     }
 
@@ -40,6 +40,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
