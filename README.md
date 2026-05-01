@@ -14,6 +14,7 @@ Incluye:
 - Ranking de usuarios.
 - Sección de entretenimiento.
 - Gestión de perfil del usuario.
+- Asistente de ayuda basado en IA (Gemini 2.5 Flash).
 - Integración con Firebase y base de datos local.
 
 ## 🛠️ Tecnologías utilizadas
@@ -57,6 +58,7 @@ Los principales objetivos de este proyecto son:
 
 - Pantalla principal dinámica:
     - Ilustración animada y mensaje de bienvenida que cambia según el momento del día.
+- Conversación con el asistente de ayuda al usuario.
 - Sistema de soporte técnico:
     - Envío de mensajes.
     - Cooldown de 5 minutos entre envíos.
@@ -127,6 +129,9 @@ Juegos diseñados para el entretenimiento del usuario:
     - Se requiere confirmación mediante contraseña para usuarios normales.
 - Los usuarios de Google realizan todas las gestiones sin uso de contraseña.
 
+## 🤖 Asistente inteligente
+
+La aplicación incorpora un asistente conversacional basado en **Gemini 2.5 Flash**, diseñado para mejorar la experiencia del usuario.
 
 ## 🗄️ Almacenamiento de datos
 
