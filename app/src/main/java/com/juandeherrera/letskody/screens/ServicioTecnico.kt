@@ -127,6 +127,7 @@ fun PantallaServicioTecnico(controladorNavegacion: NavController) {
                 estadoMenuLateral = abrirMenuLateral,
                 titulo = "Servicio técnico",
                 selectInicio = false,
+                selectAsistente = false,
                 selectServicioTecnico = true,
                 scope = scope,
                 controladorNavegacion = controladorNavegacion,

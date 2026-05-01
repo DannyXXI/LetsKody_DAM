@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.composables.icons.lucide.BriefcaseBusiness
 import com.composables.icons.lucide.Gamepad
+import com.composables.icons.lucide.Headset
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Medal
 import com.juandeherrera.letskody.navigation.AppScreens
@@ -90,7 +91,7 @@ fun ElementoMenuLateral(fuenteTipografica: FontFamily, icono: ImageVector, texto
 
 // función auxiliar para cargar el menu lateral del inicio
 @Composable
-fun MenuLateralInicio(estadoMenuLateral: DrawerState, titulo: String, selectInicio: Boolean, selectServicioTecnico: Boolean, scope: CoroutineScope, controladorNavegacion: NavController, fuenteTipografica: FontFamily) {
+fun MenuLateralInicio(estadoMenuLateral: DrawerState, titulo: String, selectInicio: Boolean, selectAsistente: Boolean, selectServicioTecnico: Boolean,scope: CoroutineScope, controladorNavegacion: NavController, fuenteTipografica: FontFamily) {
     // contenedor visual del menu lateral
     ModalDrawerSheet(
         modifier = Modifier.width(280.dp),        // ancho del menú lateral
@@ -130,6 +131,23 @@ fun MenuLateralInicio(estadoMenuLateral: DrawerState, titulo: String, selectInic
                     else {
                         scope.launch { estadoMenuLateral.close() }
                         controladorNavegacion.navigate(route = AppScreens.Inicio.route)
+                    }
+                }
+            )
+
+            // elemento 2: ir a la pantalla del asistente IA
+            ElementoMenuLateral(
+                fuenteTipografica = fuenteTipografica,
+                icono = Lucide.Headset,
+                texto = "Asistente IA",
+                seleccionado = selectAsistente,
+                accion = {
+                    if (selectAsistente) {
+                        scope.launch { estadoMenuLateral.close() }
+                    }
+                    else {
+                        scope.launch { estadoMenuLateral.close() }
+                        controladorNavegacion.navigate(route = AppScreens.AsistenteIA.route)
                     }
                 }
             )

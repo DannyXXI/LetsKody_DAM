@@ -103,8 +103,8 @@ fun CabeceraJuegoEuroBanderas(segundosCronometro: Int, numeroPregunta: Int, preg
 fun ImagenBandera(urlBandera: String) {
     // variable para altura responsive de la imagen de la bandera
     val alturaBandera = when {
-        LocalConfiguration.current.screenHeightDp < 700 -> 160.dp
-        LocalConfiguration.current.screenHeightDp < 900 -> 220.dp
+        LocalConfiguration.current.screenHeightDp < 700 -> 150.dp
+        LocalConfiguration.current.screenHeightDp < 900 -> 210.dp
         else -> 380.dp
     }
 

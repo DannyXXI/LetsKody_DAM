@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.google.firebase.auth.FirebaseAuth
 import com.juandeherrera.letskody.clasesAuxiliares.DetectorRed
+import com.juandeherrera.letskody.screens.PantallaAsistenteIA
 import com.juandeherrera.letskody.screens.PantallaCrearUsuario
 import com.juandeherrera.letskody.screens.PantallaEditarPerfil
 import com.juandeherrera.letskody.screens.PantallaInicio
@@ -74,6 +75,11 @@ fun AppNavigation() {
             composable(route = AppScreens.Inicio.route) {
                 BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
                 PantallaInicio(controladorNavegacion = controladorNavegacion)
+            }
+
+            composable(route = AppScreens.AsistenteIA.route) {
+                BackHandler(enabled = true) {} // impide al usuario ir a la pantalla anterior usando el botón físico del dispositivo
+                PantallaAsistenteIA(controladorNavegacion = controladorNavegacion)
             }
 
             composable(route = AppScreens.ServicioTecnico.route) {

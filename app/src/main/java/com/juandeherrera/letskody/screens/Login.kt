@@ -179,7 +179,7 @@ fun PantallaLogin(controladorNavegacion: NavController) {
                     // columna que contiene el formulario
                     Column(
                         modifier = Modifier.fillMaxWidth() // ocupa el ancho maximo posible
-                            .padding(16.dp),          // padding interior
+                            .padding(all = 16.dp),          // padding interior
                         horizontalAlignment = Alignment.CenterHorizontally,   // centrado horizontal
                         verticalArrangement = Arrangement.Center              // centrado vertical
                     ) {
@@ -207,11 +207,7 @@ fun PantallaLogin(controladorNavegacion: NavController) {
                         // se pide el email del usuario
                         OutlinedTextField(
                             value = email,  // valor del campo de texto
-                            onValueChange = {
-                                if (it.length < 40) {
-                                    email = it
-                                }
-                            },  // se limita la longitud a 40 caracteres
+                            onValueChange = { if (it.length < 40) { email = it } },  // se limita la longitud a 40 caracteres
                             label = {
                                 Text(
                                     text = "Email del usuario",  // texto
