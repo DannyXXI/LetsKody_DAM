@@ -1,9 +1,20 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp") version "2.3.4"   // plugin ksp (agregar primero y sincronizar)
     alias(libs.plugins.google.gms.google.services)  // plugin para usar Firebase
 }
+
+val localProperties = Properties()
+val localFile = rootProject.file("local.properties")
+
+if (localFile.exists()) {
+    localProperties.load(localFile.inputStream())
+}
+
+val key = localProperties.getProperty("GEMINI_API_KEY") ?: ""
 
 android {
     namespace = "com.juandeherrera.letskody"
@@ -21,8 +32,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // se expone la clave de Gemini al proyecto
-        val key = project.findProperty("GEMINI_API_KEY") as String? ?: ""
-        buildConfigField(type = "String", name = "GEMINI_API_KEY", value = "\"$key\"")
+
+        buildConfigField("String", "GEMINI_API_KEY", "\"$key\"")
     }
 
     buildTypes {
