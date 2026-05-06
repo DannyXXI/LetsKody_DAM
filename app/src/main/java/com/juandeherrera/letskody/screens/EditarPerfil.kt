@@ -96,11 +96,11 @@ import com.juandeherrera.letskody.metodosAuxiliares.componentes.BarraSuperior
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.MensajeSnackbarHost
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.MenuLateralPerfil
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.ModalEliminarCuenta
+import com.juandeherrera.letskody.metodosAuxiliares.componentes.ModalRecortarImagen
 import com.juandeherrera.letskody.metodosAuxiliares.componentes.notificationSnackbar
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.actualizarUsuario
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.calcularEdad
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.cerrarSesionUsuario
-import com.juandeherrera.letskody.metodosAuxiliares.operaciones.convertirURIenBase64
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.eliminarCuentaUsuario
 import com.juandeherrera.letskody.navigation.AppScreens
 import kotlinx.coroutines.launch
@@ -177,6 +177,8 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
     var uriImagenGaleria by remember { mutableStateOf<Uri?>(value = null) }              // URI de la imagen seleccionada desde la galería
     var imagen by remember { mutableStateOf(value = usuario!!.fotoUsuario) }             // imagen codificada en Base64
 
+    var mostrarRecortador by remember { mutableStateOf(value = false) }      // variable de estado para comprobar si se muestra el recortador de imagen de perfil
+
     // launcher para la galería
     val launcherGaleriaUri = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
         uriImagenGaleria = uri   // cuando el usuario seleccione una imagen de la galería, se guardará su URI
@@ -200,13 +202,9 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
     // bloque de código que se ejecuta cuando el usuario selecciona una imagen de la galería
     LaunchedEffect(key1 = uriImagenGaleria) {
 
-        // si se ha cargado una imagen, se procede a convertirla a base64
+        // si se ha cargado una imagen, se procede a abrir el modal de recortar imagen
         if (uriImagenGaleria != null) {
-
-            // se obtiene el string en base64 para almacenarlo en la base de datos
-            imagen = convertirURIenBase64(uriImagen = uriImagenGaleria!!, context = context, error = { mensaje ->
-                notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = mensaje) // si hay algún error se muestra un mensaje por Snackbar
-            })
+            mostrarRecortador = true
         }
     }
 
@@ -261,6 +259,23 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
             }
         ){
             innerPadding ->
+
+            // abrir el modal para poder recortar la imagen de perfil
+            if (mostrarRecortador && uriImagenGaleria != null) {
+                ModalRecortarImagen(
+                    uri = uriImagenGaleria!!,
+                    context = context,
+                    fuenteTipografica = badcomic,
+                    confirmar = { base64 ->
+                        imagen = base64
+                        mostrarRecortador = false
+                    },
+                    cancelar = {
+                        uriImagenGaleria = null
+                        mostrarRecortador = false
+                    }
+                )
+            }
 
             // si el estado del modal de eliminar cuenta es abierto
             if (abrirModalEliminarCuenta.value) {
