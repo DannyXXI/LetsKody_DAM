@@ -1,8 +1,10 @@
 package com.juandeherrera.letskody.metodosAuxiliares.componentes
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.net.Uri
@@ -14,13 +16,10 @@ import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -35,7 +34,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Rotate90DegreesCw
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -60,7 +58,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
@@ -74,7 +71,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.juandeherrera.letskody.clasesAuxiliares.ResultadoJuegoContrarreloj
 import com.juandeherrera.letskody.clasesAuxiliares.ResultadoJuegoCronometro
@@ -87,6 +83,7 @@ import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.sin
+import androidx.core.graphics.toColorInt
 
 // función auxiliar para cargar el modal para la modificación de contraseña del usuario
 @OptIn(ExperimentalMaterial3Api::class)
@@ -693,6 +690,7 @@ fun ModalPuntuacionJuegosContrarreloj(resultado: ResultadoJuegoContrarreloj, fue
 }
 
 // función auxiliar para cargar el modal de recortar la imagen
+@SuppressLint("UseKtx")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModalRecortarImagen (uri: Uri, context: Context, diametroCirculo: Int = 200, fuenteTipografica: FontFamily, confirmar: (String) -> Unit, cancelar: () -> Unit) {
@@ -734,458 +732,305 @@ fun ModalRecortarImagen (uri: Uri, context: Context, diametroCirculo: Int = 200,
         val maxY = max(a = 0f, b = (boundH - diametroCirculoPx) / 2f)
 
         // se limita el desplazamiento dentro del rango calculado
-        return Offset(x = desplazamiento.x.coerceIn(-maxX, maxX), y = desplazamiento.y.coerceIn(-maxY, maxY))
+        return Offset(x = nuevoDesplazamiento.x.coerceIn(-maxX, maxX), y = nuevoDesplazamiento.y.coerceIn(-maxY, maxY))
     }
 
     // modal de pantalla completa sin ancho predeterminado de plataforma
-    AlertDialog(
-        onDismissRequest = cancelar,                                    // se cancela al pulsar fuera del diálogo
-        properties = DialogProperties(usePlatformDefaultWidth = false)  // permite controlar el ancho manualmente
-    ){
-        // superficie exterior que define la forma del modal
-        Surface(
-            shape = RoundedCornerShape(size = 22.dp),           // bordes redondeados
-            color = Color.Transparent,                          // fondo transparente
-            modifier = Modifier.fillMaxWidth(fraction = 0.92f)  // ocupa el 92% del ancho de la pantalla
-        ){
-            // contenedor principal
-            Box(
-                modifier = Modifier.fillMaxWidth()  // se ocupa el ancho disponible
-                    .background(brush = fondoDegradadoDiagonal(color1 = Color(0xFF0D47A1), color2 = Color(0xFF1976D2), color3 = Color(0xFF42A5F5)), shape = RoundedCornerShape(size = 22.dp))  // color de fondo con bordes redondeados
+    BasicAlertDialog(
+        onDismissRequest = cancelar,
+        modifier = Modifier,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+        content = {
+            // superficie exterior que define la forma del modal
+            Surface(
+                shape = RoundedCornerShape(size = 22.dp),           // bordes redondeados
+                color = Color.Transparent,                          // fondo transparente
+                modifier = Modifier.fillMaxWidth(fraction = 0.92f)  // ocupa el 92% del ancho de la pantalla
             ){
-                // columna principal que organiza todos los elementos verticalmente
-                Column(
-                    modifier = Modifier.fillMaxWidth()                   // se ocupa el ancho disponible
-                        .padding(horizontal = 24.dp, vertical = 28.dp),  // padding interno
-                    horizontalAlignment = Alignment.CenterHorizontally   // centrado horizontal
-                ){
-                    // TITULO DEL DIALOGO
-                    Text(
-                        text = "Foto de perfil",             // texto
-                        color = Color.White,                 // color del texto
-                        style = TextStyle(
-                            fontFamily = fuenteTipografica,  // fuente tipográfica del texto
-                            fontSize = 22.sp,                // tamaño del texto
-                            fontWeight = FontWeight.Bold     // texto en negrita
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))  // separación vertical entre componentes
-
-                    // instrucciones de uso para el usuario
-                    Text(
-                        text = "Pellizca para hacer zoom • Arrastra para mover",   // texto
-                        color = Color.White,                 // color del texto
-                        style = TextStyle(
-                            fontFamily = fuenteTipografica,  // fuente tipográfica del texto
-                            fontSize = 11.sp                 // tamaño del texto
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
-
-                    // contenedor oscuro que enmarca visualmente el área de recorte
-                    Box(
-                        modifier = Modifier.fillMaxWidth()      // se ocupa el ancho disponible
-                            .height((diametroCirculo + 48).dp)  // altura
-                            .background(color = Color(0xFF060E1F), shape = RoundedCornerShape(size = 16.dp)), // color de fondo con bordes redondeados
-                        contentAlignment = Alignment.Center  // contenido centrado
-                    ){
-
-
-
-
-
-                    }
-
-
-
-
-
-
-
-
-                }
-            }
-        }
-    }
-
-
-    // diálogo de pantalla completa (sin ancho predeterminado de plataforma)
-    Dialog(
-        onDismissRequest = cancelar,  // se cancela al pulsar fuera del diálogo
-        properties = DialogProperties(usePlatformDefaultWidth = false)  // permite controlar el ancho manualmente
-    ) {
-        // superficie exterior transparente que define la forma redondeada del diálogo
-        Surface(
-            shape = RoundedCornerShape(24.dp),
-            color = Color.Transparent,
-            modifier = Modifier.fillMaxWidth(0.92f)  // ocupa el 92% del ancho de la pantalla
-        ) {
-            // contenedor principal con fondo de gradiente vertical azul marino oscuro
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(Color(0xFF0D1B3E), Color(0xFF0A1628))  // azul marino oscuro de arriba abajo
-                        ),
-                        shape = RoundedCornerShape(24.dp)
-                    )
-            ) {
-                // elemento decorativo: blob difuso azul en la esquina superior derecha para dar profundidad visual
+                // contenedor principal
                 Box(
-                    modifier = Modifier
-                        .size(120.dp)
-                        .offset(x = 60.dp, y = (-30).dp)  // se desplaza parcialmente fuera de la tarjeta
-                        .align(Alignment.TopEnd)
-                        .background(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    Color(0xFF1976D2).copy(alpha = 0.35f),  // azul semitransparente en el centro
-                                    Color.Transparent                        // transparente en los bordes
-                                )
-                            ),
-                            shape = androidx.compose.foundation.shape.CircleShape
+                    modifier = Modifier.fillMaxWidth()  // se ocupa el ancho disponible
+                        .background(brush = fondoDegradadoDiagonal(color1 = Color(0xFF0D47A1), color2 = Color(0xFF1976D2), color3 = Color(0xFF42A5F5)), shape = RoundedCornerShape(size = 22.dp))  // color de fondo con bordes redondeados
+                ){
+                    // columna principal que organiza todos los elementos verticalmente
+                    Column(
+                        modifier = Modifier.fillMaxWidth()                   // se ocupa el ancho disponible
+                            .padding(horizontal = 24.dp, vertical = 28.dp),  // padding interno
+                        horizontalAlignment = Alignment.CenterHorizontally   // centrado horizontal
+                    ){
+                        // TITULO DEL DIALOGO
+                        Text(
+                            text = "Foto de perfil",             // texto
+                            color = Color.White,                 // color del texto
+                            style = TextStyle(
+                                fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                                fontSize = 22.sp,                // tamaño del texto
+                                fontWeight = FontWeight.Bold     // texto en negrita
+                            )
                         )
-                )
-                // columna principal que organiza todos los elementos verticalmente
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 28.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally  // todo centrado horizontalmente
-                ) {
 
+                        Spacer(modifier = Modifier.height(4.dp))  // separación vertical entre componentes
 
+                        // instrucciones de uso para el usuario
+                        Text(
+                            text = "Pellizca para hacer zoom • Arrastra para mover",   // texto
+                            color = Color.White,                 // color del texto
+                            style = TextStyle(
+                                fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                                fontSize = 11.sp                 // tamaño del texto
+                            )
+                        )
 
-                    // ── Área de recorte ───────────────────────────────────────────────────────
+                        Spacer(modifier = Modifier.height(20.dp))  // separación vertical entre componentes
 
-                    // contenedor oscuro que enmarca visualmente el área de recorte
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height((diametroCirculo + 48).dp)  // altura = círculo + margen superior e inferior
-                            .background(
-                                color = Color(0xFF060E1F),          // negro azulado muy oscuro
-                                shape = RoundedCornerShape(16.dp)   // esquinas redondeadas del marco
-                            ),
-                        contentAlignment = Alignment.Center  // el círculo de recorte se centra dentro del marco
-                    ) {
-                        // caja interactiva con exactamente el tamaño del círculo de recorte
-                        // recibe los gestos y pinta la imagen + overlay + borde
+                        // contenedor oscuro que enmarca visualmente el área de recorte
                         Box(
-                            modifier = Modifier
-                                .size(diametroCirculo.dp)  // tamaño exacto del círculo en dp
-                                .pointerInput(Unit) {
-                                    // se detectan los gestos de zoom y arrastre (la rotación se gestiona con el botón)
-                                    detectTransformGestures { _, pan, zoom, _ ->
-                                        // se actualiza la escala respetando los límites min/max
-                                        val nuevaEscala = (escala * zoom).coerceIn(escalaMinima, escalaMaxima)
-                                        escala = nuevaEscala
+                            modifier = Modifier.fillMaxWidth()      // se ocupa el ancho disponible
+                                .height((diametroCirculo + 48).dp)  // altura
+                                .background(color = Color(0xFF060E1F), shape = RoundedCornerShape(size = 16.dp)), // color de fondo con bordes redondeados
+                            contentAlignment = Alignment.Center  // contenido centrado
+                        ){
+                            // contenedor oscuro que enmarca visualmente el área de recorte
+                            Box(
+                                modifier = Modifier.fillMaxWidth()      // se ocupa el ancho disponible
+                                    .height((diametroCirculo + 48).dp)  // altura
+                                    .background(color = Color(0xFF060E1F), shape = RoundedCornerShape(size = 16.dp)),  // color de fondo con bordes redondeados
+                                contentAlignment = Alignment.Center     // se centra el contenido
+                            ) {
+                                // contenedor con el tamaño del círculo de recorte que recibe los gestos y muestra la imagen
+                                Box(
+                                    modifier = Modifier.size(diametroCirculo.dp)  // tamaño del círculo (dp)
+                                        .pointerInput(key1 = Unit) {
+                                            // se detectan los gestos del zoom y arrastre
+                                            detectTransformGestures { _, pan, zoom, _ ->
+                                                // se actualiza la escala respetando los límites mínimos y máximos
+                                                val nuevaEscala = (escala * zoom).coerceIn(
+                                                    escalaMinima,
+                                                    escalaMaxima
+                                                )
+                                                escala = nuevaEscala
 
-                                        // se actualiza el offset limitado al área válida de la imagen
-                                        desplazamiento = limitarDesplazamiento(
-                                            nuevoDesplazamiento = desplazamiento + pan,
-                                            escala = nuevaEscala,
-                                            rotacion = rotacion
-                                        )
-                                    }
-                                }
-                                .drawWithContent {
-                                    // dimensiones del canvas (coinciden con el tamaño de la caja, es decir, cropSizeDp)
-                                    val canvasW = size.width
-                                    val canvasH = size.height
-                                    val cx = canvasW / 2f  // centro horizontal del canvas
-                                    val cy = canvasH / 2f  // centro vertical del canvas
-                                    val radius = diametroCirculoPx / 2f  // radio del círculo de recorte
-
-                                    drawIntoCanvas { composeCanvas ->
-                                        val nativeCanvas = composeCanvas.nativeCanvas  // canvas nativo de Android para operaciones avanzadas
-
-                                        // ── 1. Dibujar la imagen con transformación ──────────
-
-                                        // se usa una Matrix de Android para aplicar escala, rotación y offset en un solo paso
-                                        val matrix = Matrix()
-                                        matrix.postTranslate(-bitmapOriginal!!.width / 2f, -bitmapOriginal.height / 2f)  // se centra la imagen en el origen
-                                        matrix.postScale(escala, escala)    // se aplica la escala actual
-                                        matrix.postRotate(rotacion)          // se aplica la rotación actual
-                                        matrix.postTranslate(cx + desplazamiento.x, cy + desplazamiento.y)  // se traslada al centro del canvas + offset del usuario
-
-                                        nativeCanvas.drawBitmap(
-                                            bitmapOriginal,
-                                            matrix,
-                                            android.graphics.Paint().apply {
-                                                isFilterBitmap = true  // interpolación bilineal para mejor calidad al escalar
-                                                isAntiAlias = true     // suavizado de bordes
-                                            }
-                                        )
-
-                                        // ── 2. Overlay oscuro con agujero circular ───────────
-
-                                        // saveLayer es OBLIGATORIO: aísla las operaciones PorterDuff del canvas padre
-                                        // sin él, el modo CLEAR borraría píxeles del canvas principal en lugar del overlay
-                                        val saveCount = nativeCanvas.saveLayer(
-                                            0f, 0f, canvasW, canvasH,
-                                            android.graphics.Paint()
-                                        )
-
-                                        // se dibuja el rectángulo oscuro semitransparente sobre toda el área
-                                        nativeCanvas.drawRect(
-                                            0f, 0f, canvasW, canvasH,
-                                            android.graphics.Paint().apply {
-                                                color = android.graphics.Color.argb(180, 6, 14, 31)  // negro azulado semiopaco
-                                                isAntiAlias = true
-                                            }
-                                        )
-
-                                        // se borra el círculo central del overlay (efecto "ventana circular")
-                                        // PorterDuff.CLEAR elimina todos los píxeles en esa zona del layer
-                                        nativeCanvas.drawCircle(
-                                            cx, cy, radius,
-                                            android.graphics.Paint().apply {
-                                                isAntiAlias = true
-                                                xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
-                                            }
-                                        )
-
-                                        // se restaura el layer aplicando el overlay correctamente sobre la imagen
-                                        nativeCanvas.restoreToCount(saveCount)
-
-                                        // ── 3. Halo/glow azul exterior ───────────────────────
-
-                                        // efecto de brillo difuso alrededor del círculo usando BlurMaskFilter
-                                        nativeCanvas.drawCircle(
-                                            cx, cy, radius + 6f,
-                                            android.graphics.Paint().apply {
-                                                color = android.graphics.Color.argb(60, 1, 125, 178)  // azul muy transparente
-                                                style = android.graphics.Paint.Style.STROKE
-                                                strokeWidth = 12f
-                                                isAntiAlias = true
-                                                maskFilter = android.graphics.BlurMaskFilter(
-                                                    10f,
-                                                    android.graphics.BlurMaskFilter.Blur.NORMAL  // desenfoque gaussiano
+                                                // se actualiza el desplazamiento limitando al área válida de la imagen
+                                                desplazamiento = limitarDesplazamiento(
+                                                    nuevoDesplazamiento = desplazamiento + pan,
+                                                    escala = nuevaEscala,
+                                                    rotacion = rotacion
                                                 )
                                             }
-                                        )
+                                        }
+                                        .drawWithContent {
+                                            // dimensiones del canvas (coinciden con el tamaño del contenedor)
+                                            val canvasW = size.width
+                                            val canvasH = size.height
+                                            val cx = canvasW / 2f                // centro horizontal del canvas
+                                            val cy = canvasH / 2f                // centro vertical del canvas
+                                            val radius = diametroCirculoPx / 2f  // radio del círculo de recorte
 
-                                        // ── 4. Borde principal del círculo ───────────────────
+                                            drawIntoCanvas { composeCanvas ->
+                                                val nativeCanvas = composeCanvas.nativeCanvas  // canvas nativo de Android para operaciones avanzadas
 
-                                        // línea sólida azul que delimita el área de recorte
-                                        nativeCanvas.drawCircle(
-                                            cx, cy, radius,
-                                            android.graphics.Paint().apply {
-                                                color = android.graphics.Color.parseColor("#017DB2")  // azul principal de la app
-                                                style = android.graphics.Paint.Style.STROKE
-                                                strokeWidth = 3f
-                                                isAntiAlias = true
+                                                // se usa una Matrix de Android para aplicar la escala, rotación y desplazamiento en un solo paso
+                                                val matrix = Matrix()
+                                                matrix.postTranslate(-bitmapOriginal!!.width / 2f, -bitmapOriginal.height / 2f)  // se centra la imagen en el origen
+                                                matrix.postScale(escala, escala)    // se aplica la escala actual
+                                                matrix.postRotate(rotacion)         // se aplica la rotación actual
+                                                matrix.postTranslate(cx + desplazamiento.x, cy + desplazamiento.y)  // se traslada al centro del canvas con desplazamiento del usuario
+
+                                                nativeCanvas.drawBitmap(
+                                                    bitmapOriginal,
+                                                    matrix,
+                                                    Paint().apply {
+                                                        isFilterBitmap = true  // interpolación bilineal para mejor calidad al escalar
+                                                        isAntiAlias = true     // suavizado de bordes
+                                                    }
+                                                )
+
+                                                // se usa para que no se borren píxeles del canvas principal en lugar del overlay
+                                                val saveCount = nativeCanvas.saveLayer(0f, 0f, canvasW, canvasH, Paint())
+
+                                                // se dibuja el rectángulo oscuro semitransparente sobre toda el área
+                                                nativeCanvas.drawRect(
+                                                    0f, 0f, canvasW, canvasH,
+                                                    Paint().apply {
+                                                        color = android.graphics.Color.argb(180, 6, 14, 31)  // negro azulado semiopaco
+                                                        isAntiAlias = true
+                                                    }
+                                                )
+
+                                                // se borra el círculo central del overlay (efecto ventana circular)
+                                                nativeCanvas.drawCircle(
+                                                    cx, cy, radius,
+                                                    Paint().apply {
+                                                        isAntiAlias = true
+                                                        xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)  // elimina todos los píxeles en esa zona del layer
+                                                    }
+                                                )
+
+                                                nativeCanvas.restoreToCount(saveCount)  // se restaura el layer aplicando el overlay correctamente sobre la imagen
+
+                                                // borde sólido que delimita el área de recorte
+                                                nativeCanvas.drawCircle(
+                                                    cx, cy, radius,
+                                                    Paint().apply {
+                                                        color = "#017DB2".toColorInt()  // azul principal de la aplicación
+                                                        style = Paint.Style.STROKE
+                                                        strokeWidth = 3f
+                                                        isAntiAlias = true
+                                                    }
+                                                )
+
+                                                // pequeñas marcas blancas en los cuadrantes del círculo (estilo herramienta de recorte profesional)
+                                                val guideLen = 18f  // longitud de cada trazo de guía en píxeles
+
+                                                val guidePaint = android.graphics.Paint().apply {
+                                                    color = android.graphics.Color.argb(200, 255, 255, 255)  // blanco semitransparente
+                                                    style = Paint.Style.STROKE
+                                                    strokeWidth = 2.5f
+                                                    isAntiAlias = true
+                                                    strokeCap = Paint.Cap.ROUND  // extremos redondeados
+                                                }
+
+                                                // se dibujan las guías en los 4 puntos diagonales del círculo (45°, 135°, 225°, 315°)
+                                                listOf(45.0, 135.0, 225.0, 315.0).forEach { angDeg ->
+                                                    val angRad = Math.toRadians(angDeg)
+                                                    val px = cx + radius * cos(x = angRad).toFloat()  // coordenada X del punto en el borde del círculo
+                                                    val py = cy + radius * sin(x = angRad).toFloat()  // coordenada Y del punto en el borde del círculo
+                                                    val normX = cos(x = angRad).toFloat()             // componente X del vector normal en ese punto
+                                                    val normY = sin(x = angRad).toFloat()             // componente Y del vector normal en ese punto
+
+                                                    // trazo horizontal de la guía
+                                                    nativeCanvas.drawLine(px, py, px - normX * guideLen, py, guidePaint)
+
+                                                    // trazo vertical de la guía
+                                                    nativeCanvas.drawLine(px, py, px, py - normY * guideLen, guidePaint)
+                                                }
                                             }
-                                        )
-
-                                        // ── 5. Guías de esquina en los cuadrantes ────────────
-
-                                        // pequeñas marcas blancas en los cuadrantes del círculo (estilo herramienta de recorte profesional)
-                                        val guideLen = 18f  // longitud de cada trazo de guía en píxeles
-                                        val guidePaint = android.graphics.Paint().apply {
-                                            color = android.graphics.Color.argb(200, 255, 255, 255)  // blanco semitransparente
-                                            style = android.graphics.Paint.Style.STROKE
-                                            strokeWidth = 2.5f
-                                            isAntiAlias = true
-                                            strokeCap = android.graphics.Paint.Cap.ROUND  // extremos redondeados
                                         }
-
-                                        // se dibujan las guías en los 4 puntos diagonales del círculo (45°, 135°, 225°, 315°)
-                                        listOf(45.0, 135.0, 225.0, 315.0).forEach { angDeg ->
-                                            val angRad = Math.toRadians(angDeg)
-                                            val px = cx + radius * cos(angRad).toFloat()  // coordenada X del punto en el borde del círculo
-                                            val py = cy + radius * sin(angRad).toFloat()  // coordenada Y del punto en el borde del círculo
-                                            val normX = cos(angRad).toFloat()  // componente X del vector normal en ese punto
-                                            val normY = sin(angRad).toFloat()  // componente Y del vector normal en ese punto
-
-                                            // trazo horizontal de la guía
-                                            nativeCanvas.drawLine(px, py, px - normX * guideLen, py, guidePaint)
-                                            // trazo vertical de la guía
-                                            nativeCanvas.drawLine(px, py, px, py - normY * guideLen, guidePaint)
-                                        }
-                                    }
-                                }
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))  // separación entre el área de recorte y el botón de girar
-
-                    // ── Botón de rotación ─────────────────────────────────────────────────────
-
-                    // botón que rota la imagen 90° en sentido horario cada vez que se pulsa
-                    Button(
-                        onClick = {
-                            rotacion = (rotacion + 90f) % 360f  // se incrementa 90° y se limita a [0, 360)
-                            // se recalculan los límites del offset para la nueva rotación
-                            desplazamiento = limitarDesplazamiento(
-                                nuevoDesplazamiento = desplazamiento,
-                                escala = escala,
-                                rotacion = rotacion
-                            )
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = Color.White
-                        ),
-                        contentPadding = PaddingValues(0.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier
-                            .height(42.dp)
-                            .width(180.dp)
-                    ) {
-                        // fondo con gradiente azul oscuro diferenciado de los botones principales
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    brush = Brush.horizontalGradient(
-                                        colors = listOf(Color(0xFF1A3A6E), Color(0xFF1565C0))
-                                    ),
-                                    shape = RoundedCornerShape(12.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Rotate90DegreesCw,  // icono de rotación hacia la derecha
-                                    contentDescription = "Girar imagen 90 grados",
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "Girar 90°",
-                                    style = TextStyle(
-                                        fontFamily = fuenteTipografica,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
                                 )
                             }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(16.dp))  // separación entre el botón de girar y los botones principales
+                        Spacer(modifier = Modifier.height(14.dp))  // separación vertical entre componentes
 
-                    // ── Botones principales ───────────────────────────────────────────────────
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)  // separación horizontal entre botones
-                    ) {
-
-                        // BOTÓN CANCELAR — gradiente rojo, descarta la selección de imagen
-                        Button(
-                            onClick = cancelar,
-                            modifier = Modifier
-                                .weight(1f)   // ocupa la mitad del ancho disponible
-                                .height(50.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Transparent,
-                                contentColor = Color.White
-                            ),
-                            contentPadding = PaddingValues(0.dp),
-                            shape = RoundedCornerShape(14.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(
-                                        brush = Brush.horizontalGradient(
-                                            colors = listOf(Color(0xFFB71C1C), Color(0xFFE53935))  // rojo oscuro a rojo vivo
-                                        ),
-                                        shape = RoundedCornerShape(14.dp)
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,  // icono de cerrar/cancelar
-                                        contentDescription = "Cancelar recorte",
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = "Cancelar",
-                                        style = TextStyle(
-                                            fontFamily = fuenteTipografica,
-                                            fontSize = 15.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    )
-                                }
-                            }
-                        }
-
-                        // BOTÓN USAR FOTO — gradiente azul, confirma el recorte y devuelve el Base64
+                        // BOTÓN DE ROTACIÓN 90º
                         Button(
                             onClick = {
-                                // se genera el Base64 de la imagen recortada con la transformación actual
+                                rotacion = (rotacion + 90f) % 360f  // se incrementa 90° y se limita a [0, 360)
 
-                                val base64 = recortarBitmap(
-                                    bitmap = bitmapOriginal!!,
+                                // se recalculan los límites del desplazamiento para la nueva rotación
+                                desplazamiento = limitarDesplazamiento(
+                                    nuevoDesplazamiento = desplazamiento,
                                     escala = escala,
-                                    desplazamiento = desplazamiento,
-                                    rotacion = rotacion,
-                                    areaRecorte = diametroCirculoPx.toInt()
+                                    rotacion = rotacion
+                                )
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFFF622D),  // color de fondo del botón
+                                contentColor = Color.White           // color del texto del botón
+                            ),
+                            shape = RoundedCornerShape(size = 14.dp), // bordes redondeados
+                            modifier = Modifier.height(42.dp)         // altura
+                                .width(180.dp)                        // ancho
+                        ){
+                            // icono
+                            Icon(
+                                imageVector = Icons.Default.Rotate90DegreesCw,  // icono
+                                contentDescription = "Girar imagen 90 grados",  // descripción del icono
+                                modifier = Modifier.size(18.dp)                 // tamaño del icono
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp)) // separación horizontal entre componentes
+
+                            Text(
+                                text = "Girar 90º",                  // texto
+                                style = TextStyle(
+                                    fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                                    fontSize = 14.sp,                // tamaño del texto
+                                    fontWeight = FontWeight.Bold     // texto en negrita
+                                )
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))  // separación vertical entre componentes
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),                  // se ocupa el ancho disponible
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)  // separación horizontal entre botones
+                        ){
+                            // BOTÓN DE CANCELAR
+                            Button(
+                                onClick = cancelar,  // se cierra el modal
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFB71C1C),  // color de fondo del botón
+                                    contentColor = Color.White           // color del texto del botón
+                                ),
+                                shape = RoundedCornerShape(size = 12.dp), // bordes redondeados
+                                modifier = Modifier.weight(1f)   // ocupa la mitad del ancho disponible
+                                    .height(50.dp),              // alto
+                            ){
+                                // icono
+                                Icon(
+                                    imageVector = Icons.Default.Close,  // icono
+                                    contentDescription = "Cancelar",    // descripción del icono
+                                    modifier = Modifier.size(18.dp)     // tamaño del icono
                                 )
 
+                                Spacer(modifier = Modifier.width(8.dp)) // separación horizontal entre componentes
 
-                                confirmar(base64)  // se devuelve el resultado al caller
-                            },
-                            modifier = Modifier
-                                .weight(1f)   // ocupa la mitad del ancho disponible
-                                .height(50.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Transparent,
-                                contentColor = Color.White
-                            ),
-                            contentPadding = PaddingValues(0.dp),
-                            shape = RoundedCornerShape(14.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(
-                                        brush = Brush.horizontalGradient(
-                                            colors = listOf(Color(0xFF0D47A1), Color(0xFF017DB2))  // azul oscuro a azul principal de la app
-                                        ),
-                                        shape = RoundedCornerShape(14.dp)
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Check,  // icono de confirmación
-                                        contentDescription = "Confirmar recorte",
-                                        modifier = Modifier.size(18.dp)
+                                Text(
+                                    text = "Cancelar",                   // texto
+                                    style = TextStyle(
+                                        fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                                        fontSize = 14.sp,                // tamaño del texto
+                                        fontWeight = FontWeight.Bold     // texto en negrita
                                     )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = "Usar foto",
-                                        style = TextStyle(
-                                            fontFamily = fuenteTipografica,
-                                            fontSize = 15.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
+                                )
+                            }
+
+                            // BOTÓN DE CONFIRMAR
+                            Button(
+                                onClick = {
+                                    // se genera el string en Base64 de la imagen recortada con la transformación actual
+                                    val base64 = recortarBitmap(
+                                        bitmap = bitmapOriginal!!,
+                                        escala = escala,
+                                        desplazamiento = desplazamiento,
+                                        rotacion = rotacion,
+                                        areaRecorte = diametroCirculoPx.toInt()
                                     )
-                                }
+
+                                    confirmar(base64)
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF0D47A1),  // color de fondo del botón
+                                    contentColor = Color.White           // color del texto del botón
+                                ),
+                                shape = RoundedCornerShape(size = 12.dp), // bordes redondeados
+                                modifier = Modifier.weight(1f)   // ocupa la mitad del ancho disponible
+                                    .height(50.dp),              // alto
+                            ){
+                                // icono
+                                Icon(
+                                    imageVector = Icons.Default.Check,  // icono
+                                    contentDescription = "Confirmar",   // descripción del icono
+                                    modifier = Modifier.size(18.dp)     // tamaño del icono
+                                )
+
+                                Spacer(modifier = Modifier.width(8.dp)) // separación horizontal entre componentes
+
+                                Text(
+                                    text = "Usar foto",                  // texto
+                                    style = TextStyle(
+                                        fontFamily = fuenteTipografica,  // fuente tipográfica del texto
+                                        fontSize = 14.sp,                // tamaño del texto
+                                        fontWeight = FontWeight.Bold     // texto en negrita
+                                    )
+                                )
                             }
                         }
                     }
                 }
             }
         }
-    }
+    )
 }
