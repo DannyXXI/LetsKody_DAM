@@ -130,7 +130,9 @@ fun CampoRespuesta(valor: String, pista: Pista?, fuenteTipografica: FontFamily, 
         OutlinedTextField(
             value = valor,  // valor del campo de texto
             onValueChange = { nuevoValor ->
-                if (nuevoValor.all { it.isDigit() }) cambiar(nuevoValor)  // se filtra para que solo admitan los dígitos
+                if (nuevoValor.length < 3) {
+                    if (nuevoValor.all { it.isDigit() }) cambiar(nuevoValor)  // se filtra para que solo admitan los dos dígitos
+                }
             },
             label = {
                 Text(

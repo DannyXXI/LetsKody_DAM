@@ -251,9 +251,7 @@ fun PantallaLogin(controladorNavegacion: NavController) {
                             // icono situado al final del campo de texto
                             trailingIcon = {
                                 IconButton(
-                                    onClick = {
-                                        passVisible = !passVisible
-                                    }  // al pulsar el icono cambia el estado para mostrar/ocultar la contraseña
+                                    onClick = { passVisible = !passVisible }  // al pulsar el icono cambia el estado para mostrar/ocultar la contraseña
                                 ) {
                                     Icon(
                                         // se cambia el icono si la contraseña es visible o no
@@ -286,29 +284,14 @@ fun PantallaLogin(controladorNavegacion: NavController) {
                                 // validaciones de los campos del formulario
                                 when {
                                     email.isBlank() -> {
-                                        notificationSnackbar(
-                                            scope = scope,
-                                            snackbarHostState = snackbarHostState,
-                                            mensaje = "El email no puede estar vacío."
-                                        )
+                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El email no puede estar vacío.")
                                     }
-
                                     !email.matches(regex = emailPattern) -> {
-                                        notificationSnackbar(
-                                            scope = scope,
-                                            snackbarHostState = snackbarHostState,
-                                            mensaje = "El email no tiene un formato válido."
-                                        )
+                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "El email no tiene un formato válido.")
                                     }
-
                                     password.text.length < 8 -> {
-                                        notificationSnackbar(
-                                            scope = scope,
-                                            snackbarHostState = snackbarHostState,
-                                            mensaje = "La contraseña debe tener 8 caracteres."
-                                        )
+                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = "La contraseña debe tener 8 caracteres.")
                                     }
-
                                     else -> {
                                         // inicia sesión el usuario
                                         loguearUsuario(
