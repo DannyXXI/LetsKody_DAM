@@ -232,7 +232,7 @@ fun PianoInteractivo(fuenteTipografica: FontFamily) {
                         color = Color.Black,                     // color del texto
                         style = TextStyle(
                             fontFamily = fuenteTipografica,      // fuente tipográfica
-                            fontSize = 8.sp,                     // tamaño de fuente
+                            fontSize = 10.sp,                    // tamaño de fuente
                             fontWeight = FontWeight.Medium,      // texto en negrita media
                             textAlign = TextAlign.Center         // texto alineado en el centro
                         ),
@@ -308,7 +308,7 @@ fun PianoInteractivo(fuenteTipografica: FontFamily) {
                         color = Color.White,                     // color del texto
                         style = TextStyle(
                             fontFamily = fuenteTipografica,      // fuente tipográfica
-                            fontSize = 6.sp,                     // tamaño de fuente
+                            fontSize = 8.sp,                     // tamaño de fuente
                             textAlign = TextAlign.Center         // texto alineado en el centro
                         ),
                         modifier = Modifier.padding(end = 3.dp)  // padding en el lateral derecho
