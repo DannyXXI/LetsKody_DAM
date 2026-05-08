@@ -116,15 +116,40 @@ fun recuperarPasswordUsuario(emailRecuperacion: String, exito: () -> Unit, error
 
     val auth = FirebaseAuth.getInstance() // instancia al sistema de autenticación de Firebase
 
-    // Firebase envía un email de para que el usuario pueda modificar su contraseña (si no existe en la base de datos, no se enviará a ese email)
-    auth.sendPasswordResetEmail(emailRecuperacion)
-        .addOnSuccessListener {
-            exito()  // si envío salió bien se muestra un mensaje al usuario
+    // Firebase comprueba los métodos de inicio de sesión asociados al email antes de enviar el correo de recuperación
+    @Suppress("DEPRECATION")
+    auth.fetchSignInMethodsForEmail(emailRecuperacion)
+        .addOnSuccessListener { result ->
+            val metodos = result.signInMethods ?: emptyList<String>() // lista de los métodos de inicio de sesión asociados al email (vacía si no hay ninguno)
+
+            when {
+                // si el email pertenece a un usuario que inicio sesión con una cuenta de Google
+                metodos.contains(element = GoogleAuthProvider.GOOGLE_SIGN_IN_METHOD) -> {
+                    error("Cuenta registrada con Google.")
+                }
+                // si el email pertenece a un usuario que se registró por email y contraseña se le envía el correo de recuperación
+                metodos.contains(element = EmailAuthProvider.PROVIDER_ID) -> {
+                    // Firebase envía un email para que el usuario pueda modificar su contraseña
+                    auth.sendPasswordResetEmail(emailRecuperacion)
+                        .addOnSuccessListener {
+                            exito()  // si el envío salió bien se muestra un mensaje al usuario
+                        }
+                        .addOnFailureListener { ex ->
+                            // si falla el envió se muestra un mensaje de error en terminal y al usuario
+                            println("Error al enviar el enlace para modificar la contraseña: ${ex.message}")
+                            error("Error al enviar el email de recuperación.")
+                        }
+                }
+                // si el email no está registrado en Firebase
+                else -> {
+                    error("Cuenta no registrada.")
+                }
+            }
         }
         .addOnFailureListener { ex ->
-            // si falla el envió se muestra un mensaje de error en terminal y al usuario
-            println("Error al enviar el enlace para modificar la contraseña: ${ex.message}")
-            error("Error al enviar el email de recuperación.")
+            // si falla la comprobación de los métodos de inicio de sesión se muestra un mensaje de error en terminal y al usuario
+            println("Error al verificar los métodos de inicio de sesión del email: ${ex.message}")
+            error("Error al verificar el email.")
         }
 }
 
