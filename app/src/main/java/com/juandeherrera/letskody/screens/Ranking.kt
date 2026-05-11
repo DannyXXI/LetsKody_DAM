@@ -86,7 +86,7 @@ fun PantallaRanking(controladorNavegacion: NavController) {
     }
 
     /* ---- POSICIÓN EN EL RANKING EN EL JUEGO DE EURO-BANDERAS ---- */
-    val listaPuntuacionesEuroBanderas = db.puntuacionEuroBanderasDao().getListaPuntuacionesEuroBanderas()        // se obtiene la lista de completa de puntuaciones ya ordenada
+    val listaPuntuacionesEuroBanderas = db.puntuacionEuroBanderasDao().getListaPuntuacionesEuroBanderasOrdenada()        // se obtiene la lista de completa de puntuaciones ya ordenada
     val posicionEuroBanderas = listaPuntuacionesEuroBanderas.indexOfFirst { it.usuario == usuario!!.uidUsuario}  // se obtiene la posición de la puntuación del usuario (-1 si no está)
 
     // se obtiene los datos de la posición del usuario en el ranking (si no está es null)

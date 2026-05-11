@@ -8,13 +8,13 @@ import androidx.room.Update
 // OPERACIONES QUE SE REALIZARAN EN LA TABLA DE PUNTUACIONES DEL JUEGO DE EURO-BANDERAS
 @Dao
 interface PuntuacionEuroBanderasDAO {
-    // OBTENER TODAS LAS PUNTUACIONES
-    @Query(value = "SELECT * FROM ${Estructura.PuntuacionEuroBanderas.TABLE_NAME}")
-    fun getListaPuntuacionesEuroBanderas(): List<PuntuacionEuroBanderasData>
-
     // OBTENER UNA DETERMINADA PUNTUACIÓN
     @Query(value = "SELECT * FROM ${Estructura.PuntuacionEuroBanderas.TABLE_NAME} WHERE ${Estructura.PuntuacionEuroBanderas.USUARIO} = :uidUsuario")
     fun getPuntuacionEuroBanderas(uidUsuario: String): PuntuacionEuroBanderasData?
+
+    // OBTENER LAS PUNTUACIONES (NÚMERO ENTERO) SEGÚN LOS PUNTOS Y SI EMPATA POR TIEMPO
+    @Query(value = "SELECT * FROM ${Estructura.PuntuacionEuroBanderas.TABLE_NAME} ORDER BY ${Estructura.PuntuacionEuroBanderas.PUNTOS} DESC, ${Estructura.PuntuacionEuroBanderas.TIEMPO} ASC")
+    fun getListaPuntuacionesEuroBanderasOrdenada(): List<PuntuacionEuroBanderasData>
 
     // AGREGAR UNA NUEVA PUNTUACIÓN
     @Insert
