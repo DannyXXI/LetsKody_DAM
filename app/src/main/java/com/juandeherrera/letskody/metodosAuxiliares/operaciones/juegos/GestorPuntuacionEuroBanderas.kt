@@ -87,14 +87,14 @@ object GestorPuntuacionEuroBanderas {
             // si existe y hay alguna mejora, se actualizarán los campos mejorados
             AccionPuntuacion.ACTUALIZADA -> {
                 // se obtiene el documento actual de Firebase
-                dbfire.collection(COLECCION_FIREBASE).document(uidUsuario).get()
-                    .addOnSuccessListener { document ->
-                        // si funciona se extrae la puntuación de Firebase a modificar
-                        val puntuacionFirebase = document.toObject(PuntuacionEuroBanderasFirebase::class.java)
+                dbfire.collection(COLECCION_FIREBASE).whereEqualTo("usuario", uidUsuario).get()
+                    .addOnSuccessListener { documents ->
+                        val documento = documents.firstOrNull() // se obtiene el documento de la puntuación
 
-                        if (puntuacionFirebase != null) {
+                        if (documento != null) {
+                            // se extrae la puntuación de Firebase a modificar
+                            val puntuacionFirebase = documento.toObject(PuntuacionEuroBanderasFirebase::class.java)
 
-                            // se comprueba si se ha mejorado la puntuación o el tiempo
                             val mejorPuntuacion = puntos > puntuacionFirebase.puntos!!
                             val mejorTiempo = tiempoTotal < puntuacionFirebase.tiempo!!
 
@@ -105,7 +105,7 @@ object GestorPuntuacionEuroBanderas {
                             )
 
                             // se actualiza la puntuación en la base de datos de Firebase
-                            dbfire.collection(COLECCION_FIREBASE).document(document.id).set(puntuacionFirebaseActualizado, SetOptions.merge())
+                            dbfire.collection(COLECCION_FIREBASE).document(documento.id).set(puntuacionFirebaseActualizado, SetOptions.merge())
                                 .addOnFailureListener { ex ->
                                     println("Error al actualizar la puntuación de Euro-banderas del usuario en Firebase: ${ex.message}")
                                 }
