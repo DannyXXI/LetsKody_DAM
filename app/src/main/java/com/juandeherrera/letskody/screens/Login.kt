@@ -410,11 +410,7 @@ fun PantallaLogin(controladorNavegacion: NavController) {
                                     db = db,
                                     controladorNavegacion = controladorNavegacion,
                                     error = { mensaje ->
-                                        notificationSnackbar(
-                                            scope = scope,
-                                            snackbarHostState = snackbarHostState,
-                                            mensaje = mensaje
-                                        )
+                                        notificationSnackbar(scope = scope, snackbarHostState = snackbarHostState, mensaje = mensaje)
                                     }
                                 )
                             },
