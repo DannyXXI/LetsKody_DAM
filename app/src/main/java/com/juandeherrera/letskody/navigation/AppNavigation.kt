@@ -51,13 +51,20 @@ fun AppNavigation() {
 
     val usuarioActual = FirebaseAuth.getInstance().currentUser  // se obtiene el usuario iniciado en Firebase (si no existe, será nulo)
 
+    // variable para indicar la pantalla de inicio de la navegación
+    val pantallaInicial = when {
+        usuarioActual == null -> AppScreens.Login.route
+        !usuarioActual.isEmailVerified -> AppScreens.Login.route  // huérfano temporal sin verificar se redirige login (donde se limpiará)
+        else -> AppScreens.Inicio.route
+    }
+
     // si hay Internet, se muestra la navegación normal de la aplicación
     if (hayInternet) {
 
         // contenedor que gestiona la navegación y muestra las pantallas según la ruta actual
         // se le pasa el controlador del estado de navegación y la pantalla inicial al abrir la app
         // se muestre el login o la pantalla de perfil en función si existe una sesión iniciada en Firebase
-        NavHost(navController = controladorNavegacion, startDestination = if (usuarioActual != null) { AppScreens.Inicio.route } else { AppScreens.Login.route }) {
+        NavHost(navController = controladorNavegacion, startDestination = pantallaInicial) {
 
             // se definen las rutas para las pantallas y se le indica al navegador la función que se ejecutará
             composable(route = AppScreens.Login.route) { PantallaLogin(controladorNavegacion = controladorNavegacion) }

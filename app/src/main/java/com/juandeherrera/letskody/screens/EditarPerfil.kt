@@ -194,9 +194,10 @@ fun PantallaEditarPerfil(controladorNavegacion: NavController) {
 
     var passVisibleVerificacion by remember { mutableStateOf(value = false) }  // variable de estado (mostrar/ocultar) la contraseña de verificación
 
-    // se comprueba si el usuario inició sesión con Google (no tiene contraseña propia en Firebase Auth)
+    // se comprueba si el usuario inició sesión con Google sin contraseña (true) o con contraseña (true)
     val esUsuarioGoogle = remember {
-        FirebaseAuth.getInstance().currentUser?.providerData?.any { it.providerId == "google.com" }?: false
+        val providers = FirebaseAuth.getInstance().currentUser?.providerData?.map { it.providerId } ?: emptyList()
+        providers.contains("google.com") && !providers.contains("password")
     }
 
     // bloque de código que se ejecuta cuando el usuario selecciona una imagen de la galería

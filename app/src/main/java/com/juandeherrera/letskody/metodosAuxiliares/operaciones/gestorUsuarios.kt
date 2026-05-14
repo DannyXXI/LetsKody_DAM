@@ -326,8 +326,9 @@ fun eliminarCuentaUsuario(usuario: UsuarioData, password: String, db: AppDB, con
         return
     }
 
-    // se comprueba si el usuario inicio sesión con Google
-    val esUsuarioGoogle = user.providerData.any { it.providerId == "google.com" }
+    // se comprueba si el usuario tiene inicio sesión con Google y contraseña, o un inicio de sesión único
+    val providers = user.providerData.map { it.providerId }
+    val esUsuarioGoogle = providers.contains("google.com") && !providers.contains("password")
 
     // función interna que contiene toda la lógica de borrado
     fun borradoDatos() {

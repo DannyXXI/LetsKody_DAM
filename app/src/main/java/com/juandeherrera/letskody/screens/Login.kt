@@ -65,6 +65,7 @@ import androidx.room.Room
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.firebase.auth.FirebaseAuth
 import com.juandeherrera.letskody.R
 import com.juandeherrera.letskody.localdb.AppDB
 import com.juandeherrera.letskody.localdb.Estructura
@@ -76,6 +77,7 @@ import com.juandeherrera.letskody.metodosAuxiliares.operaciones.iniciarSesionGoo
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.loguearUsuario
 import com.juandeherrera.letskody.metodosAuxiliares.operaciones.recuperarPasswordUsuario
 import com.juandeherrera.letskody.navigation.AppScreens
+import kotlinx.coroutines.tasks.await
 
 @SuppressLint("DefaultLocale")
 @RequiresApi(value = Build.VERSION_CODES.TIRAMISU) // solo se permite Android 13 o superior (API 33+)
@@ -94,6 +96,8 @@ fun PantallaLogin(controladorNavegacion: NavController) {
 
     val context = LocalContext.current // variable que obtiene el contexto actual
 
+    val auth = FirebaseAuth.getInstance() // instancia al sistema de autenticación de Firebase
+
     // instancia a la base de datos local (en el mismo hilo)
     val db = Room.databaseBuilder(context, klass = AppDB::class.java, name = Estructura.DB.NAME).allowMainThreadQueries().build()
 
@@ -107,6 +111,29 @@ fun PantallaLogin(controladorNavegacion: NavController) {
     var emailRecuperacion by remember { mutableStateOf(value = "") } // variable de estado para el email del usuario para la recuperación de su contraseña
 
     val abrirModalPassword = remember { mutableStateOf(value = false) } // variable para el estado (abrir/cerrar) del modal de recuperación de contraseña
+
+    // bloque que se ejecuta una sola vez al cargar la pantalla
+    LaunchedEffect(key1 = Unit) {
+        val usuarioTemporalHuerfano = db.usuarioDao().getUserTemporal()  // se obtiene el usuario temporal huerfano
+
+        // si existe un usuario temporal huerfano de la autenticación de email
+        if (usuarioTemporalHuerfano != null) {
+            val user = auth.currentUser   // se obtiene su usuario en Firebase Authentication
+
+            // si existe el usuario en Firebase Authentication y no está
+            if (user != null && !user.isEmailVerified) {
+                try {
+                    user.delete().await()  // se espera a que se elimine el usuario
+                    auth.signOut()         // se cierra la sesión
+                }
+                catch (e: Exception) {
+                    println("Error al eliminar usuario huérfano de Firebase: ${e.message}")
+                }
+            }
+
+            db.usuarioDao().eliminarUsuario(email = usuarioTemporalHuerfano.emailUsuario)  // elimina el usuario temporal
+        }
+    }
 
     Scaffold(
         // define el lugar donde se mostraran los Snackbar

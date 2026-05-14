@@ -58,132 +58,108 @@ fun iniciarSesionGoogle(context: Context, scope: CoroutineScope, db: AppDB, cont
             val tokenCredencialesGoogle = GoogleIdTokenCredential.createFrom(respuesta.credential.data)
             val tokenIdGoogle = tokenCredencialesGoogle.idToken
 
-            val emailUsuario = tokenCredencialesGoogle.id // se obtiene el email del usuario
+            // se construye las credenciales de Firebase a partir del token de Google
+            val credencialesFirebase = GoogleAuthProvider.getCredential(tokenIdGoogle, null)
 
-            // Firebase comprueba los métodos de inicio de sesión asociados al email
-            @Suppress("DEPRECATION")
-            auth.fetchSignInMethodsForEmail(emailUsuario)
-                .addOnSuccessListener { result ->
-                    val metodos = result.signInMethods ?: emptyList<String>() // lista de los métodos de inicio de sesión asociados al email (vacía si no hay ninguno)
+            // se autentica el usuario en Firebase con la credencial de Google
+            auth.signInWithCredential(credencialesFirebase)
+                .addOnSuccessListener {  authResult ->
+                    val usuarioFirebase = authResult.user  // usuario autenticado de Firebase
 
-                    // si email ya pertenece a una cuenta que tiene contraseña, se bloquea y se cierra sesión
-                    if (metodos.contains("password") && !metodos.contains("google.com")) {
-                        auth.signOut()
-                        error("Este email ya está registrado con contraseña.")
+                    if (usuarioFirebase == null) {
+                        error("No se pudo obtener el usuario de Google.")
                         return@addOnSuccessListener
                     }
 
-                    // se construye las credenciales de Firebase a partir del token de Google
-                    val credencialesFirebase = GoogleAuthProvider.getCredential(tokenIdGoogle, null)
+                    // se comprueba si el usuario ya existe en Firestore se busca su documento por UID
+                    dbfire.collection("usuarios").document(usuarioFirebase.uid).get()
+                        .addOnSuccessListener { documento ->
 
-                    // se autentica el usuario en Firebase con la credencial de Google
-                    auth.signInWithCredential(credencialesFirebase)
-                        .addOnSuccessListener {  authResult ->
-                            val usuarioFirebase = authResult.user  // usuario autenticado de Firebase
+                            if (documento.exists()) {
+                                // si el usuario ya existe en Firestore, se inicia su sesión
 
-                            if (usuarioFirebase == null) {
-                                error("No se pudo obtener el usuario de Google.")
-                                return@addOnSuccessListener
+                                // se convierte el documento de Firestore en un objeto de Usuario de Firebase
+                                val datosUsuario = documento.toObject(UsuarioFirebase::class.java) ?: run {
+                                    error("Error al leer los datos del usuario.")
+                                    return@addOnSuccessListener
+                                }
+
+                                // se cargan los datos necesarios desde Firebase para tenerlos en local
+                                cargarDatos(
+                                    uid = usuarioFirebase.uid,
+                                    datosUsuario = datosUsuario,
+                                    dbfire = dbfire,
+                                    db = db,
+                                    controladorNavegacion = controladorNavegacion,
+                                    error = error
+                                )
                             }
+                            else {
+                                // si el usuario no existe en Firestore, se registra
 
-                            // se comprueba si el usuario ya existe en Firestore se busca su documento por UID
-                            dbfire.collection("usuarios").document(usuarioFirebase.uid).get()
-                                .addOnSuccessListener { documento ->
+                                // se obtienen los datos del perfil de Google
+                                val nombreGoogle = usuarioFirebase.displayName ?: ""
+                                val emailGoogle = usuarioFirebase.email ?: ""
+                                val fotoUrlGoogle = usuarioFirebase.photoUrl?.toString()
 
-                                    if (documento.exists()) {
-                                        // si el usuario ya existe en Firestore, se inicia su sesión
+                                // se obtiene el nombre y los apellidos del nombre completo de Google (se divide el primer espacio)
+                                val partes = nombreGoogle.trim().split(" ", limit = 2)
+                                val nombre = partes.getOrElse(index = 0) { "" }     // primera palabra (nombre) si existe
+                                val apellidos = partes.getOrElse(index = 1) { "" }  // resto del nombre (apellidos) si existen
 
-                                        // se convierte el documento de Firestore en un objeto de Usuario de Firebase
-                                        val datosUsuario = documento.toObject(UsuarioFirebase::class.java) ?: run {
-                                            error("Error al leer los datos del usuario.")
-                                            return@addOnSuccessListener
-                                        }
-
-                                        // se cargan los datos necesarios desde Firebase para tenerlos en local
-                                        cargarDatos(
-                                            uid = usuarioFirebase.uid,
-                                            datosUsuario = datosUsuario,
-                                            dbfire = dbfire,
-                                            db = db,
-                                            controladorNavegacion = controladorNavegacion,
-                                            error = error
-                                        )
+                                scope.launch {
+                                    // se descarga la foto de perfil de Google a base64 (en función si el usuario tiene imagen, si no se usa una por defecto)
+                                    val fotoBase64 = if (fotoUrlGoogle != null) {
+                                        descargarFotoGoogleBase64(context = context, url = fotoUrlGoogle)
                                     }
                                     else {
-                                        // si el usuario no existe en Firestore, se registra
-
-                                        // se obtienen los datos del perfil de Google
-                                        val nombreGoogle = usuarioFirebase.displayName ?: ""
-                                        val emailGoogle = usuarioFirebase.email ?: ""
-                                        val fotoUrlGoogle = usuarioFirebase.photoUrl?.toString()
-
-                                        // se obtiene el nombre y los apellidos del nombre completo de Google (se divide el primer espacio)
-                                        val partes = nombreGoogle.trim().split(" ", limit = 2)
-                                        val nombre = partes.getOrElse(index = 0) { "" }     // primera palabra (nombre) si existe
-                                        val apellidos = partes.getOrElse(index = 1) { "" }  // resto del nombre (apellidos) si existen
-
-                                        scope.launch {
-                                            // se descarga la foto de perfil de Google a base64 (en función si el usuario tiene imagen, si no se usa una por defecto)
-                                            val fotoBase64 = if (fotoUrlGoogle != null) {
-                                                descargarFotoGoogleBase64(context = context, url = fotoUrlGoogle)
-                                            }
-                                            else {
-                                                convertirImagenDefectoBase64(context = context, recursoId = R.drawable.kody_orange)
-                                            }
-
-                                            // se construye el objeto de usuario de Firebase con los datos disponibles (los demás se dejan vacíos o con valor por defecto)
-                                            val nuevoUsuario = UsuarioFirebase(
-                                                nombre = nombre,
-                                                apellidos = apellidos,
-                                                telefono = "",         // Google no proporciona el teléfono se dejará vacío
-                                                email = emailGoogle,
-                                                sexo = "Otro",         // Google no proporciona el sexo por lo que se establece como Otro
-                                                fechaNacimiento = "",  // Google no proporciona la fecha de nacimiento se dejará vacío
-                                                foto = fotoBase64,
-                                                ultimoEnvioTicket = 0L
-                                            )
-
-                                            // se guarda el nuevo usuario en la base de datos de Firebase
-                                            dbfire.collection("usuarios").document(usuarioFirebase.uid).set(nuevoUsuario)
-                                                .addOnSuccessListener {
-                                                    // si el registro fue exitoso, se procede a cargar los datos
-                                                    cargarDatos(
-                                                        uid = usuarioFirebase.uid,
-                                                        datosUsuario = nuevoUsuario,
-                                                        dbfire = dbfire,
-                                                        db = db,
-                                                        controladorNavegacion = controladorNavegacion,
-                                                        error = error
-                                                    )
-                                                }
-                                                .addOnFailureListener { ex ->
-                                                    // si falla el registro del nuevo usuario en Firebase se muestra un mensaje de error al usuario y en la terminal
-                                                    error("Error al registrar el nuevo usuario en Firebase.")
-                                                    println("Error al registrar el nuevo usuario en Firebase: ${ex.message}")
-                                                }
-                                        }
+                                        convertirImagenDefectoBase64(context = context, recursoId = R.drawable.kody_orange)
                                     }
-                                }
-                                .addOnFailureListener { ex ->
-                                    // si falla la comprobación del usuario en Firebase se muestra un mensaje de error al usuario y en la terminal
-                                    error("Error al comprobar el usuario en Firebase.")
-                                    println("Error al comprobar el usuario en Firebase: ${ex.message}")
-                                }
 
+                                    // se construye el objeto de usuario de Firebase con los datos disponibles (los demás se dejan vacíos o con valor por defecto)
+                                    val nuevoUsuario = UsuarioFirebase(
+                                        nombre = nombre,
+                                        apellidos = apellidos,
+                                        telefono = "",         // Google no proporciona el teléfono se dejará vacío
+                                        email = emailGoogle,
+                                        sexo = "Otro",         // Google no proporciona el sexo por lo que se establece como Otro
+                                        fechaNacimiento = "",  // Google no proporciona la fecha de nacimiento se dejará vacío
+                                        foto = fotoBase64,
+                                        ultimoEnvioTicket = 0L
+                                    )
+
+                                    // se guarda el nuevo usuario en la base de datos de Firebase
+                                    dbfire.collection("usuarios").document(usuarioFirebase.uid).set(nuevoUsuario)
+                                        .addOnSuccessListener {
+                                            // si el registro fue exitoso, se procede a cargar los datos
+                                            cargarDatos(
+                                                uid = usuarioFirebase.uid,
+                                                datosUsuario = nuevoUsuario,
+                                                dbfire = dbfire,
+                                                db = db,
+                                                controladorNavegacion = controladorNavegacion,
+                                                error = error
+                                            )
+                                        }
+                                        .addOnFailureListener { ex ->
+                                            // si falla el registro del nuevo usuario en Firebase se muestra un mensaje de error al usuario y en la terminal
+                                            error("Error al registrar el nuevo usuario en Firebase.")
+                                            println("Error al registrar el nuevo usuario en Firebase: ${ex.message}")
+                                        }
+                                }
+                            }
                         }
                         .addOnFailureListener { ex ->
-                            // si falla la autenticación con Firebase se muestra un mensaje de error al usuario y en la terminal
-                            error("Error al autenticar con Google.")
-                            println("Error al autenticar en Firebase con Google: ${ex.message}")
+                            // si falla la comprobación del usuario en Firebase se muestra un mensaje de error al usuario y en la terminal
+                            error("Error al comprobar el usuario en Firebase.")
+                            println("Error al comprobar el usuario en Firebase: ${ex.message}")
                         }
                 }
                 .addOnFailureListener { ex ->
-                    // si falla la comprobación de los métodos de inicio de sesión se muestra un mensaje de error en terminal y al usuario
-                    auth.signOut()
-                    println("Error al verificar los métodos de inicio de sesión del email: ${ex.message}")
-                    error("Error al verificar el email.")
+                    // si falla la autenticación con Firebase se muestra un mensaje de error al usuario y en la terminal
+                    error("Error al autenticar con Google.")
+                    println("Error al autenticar en Firebase con Google: ${ex.message}")
                 }
-
         }
         catch (ex: GetCredentialException) {
             // si el usuario cancela la selección de cuenta o hay un error en el selector, se muestra en la terminal

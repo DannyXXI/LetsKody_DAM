@@ -15,6 +15,10 @@ interface UsuarioDAO {
     @Query(value = "SELECT * FROM ${Estructura.Usuario.TABLE_NAME} LIMIT 1")
     fun getUser(): Flow<UsuarioData?>
 
+    // OBTENER EL POSIBLE USUARIO TEMPORAL
+    @Query(value = "SELECT * FROM ${Estructura.Usuario.TABLE_NAME} LIMIT 1")
+    fun getUserTemporal(): UsuarioData?
+
     // AGREGAR UN NUEVO USUARIO
     @Insert
     fun nuevoUsuario (usuarioData: UsuarioData)
